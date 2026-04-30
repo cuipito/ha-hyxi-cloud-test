@@ -28,6 +28,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-lines
 # Constants for optimization
 INT_SENSOR_KEYS = {"batsoc", "batsoh", "signalval"}
 
@@ -861,6 +862,29 @@ class HyxiSensor(HyxiBaseSensor):
             val = val - ac_l
 
         return val
+
+    def _get_metric_float(self, key: str) -> float | None:
+        """Safely extract a metric value as a float."""
+        dev_data = self.coordinator.data.get(self._sn) or {}
+        metrics = dev_data.get("metrics") or {}
+        val = metrics.get(key)
+
+        if val is None or str(val).strip().lower() in (
+            "",
+            "null",
+            "none",
+            "na",
+            "--",
+        ):
+            return None
+
+        try:
+            return float(val)
+        except (
+            ValueError,
+            TypeError,
+        ):
+            return None
 
     def _parse_device_type(self, dev_data, value):
         return normalize_device_type(get_raw_device_code(dev_data))
