@@ -29,8 +29,8 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        # Frequency control for hybrid inverters
-        if device_type == "hybrid_inverter":
+        # Frequency control for hybrid inverters and all-in-one devices
+        if device_type in ("hybrid_inverter", "all_in_one"):
             entities.append(HyxiFrequencyControlSwitch(coordinator, sn, dev_data))
 
     if entities:

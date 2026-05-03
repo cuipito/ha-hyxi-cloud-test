@@ -30,7 +30,7 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        if device_type in ("hybrid_inverter", "micro_ess"):
+        if device_type in ("hybrid_inverter", "micro_ess", "all_in_one"):
             # Determine max power from device info, fall back to 10000W
             metrics = dev_data.get("metrics") or {}
             max_charge = _safe_int(metrics.get("maxChargePower"), 10000)

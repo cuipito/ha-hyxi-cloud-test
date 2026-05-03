@@ -27,6 +27,7 @@ DEVICE_TYPE_KEYS = {
     "EMS": "micro_ess",
     "DMU": "collector",
     "COLLECTOR": "collector",
+    "ALL_IN_ONE": "all_in_one",
 }
 
 
@@ -115,6 +116,8 @@ def normalize_device_type(code: str | int | float) -> str:
         return "hybrid_inverter"
     if "ESS" in code_str or "HALO" in code_str:
         return "micro_ess"
+    if "ALL_IN_ONE" in code_str or "ALL-IN-ONE" in code_str:
+        return "all_in_one"
 
     return "unknown"
 

@@ -32,12 +32,12 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        # Mode control for inverters (hybrid inverters and ESS devices)
-        if device_type in ("hybrid_inverter", "micro_ess"):
+        # Mode control for inverters, ESS, and all-in-one devices
+        if device_type in ("hybrid_inverter", "micro_ess", "all_in_one"):
             entities.append(HyxiModeSelect(coordinator, sn, dev_data))
 
-        # Peak Shaving for single-phase inverters
-        if device_type == "hybrid_inverter":
+        # Peak Shaving for hybrid inverters and all-in-one devices
+        if device_type in ("hybrid_inverter", "all_in_one"):
             entities.append(HyxiPeakShavingSelect(coordinator, sn, dev_data))
 
     if entities:
