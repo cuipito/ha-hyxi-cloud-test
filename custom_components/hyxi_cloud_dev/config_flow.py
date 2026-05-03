@@ -78,7 +78,7 @@ class HyxiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[
 
             error = await self._validate_input(user_input)
             if not error:
-                return self.async_create_entry(title="HYXI Cloud", data=user_input)
+                return self.async_create_entry(title="HYXI Development", data=user_input)
 
             errors["base"] = error
 

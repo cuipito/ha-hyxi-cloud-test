@@ -2,7 +2,7 @@
 
 from homeassistant.const import Platform
 
-DOMAIN = "hyxi_cloud"
+DOMAIN = "hyxi_cloud_dev"
 CONF_ACCESS_KEY = "access_key"
 CONF_SECRET_KEY = "secret_key"
 BASE_URL = "https://open.hyxicloud.com"
