@@ -8,7 +8,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from hyxi_cloud_api import HyxiApiClient
+from ._vendor.hyxi_cloud_api import HyxiApiClient
 
 from .const import (
     BASE_URL,

@@ -292,6 +292,40 @@
       "internal_temperature": {
         "name": "Interne Temperatuur"
       }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Bedrijfsmodus",
+        "state": {
+          "idle": "Inactief",
+          "charge": "Laden",
+          "discharge": "Ontladen",
+          "self_consume": "Eigen verbruik"
+        }
+      },
+      "peak_shaving": {
+        "name": "Piekvermogenbeperking",
+        "state": {
+          "close": "Uit",
+          "charge": "Laden",
+          "discharge": "Ontladen",
+          "stop": "Stop",
+          "hold": "Vasthouden"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Laadvermogen"
+      },
+      "discharge_power": {
+        "name": "Ontlaadvermogen"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequentieregeling"
+      }
     }
   }
 }

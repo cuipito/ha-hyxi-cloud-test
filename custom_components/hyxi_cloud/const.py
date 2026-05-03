@@ -122,4 +122,7 @@ def normalize_device_type(code: str | int | float) -> str:
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
+    Platform.SELECT,
+    Platform.NUMBER,
+    Platform.SWITCH,
 ]

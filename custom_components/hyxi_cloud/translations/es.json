@@ -292,6 +292,40 @@
       "internal_temperature": {
         "name": "Temperatura interna"
       }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Modo de operación",
+        "state": {
+          "idle": "Inactivo",
+          "charge": "Carga",
+          "discharge": "Descarga",
+          "self_consume": "Autoconsumo"
+        }
+      },
+      "peak_shaving": {
+        "name": "Recorte de picos",
+        "state": {
+          "close": "Apagado",
+          "charge": "Carga",
+          "discharge": "Descarga",
+          "stop": "Detener",
+          "hold": "Mantener"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Potencia de carga"
+      },
+      "discharge_power": {
+        "name": "Potencia de descarga"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Control de frecuencia"
+      }
     }
   }
 }

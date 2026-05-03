@@ -292,6 +292,43 @@
       },
       "ph3p": {
         "name": "Phase 3 Power"
+      },
+      "internal_temperature": {
+        "name": "Internal Temperature"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Operating Mode",
+        "state": {
+          "idle": "Idle",
+          "charge": "Charge",
+          "discharge": "Discharge",
+          "self_consume": "Self-Consumption"
+        }
+      },
+      "peak_shaving": {
+        "name": "Peak Shaving",
+        "state": {
+          "close": "Off",
+          "charge": "Charge",
+          "discharge": "Discharge",
+          "stop": "Stop",
+          "hold": "Hold"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Charge Power"
+      },
+      "discharge_power": {
+        "name": "Discharge Power"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequency Control"
       }
     }
   }
