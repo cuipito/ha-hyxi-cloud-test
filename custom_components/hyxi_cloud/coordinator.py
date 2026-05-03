@@ -11,7 +11,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
-from hyxi_cloud_api import HyxiApiClient
+from ._vendor.hyxi_cloud_api import HyxiApiClient
 
 from .const import CONF_BACK_DISCOVERY, DOMAIN, get_software_version, mask_sn
 

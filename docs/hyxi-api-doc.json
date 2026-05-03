@@ -1,0 +1,118 @@
+{
+  "scrape_date": "2026-05-03",
+  "source": "https://open.hyxicloud.com/#/document",
+  "endpoints": {
+    "issue_device_control_instructions": {
+      "title": "Issue Device Control Instructions",
+      "method": "POST",
+      "path": "/api/device/v2/control",
+      "description": "Issue control instructions to the specified SN device; different device types support different instructions, see the interface parameter description for details",
+      "request_header": {
+        "note": "Standard HMAC-signed headers (accessKey, timestamp, nonce, sign, Authorization)"
+      },
+      "request_parameters": [
+        {
+          "name": "deviceControlMap",
+          "data_type": "Map",
+          "required": true,
+          "description": "Key for deviceControlMap is SN (e.g. '318*********14'). The set of instructions to be issued."
+        },
+        {
+          "name": "<controlId>",
+          "data_type": "Map",
+          "required": true,
+          "description": "Instruction ID. Different models of devices support different instructions, please refer to Appendix 1 for details."
+        },
+        {
+          "name": "<value>",
+          "data_type": "String/Integer",
+          "required": true,
+          "description": "Value corresponding to the instruction, please refer to Appendix 1 for details."
+        }
+      ],
+      "request_body_example": {
+        "deviceControlMap": {
+          "318*********14": {
+            "3012": 99
+          }
+        }
+      },
+      "return_parameters": [
+        {"name": "code", "data_type": "String", "required": true, "description": "Request error code, non-zero means error"},
+        {"name": "msg", "data_type": "String", "required": true, "description": "Specific error message"},
+        {"name": "data", "data_type": "Object", "required": true, "description": "The returned dataset"},
+        {"name": "traceId", "data_type": "String", "required": false, "description": "Serial number"},
+        {"name": "deviceSn", "data_type": "String", "required": false, "description": "Device SN"},
+        {"name": "success", "data_type": "Boolean", "required": true, "description": "Success / Failure"}
+      ]
+    },
+    "query_results_of_device_control_instructions": {
+      "title": "Query Results of Device Control Instructions",
+      "method": "POST",
+      "path": "/api/device/v1/obtain",
+      "description": "Query the execution results of a specific SN device for a specific issued instruction based on the traceId returned by the device control instruction",
+      "request_parameters": [
+        {"name": "traceId", "data_type": "String", "required": true, "description": "The operation trace ID returned by issuing the device control instruction"}
+      ],
+      "request_body_example": {
+        "traceId": "17168xxxxx"
+      },
+      "return_parameters": [
+        {"name": "code", "data_type": "String", "required": true, "description": "Request error code, non-zero means error"},
+        {"name": "msg", "data_type": "String", "required": true, "description": "Specific error message"},
+        {"name": "data", "data_type": "Object", "required": true, "description": "The returned dataset"},
+        {"name": "traceId", "data_type": "String", "required": false, "description": "Operation trace ID"},
+        {"name": "deviceSn", "data_type": "String", "required": false, "description": "Device SN"},
+        {"name": "result", "data_type": "String", "required": false, "description": "Instruction execution result: 2=issuing, 3=Success / Complete, 5=Failure"},
+        {"name": "success", "data_type": "Boolean", "required": true, "description": "Success / Failure"}
+      ]
+    }
+  },
+  "energy_storage_control_instruction_table": {
+    "title": "Energy Storage Control Instruction Table (Appendix 1)",
+    "instructions": [
+      {
+        "controlId": 1020,
+        "control_name": "Frequency Control Enable/Disable (Single Phase)",
+        "values": {"0": "close", "1": "open"},
+        "description": "VPP business usage. FCAS toggling. Enables or disables the function of switch frequency control."
+      },
+      {
+        "controlId": 1021,
+        "control_name": "Peak Shaving Control (Single Phase)",
+        "values": {
+          "0": "close",
+          "1": "charge",
+          "2": "discharge",
+          "3": "stop",
+          "4": "hold"
+        },
+        "description": "For VPP (Virtual Power Plant), set the real-time charge/discharge/stop operations. charge: Battery charges using PV first, and any shortfall is drawn from the grid (Unit: W). discharge: Battery discharges to cover household consumption first, then excess is injected into the grid (Unit: W). stop: Battery neither charges nor discharges. hold: MaxPV generates power as much as possible and battery neither charges nor discharges."
+      },
+      {
+        "controlId": 1062,
+        "control_name": "Mode Control (Three-Phase) - Idle",
+        "value": "Empty String",
+        "description": "Battery neither charges nor discharges. Ideally, the hybrid storage and charging system operates for self-consumption."
+      },
+      {
+        "controlId": 1063,
+        "control_name": "Mode Control (Three-Phase) - Charge",
+        "value": "Wattage as integer string (Unit: W)",
+        "description": "Battery charges using PV first, and any shortfall is drawn from the grid (Unit: W)."
+      },
+      {
+        "controlId": 1064,
+        "control_name": "Mode Control (Three-Phase) - Discharge",
+        "value": "Wattage as integer string (Unit: W)",
+        "description": "Battery discharges to cover household consumption first, then excess is injected into the grid (Unit: W)."
+      },
+      {
+        "controlId": 1065,
+        "control_name": "Mode Control (Three-Phase) - Self-consumption",
+        "value": "Empty String",
+        "description": "Self-consumption: Battery only to meet household demand. Balance: should not charge the battery to more energy than stored in the storage system."
+      }
+    ]
+  }
+}

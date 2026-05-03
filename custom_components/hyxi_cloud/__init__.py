@@ -10,8 +10,8 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from hyxi_cloud_api import HyxiApiClient
-from hyxi_cloud_api import __version__ as API_VERSION
+from ._vendor.hyxi_cloud_api import HyxiApiClient
+from ._vendor.hyxi_cloud_api import __version__ as API_VERSION
 
 from .const import (
     BASE_URL,
