@@ -45,7 +45,7 @@ class FetchState:
 _LOGGER = logging.getLogger(__name__)
 _battery_device_types = ("INVERTER", "ESS", "HALO", "1", "15")
 _BATTERY_DEVICE_REGEX = re.compile("|".join(_battery_device_types))
-_parent_device_types = ("COLLECTOR", "DMU", "INVERTER")
+_parent_device_types = ("COLLECTOR", "DMU", "INVERTER", "ALL_IN_ONE")
 _PARENT_DEVICE_REGEX = re.compile("|".join(_parent_device_types))
 _COLLECTOR_FILTER_KEYWORDS = (
     "bat",
