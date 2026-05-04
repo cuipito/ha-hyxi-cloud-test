@@ -581,12 +581,14 @@ def _compute_derived_metrics(m_raw: dict) -> dict:
         derived["grid_export"] = grid if grid > 0 else 0.0
 
     # 3. Battery Metrics
-    # Prefer batP (DC terminals) over pbat (AC equivalent)
+    # Prefer pbat over batP: batP can have an inverted sign convention on
+    # some device types (e.g. ALL_IN_ONE), while pbat is consistently
+    # negative-for-charging / positive-for-discharging.
     bat_p_dc = _get_f("batP", m_raw)
     pbat = _get_f("pbat", m_raw)
 
     if "batP" in m_raw or "pbat" in m_raw:
-        power_source = bat_p_dc if bat_p_dc != 0.0 else pbat
+        power_source = pbat if pbat != 0.0 else bat_p_dc
         derived["bat_charging"] = abs(power_source) if power_source < 0 else 0.0
         derived["bat_discharging"] = power_source if power_source > 0 else 0.0
         derived["bat_power_dc"] = bat_p_dc
