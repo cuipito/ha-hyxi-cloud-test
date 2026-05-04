@@ -616,6 +616,12 @@ def _compute_derived_metrics(m_raw: dict) -> dict:
             _get_f("pv4v", m_raw) * _get_f("pv4i", m_raw), 2
         )
 
+    # Derive pv1p from ppv - pv2p when pv1 data is not reported directly
+    # (e.g. ALL_IN_ONE devices only report ppv and pv2p)
+    if "pv1p" not in derived and "ppv" in m_raw and "pv2p" in derived:
+        ppv_total = _get_f("ppv", m_raw)
+        derived["pv1p"] = round(max(ppv_total - derived["pv2p"], 0), 2)
+
     return derived
 
 
