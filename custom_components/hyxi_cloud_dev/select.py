@@ -9,6 +9,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from ._vendor.hyxi_cloud_api import HyxiControlError
+from homeassistant.helpers import entity_registry as er
+
 from .const import DOMAIN, MANUFACTURER, normalize_device_type, get_raw_device_code
 
 _LOGGER = logging.getLogger(__name__)
@@ -144,9 +146,19 @@ class HyxiPeakShavingSelect(CoordinatorEntity, SelectEntity):
 def _get_power_value(hass: HomeAssistant, sn: str, direction: str) -> int:
     """Read the wattage from the paired number entity.
 
+    Looks up the entity by unique_id via the entity registry, since HA-assigned
+    entity_ids don't follow a predictable pattern.
     Falls back to 100W if the number entity has not been set yet.
     """
-    entity_id = f"number.hyxi_{sn}_{direction}_power"
+    unique_id = f"hyxi_{sn}_{direction}_power"
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id("number", DOMAIN, unique_id)
+    if entity_id is None:
+        _LOGGER.warning(
+            "Power number entity (unique_id=%s) not found in registry, using default 100W",
+            unique_id,
+        )
+        return 100
     state = hass.states.get(entity_id)
     if state is not None and state.state not in ("unknown", "unavailable"):
         try:
