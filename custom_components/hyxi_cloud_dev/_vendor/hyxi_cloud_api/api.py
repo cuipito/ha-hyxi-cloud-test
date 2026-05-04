@@ -1539,6 +1539,9 @@ class HyxiApiClient:  # pylint: disable=too-many-instance-attributes
                 device_sn: {str(k): v for k, v in control_map.items()}
             }
         }
+        _LOGGER.debug(
+            "HYXI CONTROL request for %s: %s", device_sn, body["deviceControlMap"][device_sn]
+        )
         _, res = await self._request("POST", path, json=body)
         if res is None or not res.get("success"):
             code = res.get("code", "unknown") if res else "no_response"
@@ -1546,6 +1549,7 @@ class HyxiApiClient:  # pylint: disable=too-many-instance-attributes
             raise HyxiControlError(
                 f"controlMap write failed (code={code}): {msg}"
             )
+        _LOGGER.debug("HYXI CONTROL response for %s: success=%s", device_sn, res.get("success"))
         return res
 
     async def set_mode_idle(self, device_sn: str) -> dict:

@@ -80,11 +80,12 @@ class HyxiModeSelect(CoordinatorEntity, SelectEntity):
             if option == "idle":
                 await client.set_mode_idle(self._sn)
             elif option == "charge":
-                # Get the wattage from the paired number entity
                 watts = _get_power_value(self.hass, self._sn, "charge")
+                _LOGGER.debug("Setting %s to CHARGE at %dW", self._sn, watts)
                 await client.set_mode_charge(self._sn, watts)
             elif option == "discharge":
                 watts = _get_power_value(self.hass, self._sn, "discharge")
+                _LOGGER.debug("Setting %s to DISCHARGE at %dW", self._sn, watts)
                 await client.set_mode_discharge(self._sn, watts)
             elif option == "self_consume":
                 await client.set_mode_self_consume(self._sn)
