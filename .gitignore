@@ -40,3 +40,9 @@ dev_env/ha_testing_*
 mock_data.json
 mock_data_example.json
 .coverage*
+
+# MCP config (contains HA access token)
+.mcp.json
+
+# Automations (contain device serial numbers)
+automations/
