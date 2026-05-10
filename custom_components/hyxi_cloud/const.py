@@ -124,6 +124,37 @@ def normalize_device_type(code: str | int | float) -> str:
     return "unknown"
 
 
+def detect_phase_type(dev_data: dict) -> str:
+    """Detect whether a device is single-phase or three-phase.
+
+    Detection strategy (in priority order):
+    1. Model name suffix: -HT/-HTA = three-phase, -HS/-LS = single-phase
+    2. Runtime metrics: non-zero ph2v or ph3v = three-phase
+    3. Default: "unknown" — expose all controls and let the API reject unsupported ones
+    """
+    # 1. Model name suffix check
+    model = (dev_data.get("model") or "").upper().strip()
+    if model:
+        # Strip trailing power rating (e.g. "H5K-HT" -> check "-HT")
+        for suffix in ("-HTA", "-HT", "-ET"):
+            if suffix in model:
+                return "three_phase"
+        for suffix in ("-HS", "-LS", "-HS1"):
+            if suffix in model:
+                return "single_phase"
+
+    # 2. Runtime metrics — presence of phase 2/3 voltage with non-zero values
+    metrics = dev_data.get("metrics") or {}
+    for key in ("ph2v", "ph3v"):
+        try:
+            if float(metrics.get(key, 0)) > 0:
+                return "three_phase"
+        except (ValueError, TypeError):
+            continue
+
+    return "unknown"
+
+
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,

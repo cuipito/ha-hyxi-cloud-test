@@ -10,7 +10,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from hyxi_cloud_api import HyxiApiClient
 
-from .const import DOMAIN, MANUFACTURER, get_raw_device_code, normalize_device_type
+from .const import (
+    DOMAIN,
+    MANUFACTURER,
+    detect_phase_type,
+    get_raw_device_code,
+    normalize_device_type,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,12 +39,25 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        # Mode control for hybrid inverters and all-in-one devices
-        if device_type in ("hybrid_inverter", "all_in_one"):
+        if device_type not in ("hybrid_inverter", "all_in_one"):
+            continue
+
+        phase = detect_phase_type(dev_data)
+        if phase == "unknown":
+            _LOGGER.warning(
+                "Cannot determine phase type for %s (model=%s) — "
+                "skipping control entities",
+                sn,
+                dev_data.get("model"),
+            )
+            continue
+
+        # Mode control (controlIds 1062-1065) — three-phase devices only
+        if phase == "three_phase":
             entities.append(HyxiModeSelect(coordinator, sn, dev_data))
 
-        # Peak Shaving for hybrid inverters and all-in-one devices
-        if device_type in ("hybrid_inverter", "all_in_one"):
+        # Peak Shaving (controlId 1021) — single-phase devices only
+        if phase == "single_phase":
             entities.append(HyxiPeakShavingSelect(coordinator, sn, dev_data))
 
     if entities:

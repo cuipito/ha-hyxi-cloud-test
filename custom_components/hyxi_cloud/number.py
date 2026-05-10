@@ -11,7 +11,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MANUFACTURER, get_raw_device_code, normalize_device_type
+from .const import (
+    DOMAIN,
+    MANUFACTURER,
+    detect_phase_type,
+    get_raw_device_code,
+    normalize_device_type,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +37,14 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        if device_type in ("hybrid_inverter", "all_in_one"):
+        if device_type not in ("hybrid_inverter", "all_in_one"):
+            continue
+
+        phase = detect_phase_type(dev_data)
+
+        # Power numbers pair with mode control (1062-1065) — three-phase only
+        # Peak shaving (single-phase) uses full inverter power, no wattage setting
+        if phase == "three_phase":
             entities.append(HyxiPowerNumber(coordinator, sn, dev_data, "charge"))
             entities.append(HyxiPowerNumber(coordinator, sn, dev_data, "discharge"))
 
