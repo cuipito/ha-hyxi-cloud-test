@@ -23,6 +23,7 @@ class TestEMConstants:
         required_keys = [
             "soc_min",
             "soc_max",
+            "soc_hysteresis_pct",
             "night_buffer_pct",
             "high_load_threshold",
             "battery_capacity_wh",
@@ -34,9 +35,11 @@ class TestEMConstants:
             "power_adjust_cooldown",
             "avg_night_consumption",
             "charge_margin",
+            "export_limit_w",
             "charge_entry_threshold",
             "charge_reentry_delay",
             "bottomout_cooldown",
+            "manual_override_timeout",
         ]
         for key in required_keys:
             assert key in EM_DEFAULTS, f"Missing EM_DEFAULTS key: {key}"
@@ -155,6 +158,7 @@ class TestEMTranslationCoverage:
         em_keys = [
             "em_current_decision",
             "em_last_action",
+            "em_last_sent_mode",
             "em_battery_energy_available",
             "em_hours_until_sunrise",
             "em_hours_until_sunset",

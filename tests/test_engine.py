@@ -31,6 +31,7 @@ class DecisionState:
     home_load: float
     soc_min: float
     soc_max: float
+    soc_resume: float
     max_charge: float
     max_discharge: float
     is_night: bool
@@ -45,6 +46,7 @@ class SolarConfig:
     min_solar_for_charge: float
     charge_margin: float
     charge_entry_threshold: float
+    export_limit: float
     readings_needed: int
     sunset_urgent: bool
 
@@ -93,6 +95,8 @@ class FakeEngine:
         self._last_power_adjust: float = 0
         self._last_charge_exit: float = 0
         self._last_bottomout_exit: float = 0
+        self._manual_override_until: float = 0
+        self._manual_override_mode: str | None = None
         self._charge_entry_export_count = 0
         self._charge_bottomout_count = 0
         self._p1_buffer: deque = deque()
@@ -105,6 +109,7 @@ class FakeEngine:
         self.params = {
             "soc_min": cfg.soc_min,
             "soc_max": cfg.soc_max,
+            "soc_hysteresis_pct": 2,
             "max_charge_power": cfg.max_charge,
             "max_discharge_power": cfg.max_discharge,
             "high_load_threshold": 6500,
@@ -115,10 +120,12 @@ class FakeEngine:
             "avg_night_consumption": 400,
             "night_buffer_pct": 5,
             "min_solar_for_charge": 1000,
+            "export_limit_w": 500,
             "charge_margin": 150,
             "charge_entry_threshold": 500,
             "charge_reentry_delay": 300,
             "bottomout_cooldown": 300,
+            "manual_override_timeout": 1800,
         }
 
     def _get_soc(self):
@@ -175,6 +182,15 @@ class FakeEngine:
     def _set_decision(self, decision):
         self._last_decision = decision
 
+    def note_manual_override(self, mode):
+        timeout = self._get_param("manual_override_timeout")
+        if timeout <= 0:
+            return
+        self._manual_override_mode = mode
+        self._manual_override_until = time.monotonic() + timeout
+        self._current_mode = mode
+        self._set_decision("manual_override_active")
+
     async def _set_mode(self, mode, power_w=None):
         self.mode_calls.append((mode, power_w))
         self._current_mode = mode
@@ -198,19 +214,27 @@ class FakeEngine:
 
     async def _make_decision(self) -> None:
         solar = self._get_solar()
+        soc_min = self._get_param("soc_min")
+        soc_max = self._get_param("soc_max")
+        soc_resume = min(soc_max, soc_min + self._get_param("soc_hysteresis_pct"))
         s = DecisionState(
             soc=self._get_soc(),
             solar=solar,
             p1=self._get_p1(),
             home_load=self._get_home_load(),
-            soc_min=self._get_param("soc_min"),
-            soc_max=self._get_param("soc_max"),
+            soc_min=soc_min,
+            soc_max=soc_max,
+            soc_resume=soc_resume,
             max_charge=self._get_param("max_charge_power"),
             max_discharge=self._get_param("max_discharge_power"),
             is_night=self._is_night(),
             solar_producing=solar > 50,
             night_soc_target=self._soc_needed_for_night(),
         )
+
+        if self._manual_override_active() and s.soc > s.soc_min and s.soc < s.soc_max:
+            self._set_decision("manual_override_active")
+            return
 
         # PRIORITY 1 & 2: SOC safety limits
         if await self._check_soc_limits(s):
@@ -232,7 +256,7 @@ class FakeEngine:
 
     async def _check_soc_limits(self, s: DecisionState) -> bool:
         """PRIORITY 1: Emergency SOC below minimum. PRIORITY 2: SOC above maximum."""
-        if s.soc < s.soc_min:
+        if s.soc <= s.soc_min:
             if s.solar_producing:
                 charge_target = min(s.solar - 50, s.max_charge)
                 charge_target = max(charge_target, 300)
@@ -245,7 +269,7 @@ class FakeEngine:
 
             grid_charge_uid = f"hyxi_{self._sn}_em_grid_charge_allowed"
             grid_entity = self._find_entity_id("switch", grid_charge_uid)
-            if self._get_ha_state_bool(grid_entity):
+            if s.soc < s.soc_min and self._get_ha_state_bool(grid_entity):
                 grid_charge_w = min(2000, int(s.max_charge))
                 self._set_decision("grid_charge_emergency")
                 if self._current_mode != "charge":
@@ -256,6 +280,21 @@ class FakeEngine:
             self._set_decision("low_soc_idle")
             if self._current_mode != "idle":
                 await self._set_mode("idle")
+            return True
+
+        if (
+            s.soc < s.soc_resume
+            and not s.solar_producing
+            and self._current_mode in ("self_consume", "discharge", "idle")
+        ):
+            self._set_decision("soc_hysteresis_hold")
+            if self._current_mode != "idle":
+                await self._set_mode("idle")
+            return True
+
+        if s.soc >= s.soc_max and self._current_mode == "charge":
+            self._set_decision("soc_max_charge_stop")
+            await self._set_mode("self_consume")
             return True
 
         # SOC above maximum — force discharge
@@ -299,7 +338,7 @@ class FakeEngine:
     async def _check_night(self, s: DecisionState) -> bool:
         """PRIORITY 4: Night self_consume/idle. PRIORITY 4b: Night battery preservation."""
         if not s.solar_producing and s.is_night:
-            if s.soc > s.soc_min:
+            if s.soc >= s.soc_resume:
                 self._set_decision("night_self_consume")
                 if self._current_mode != "self_consume":
                     await self._set_mode("self_consume")
@@ -344,6 +383,7 @@ class FakeEngine:
         min_solar_for_charge = self._get_param("min_solar_for_charge")
         charge_margin = self._get_param("charge_margin")
         charge_entry_threshold = self._get_param("charge_entry_threshold")
+        export_limit = self._get_param("export_limit_w")
         charge_reentry_delay = self._get_param("charge_reentry_delay")
         readings_needed = max(int(charge_reentry_delay / 15 / 3), 2)
 
@@ -366,6 +406,7 @@ class FakeEngine:
             min_solar_for_charge=min_solar_for_charge,
             charge_margin=charge_margin,
             charge_entry_threshold=charge_entry_threshold,
+            export_limit=export_limit,
             readings_needed=readings_needed,
             sunset_urgent=sunset_urgent,
         )
@@ -388,13 +429,16 @@ class FakeEngine:
                 await self._set_mode("self_consume")
             self._charge_entry_export_count = 0
 
-        elif s.p1 < -sc.charge_entry_threshold:
+        elif s.p1 < -(sc.export_limit + sc.charge_entry_threshold):
             self._charge_entry_export_count += 1
             if (
                 self._charge_entry_export_count >= sc.readings_needed
                 and s.solar >= sc.min_solar_for_charge
             ):
-                charge_target = min(abs(s.p1) - sc.charge_margin - 100, s.solar - 500)
+                charge_target = min(
+                    abs(s.p1) - sc.export_limit - sc.charge_margin,
+                    s.solar - 500,
+                )
                 charge_target = min(charge_target, s.max_charge)
                 charge_target = max(charge_target, 300)
                 decision = "pre_night_charge" if sc.sunset_urgent else "solar_charge"
@@ -433,10 +477,10 @@ class FakeEngine:
                 s.p1, current_charge, solar_cap, sc.charge_margin
             )
 
-        elif s.p1 < -(sc.charge_margin + 100):
+        elif s.p1 < -(sc.export_limit + sc.charge_margin):
             # Exporting too much — increase charge
             self._charge_bottomout_count = 0
-            excess_export = abs(s.p1) - sc.charge_margin
+            excess_export = abs(s.p1) - sc.export_limit - sc.charge_margin
             charge_target = current_charge + excess_export
             charge_target = min(charge_target, s.max_charge)
             charge_target = min(charge_target, solar_cap)
@@ -475,6 +519,15 @@ class FakeEngine:
             self._charge_bottomout_count = 0
             self._set_decision("solar_charge")
             await self._adjust_power("charge", int(charge_target))
+
+    def _manual_override_active(self) -> bool:
+        if self._manual_override_until <= 0:
+            return False
+        if time.monotonic() < self._manual_override_until:
+            return True
+        self._manual_override_until = 0
+        self._manual_override_mode = None
+        return False
 
 
 async def run_decision(engine):
@@ -525,6 +578,28 @@ class TestPriority1EmergencyLowSOC:
         assert len(engine.adjust_calls) == 1  # Power adjustment
         assert engine.adjust_calls[0][0] == "charge"
 
+    @pytest.mark.asyncio
+    async def test_soc_at_min_no_solar_holds_reserve(self):
+        """SOC at min + no solar -> idle to protect reserve."""
+        engine = FakeEngine(
+            soc=20,
+            solar=0,
+            soc_min=20,
+            current_mode="self_consume",
+            grid_charge_allowed=True,
+        )
+        await run_decision(engine)
+        assert engine._last_decision == "low_soc_idle"
+        assert engine.mode_calls[0][0] == "idle"
+
+    @pytest.mark.asyncio
+    async def test_soc_at_min_with_solar_charges(self):
+        """SOC at min + solar producing -> charge away from the reserve floor."""
+        engine = FakeEngine(soc=20, solar=2000, soc_min=20)
+        await run_decision(engine)
+        assert engine._last_decision == "emergency_solar_charge"
+        assert engine.mode_calls[0][0] == "charge"
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Priority 2: SOC above maximum
@@ -550,6 +625,23 @@ class TestPriority2OverMax:
         assert engine._last_decision == "forced_discharge_over_max"
         assert len(engine.mode_calls) == 0
         assert len(engine.adjust_calls) == 1
+
+    @pytest.mark.asyncio
+    async def test_at_max_stops_charging(self):
+        """SOC at max + currently charging -> stop charging."""
+        engine = FakeEngine(soc=90, soc_max=90, current_mode="charge")
+        await run_decision(engine)
+        assert engine._last_decision == "soc_max_charge_stop"
+        assert engine.mode_calls[0][0] == "self_consume"
+
+    @pytest.mark.asyncio
+    async def test_soc_hysteresis_holds_until_resume(self):
+        """SOC above min but below hysteresis resume -> stay idle."""
+        engine = FakeEngine(soc=21, soc_min=20, current_mode="self_consume")
+        engine.params["soc_hysteresis_pct"] = 2
+        await run_decision(engine)
+        assert engine._last_decision == "soc_hysteresis_hold"
+        assert engine.mode_calls[0][0] == "idle"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -608,10 +700,10 @@ class TestPriority4Night:
 
     @pytest.mark.asyncio
     async def test_night_soc_at_min_idles(self):
-        """Night + SOC at minimum -> idle to protect reserve."""
+        """Night + SOC at minimum -> Priority 1 holds reserve."""
         engine = FakeEngine(soc=20, is_night=True, soc_min=20)
         await run_decision(engine)
-        assert engine._last_decision == "night_reserve_hold"
+        assert engine._last_decision == "low_soc_idle"
         assert engine.mode_calls[0][0] == "idle"
 
     @pytest.mark.asyncio
@@ -641,11 +733,31 @@ class TestPriority5Solar:
     @pytest.mark.asyncio
     async def test_solar_exporting_counts_before_charge(self):
         """Heavy export -> counts up, doesn't immediately charge."""
-        engine = FakeEngine(soc=50, solar=3000, p1=-1000, soc_max=90)
+        engine = FakeEngine(soc=50, solar=3000, p1=-1200, soc_max=90)
         engine.params["min_solar_for_charge"] = 1000
         engine.params["charge_entry_threshold"] = 500
+        engine.params["export_limit_w"] = 500
         await run_decision(engine)
         # First tick should just count, not switch to charge
+        assert engine._charge_entry_export_count == 1
+        assert engine._last_decision == "solar_export_waiting"
+
+    @pytest.mark.asyncio
+    async def test_export_within_limit_does_not_charge(self):
+        """Export under the configured limit should not trigger charging."""
+        engine = FakeEngine(soc=50, solar=3000, p1=-400, soc_max=90)
+        engine.params["export_limit_w"] = 500
+        await run_decision(engine)
+        assert engine._last_decision == "solar_self_consume"
+        assert engine.mode_calls[0][0] == "self_consume"
+
+    @pytest.mark.asyncio
+    async def test_zero_export_target_counts_export(self):
+        """Zero export target reacts once export exceeds the entry threshold."""
+        engine = FakeEngine(soc=50, solar=3000, p1=-600, soc_max=90)
+        engine.params["export_limit_w"] = 0
+        engine.params["charge_entry_threshold"] = 500
+        await run_decision(engine)
         assert engine._charge_entry_export_count == 1
         assert engine._last_decision == "solar_export_waiting"
 
@@ -656,6 +768,44 @@ class TestPriority5Solar:
         await run_decision(engine)
         assert engine._last_decision == "solar_battery_full"
         assert engine.mode_calls[0][0] == "self_consume"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Manual override
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestManualOverride:
+    """Test user manual mode override behavior."""
+
+    @pytest.mark.asyncio
+    async def test_manual_override_blocks_decision(self):
+        """Manual mode command pauses EM decisions for the configured timeout."""
+        engine = FakeEngine(soc=50, solar=2000, soc_min=20)
+        engine.note_manual_override("idle")
+        await run_decision(engine)
+        assert engine._last_decision == "manual_override_active"
+        assert engine._current_mode == "idle"
+        assert len(engine.mode_calls) == 0
+
+    @pytest.mark.asyncio
+    async def test_soc_safety_overrides_manual_override(self):
+        """SOC protection still runs during a manual override."""
+        engine = FakeEngine(soc=15, solar=2000, soc_min=20)
+        engine.note_manual_override("idle")
+        await run_decision(engine)
+        assert engine._last_decision == "emergency_solar_charge"
+        assert engine.mode_calls[0][0] == "charge"
+
+    @pytest.mark.asyncio
+    async def test_manual_override_timeout_zero_disabled(self):
+        """A zero timeout lets EM immediately continue making decisions."""
+        engine = FakeEngine(soc=15, solar=2000, soc_min=20)
+        engine.params["manual_override_timeout"] = 0
+        engine.note_manual_override("idle")
+        await run_decision(engine)
+        assert engine._last_decision == "emergency_solar_charge"
+        assert engine.mode_calls[0][0] == "charge"
 
 
 # ═══════════════════════════════════════════════════════════════════════

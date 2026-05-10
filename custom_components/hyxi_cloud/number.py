@@ -46,6 +46,7 @@ ALWAYS_ON_NUMBER_DEFS: list[EMNumberDef] = [
 
 # EM-only: created only when Energy Manager is enabled in options
 EM_NUMBER_DEFS: list[EMNumberDef] = [
+    EMNumberDef("soc_hysteresis_pct", "%", 0, 10, 1, "mdi:battery-sync"),
     EMNumberDef("high_load_threshold", "W", 1000, 20000, 500, "mdi:flash-alert"),
     EMNumberDef("battery_capacity_wh", "Wh", 1000, 50000, 100, "mdi:battery"),
     EMNumberDef("max_charge_power", "W", 500, 15000, 100, "mdi:lightning-bolt"),
@@ -61,11 +62,13 @@ EM_NUMBER_DEFS: list[EMNumberDef] = [
     EMNumberDef("night_buffer_pct", "%", 0, 20, 1, "mdi:shield-half-full"),
     EMNumberDef("avg_night_consumption", "W", 100, 2000, 50, "mdi:weather-night"),
     EMNumberDef("charge_margin", "W", 0, 500, 25, "mdi:margin"),
+    EMNumberDef("export_limit_w", "W", 0, 10000, 100, "mdi:transmission-tower-export"),
     EMNumberDef(
         "charge_entry_threshold", "W", 100, 2000, 50, "mdi:solar-power-variant-outline"
     ),
     EMNumberDef("charge_reentry_delay", "s", 30, 600, 15, "mdi:timer-lock"),
     EMNumberDef("bottomout_cooldown", "s", 60, 900, 30, "mdi:timer-alert"),
+    EMNumberDef("manual_override_timeout", "s", 0, 7200, 60, "mdi:hand-back-right"),
 ]
 
 

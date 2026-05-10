@@ -61,6 +61,7 @@ class DecisionState:
     home_load: float
     soc_min: float
     soc_max: float
+    soc_resume: float
     max_charge: float
     max_discharge: float
     is_night: bool
@@ -75,6 +76,7 @@ class SolarConfig:
     min_solar_for_charge: float
     charge_margin: float
     charge_entry_threshold: float
+    export_limit: float
     readings_needed: int
     sunset_urgent: bool
 
@@ -103,6 +105,8 @@ class EnergyManagerEngine:
         self._last_power_adjust: float = 0
         self._last_charge_exit: float = 0
         self._last_bottomout_exit: float = 0
+        self._manual_override_until: float = 0
+        self._manual_override_mode: str | None = None
         self._charge_entry_export_count: int = 0
         self._charge_bottomout_count: int = 0
         self._current_mode: str | None = None
@@ -133,6 +137,17 @@ class EnergyManagerEngine:
     def current_mode(self) -> str | None:
         """Last mode set by the engine."""
         return self._current_mode
+
+    def note_manual_override(self, mode: str) -> None:
+        """Pause EM decisions after a user sends a manual mode command."""
+        timeout = self._get_param("manual_override_timeout")
+        if timeout <= 0:
+            return
+        self._manual_override_mode = mode
+        self._manual_override_until = time.monotonic() + timeout
+        self._current_mode = mode
+        self._set_decision("manual_override_active")
+        _LOGGER.info("EM: Manual override active for %.0fs (%s)", timeout, mode)
 
     @property
     def enabled(self) -> bool:
@@ -498,13 +513,17 @@ class EnergyManagerEngine:
         """
         # Read current state into snapshot
         solar = self._get_solar()
+        soc_min = self._get_param("soc_min")
+        soc_max = self._get_param("soc_max")
+        soc_resume = min(soc_max, soc_min + self._get_param("soc_hysteresis_pct"))
         s = DecisionState(
             soc=self._get_soc(),
             solar=solar,
             p1=self._get_p1(),
             home_load=self._get_home_load(),
-            soc_min=self._get_param("soc_min"),
-            soc_max=self._get_param("soc_max"),
+            soc_min=soc_min,
+            soc_max=soc_max,
+            soc_resume=soc_resume,
             max_charge=self._get_param("max_charge_power"),
             max_discharge=self._get_param("max_discharge_power"),
             is_night=self._is_night(),
@@ -522,6 +541,10 @@ class EnergyManagerEngine:
             s.is_night,
             s.night_soc_target,
         )
+
+        if self._manual_override_active() and s.soc > s.soc_min and s.soc < s.soc_max:
+            self._set_decision("manual_override_active")
+            return
 
         # PRIORITY 1 & 2: SOC safety limits
         if await self._check_soc_limits(s):
@@ -546,7 +569,7 @@ class EnergyManagerEngine:
 
     async def _check_soc_limits(self, s: DecisionState) -> bool:
         """PRIORITY 1 & 2: SOC safety limits. Returns True if handled."""
-        if s.soc < s.soc_min:
+        if s.soc <= s.soc_min:
             if s.solar_producing:
                 charge_target = min(s.solar - 50, s.max_charge)
                 charge_target = max(charge_target, 300)
@@ -559,7 +582,7 @@ class EnergyManagerEngine:
 
             grid_charge_uid = f"hyxi_{self._sn}_em_grid_charge_allowed"
             grid_entity = self._find_entity_id("switch", grid_charge_uid)
-            if self._get_ha_state_bool(grid_entity):
+            if s.soc < s.soc_min and self._get_ha_state_bool(grid_entity):
                 grid_charge_w = min(2000, int(s.max_charge))
                 self._set_decision("grid_charge_emergency")
                 if self._current_mode != "charge":
@@ -570,6 +593,21 @@ class EnergyManagerEngine:
             self._set_decision("low_soc_idle")
             if self._current_mode != "idle":
                 await self._set_mode("idle")
+            return True
+
+        if (
+            s.soc < s.soc_resume
+            and not s.solar_producing
+            and self._current_mode in ("self_consume", "discharge", "idle")
+        ):
+            self._set_decision("soc_hysteresis_hold")
+            if self._current_mode != "idle":
+                await self._set_mode("idle")
+            return True
+
+        if s.soc >= s.soc_max and self._current_mode == "charge":
+            self._set_decision("soc_max_charge_stop")
+            await self._set_mode("self_consume")
             return True
 
         if s.soc > s.soc_max:
@@ -612,7 +650,7 @@ class EnergyManagerEngine:
     async def _check_night(self, s: DecisionState) -> bool:
         """PRIORITY 4 & 4b: Night mode. Returns True if handled."""
         if not s.solar_producing and s.is_night:
-            if s.soc > s.soc_min:
+            if s.soc >= s.soc_resume:
                 self._set_decision("night_self_consume")
                 if self._current_mode != "self_consume":
                     await self._set_mode("self_consume")
@@ -657,6 +695,7 @@ class EnergyManagerEngine:
         min_solar_for_charge = self._get_param("min_solar_for_charge")
         charge_margin = self._get_param("charge_margin")
         charge_entry_threshold = self._get_param("charge_entry_threshold")
+        export_limit = self._get_param("export_limit_w")
         charge_reentry_delay = self._get_param("charge_reentry_delay")
         readings_needed = max(int(charge_reentry_delay / 15 / 3), 2)
 
@@ -679,6 +718,7 @@ class EnergyManagerEngine:
             min_solar_for_charge=min_solar_for_charge,
             charge_margin=charge_margin,
             charge_entry_threshold=charge_entry_threshold,
+            export_limit=export_limit,
             readings_needed=readings_needed,
             sunset_urgent=sunset_urgent,
         )
@@ -700,13 +740,16 @@ class EnergyManagerEngine:
                 await self._set_mode("self_consume")
             self._charge_entry_export_count = 0
 
-        elif s.p1 < -sc.charge_entry_threshold:
+        elif s.p1 < -(sc.export_limit + sc.charge_entry_threshold):
             self._charge_entry_export_count += 1
             if (
                 self._charge_entry_export_count >= sc.readings_needed
                 and s.solar >= sc.min_solar_for_charge
             ):
-                charge_target = min(abs(s.p1) - sc.charge_margin - 100, s.solar - 500)
+                charge_target = min(
+                    abs(s.p1) - sc.export_limit - sc.charge_margin,
+                    s.solar - 500,
+                )
                 charge_target = min(charge_target, s.max_charge)
                 charge_target = max(charge_target, 300)
                 decision = "pre_night_charge" if sc.sunset_urgent else "solar_charge"
@@ -744,10 +787,10 @@ class EnergyManagerEngine:
                 s.p1, current_charge, solar_cap, sc.charge_margin
             )
 
-        elif s.p1 < -(sc.charge_margin + 100):
+        elif s.p1 < -(sc.export_limit + sc.charge_margin):
             # Exporting too much — increase charge
             self._charge_bottomout_count = 0
-            excess_export = abs(s.p1) - sc.charge_margin
+            excess_export = abs(s.p1) - sc.export_limit - sc.charge_margin
             charge_target = current_charge + excess_export
             charge_target = min(charge_target, s.max_charge)
             charge_target = min(charge_target, solar_cap)
@@ -791,6 +834,16 @@ class EnergyManagerEngine:
         """Update the current decision label."""
         self._last_decision = decision
         self._notify_sensors()
+
+    def _manual_override_active(self) -> bool:
+        """Return True while a user-triggered mode command should be respected."""
+        if self._manual_override_until <= 0:
+            return False
+        if time.monotonic() < self._manual_override_until:
+            return True
+        self._manual_override_until = 0
+        self._manual_override_mode = None
+        return False
 
     # ── Callbacks ───────────────────────────────────────────────────────
 
@@ -861,7 +914,7 @@ class EnergyManagerEngine:
             return
 
         soc_min = self._get_param("soc_min")
-        if soc < soc_min:
+        if soc <= soc_min:
             self._hass.async_create_task(self._make_decision())
 
     async def _update_night_estimate(self, now) -> None:

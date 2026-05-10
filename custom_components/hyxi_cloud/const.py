@@ -178,6 +178,7 @@ CONF_EM_FORECAST_POWER_ENTITY = "em_forecast_power_entity"
 EM_DEFAULTS: dict[str, int | float] = {
     "soc_min": 20,
     "soc_max": 90,
+    "soc_hysteresis_pct": 2,
     "night_buffer_pct": 5,
     "high_load_threshold": 6500,
     "battery_capacity_wh": 14800,
@@ -189,9 +190,11 @@ EM_DEFAULTS: dict[str, int | float] = {
     "power_adjust_cooldown": 30,
     "avg_night_consumption": 400,
     "charge_margin": 150,
+    "export_limit_w": 500,
     "charge_entry_threshold": 500,
     "charge_reentry_delay": 300,
     "bottomout_cooldown": 300,
+    "manual_override_timeout": 1800,
 }
 EM_LOOP_INTERVAL = 15  # seconds
 

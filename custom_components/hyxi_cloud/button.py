@@ -166,6 +166,9 @@ class HyxiModeButton(CoordinatorEntity, ButtonEntity):
                 await client.set_mode_discharge(self._sn, watts)
             elif self._mode == "self_consume":
                 await client.set_mode_self_consume(self._sn)
+            engine = getattr(self.coordinator, "engine", None)
+            if engine is not None and getattr(engine, "_sn", None) == self._sn:
+                engine.note_manual_override(self._mode)
             _LOGGER.info("Mode '%s' command sent to %s", self._mode, self._sn)
             await self.coordinator.async_request_refresh()
         except HyxiApiClient.ControlError as err:

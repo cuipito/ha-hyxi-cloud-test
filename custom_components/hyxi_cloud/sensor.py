@@ -642,6 +642,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
             EMSensor(coordinator, em_sn, EMSensorDef("last_action", em_device_info))
         )
         entities.append(
+            EMSensor(coordinator, em_sn, EMSensorDef("last_sent_mode", em_device_info))
+        )
+        entities.append(
             EMSensor(
                 coordinator,
                 em_sn,
@@ -1080,6 +1083,7 @@ class EMSensor(SensorEntity):
     _VALUE_GETTERS: ClassVar[dict[str, str]] = {
         "current_decision": "decision",
         "last_action": "last_action",
+        "last_sent_mode": "current_mode",
         "battery_energy_available": "battery_energy_available_wh",
         "hours_until_sunrise": "_hours_until_sunrise",
         "hours_until_sunset": "_hours_until_sunset",

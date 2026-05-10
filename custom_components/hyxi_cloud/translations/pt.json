@@ -316,6 +316,9 @@
       "em_last_action": {
         "name": "EM Last Action"
       },
+      "em_last_sent_mode": {
+        "name": "EM Last Sent Mode"
+      },
       "em_battery_energy_available": {
         "name": "Battery Energy Available"
       },

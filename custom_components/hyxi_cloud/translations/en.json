@@ -317,6 +317,9 @@
       "em_last_action": {
         "name": "EM Last Action"
       },
+      "em_last_sent_mode": {
+        "name": "EM Last Sent Mode"
+      },
       "em_battery_energy_available": {
         "name": "Battery Energy Available"
       },
@@ -345,6 +348,9 @@
       },
       "em_soc_max": {
         "name": "SOC Maximum"
+      },
+      "em_soc_hysteresis_pct": {
+        "name": "SOC Hysteresis"
       },
       "em_high_load_threshold": {
         "name": "High Load Threshold"
@@ -379,6 +385,9 @@
       "em_charge_margin": {
         "name": "Charge Margin"
       },
+      "em_export_limit_w": {
+        "name": "Export Limit"
+      },
       "em_charge_entry_threshold": {
         "name": "Charge Entry Threshold"
       },
@@ -387,6 +396,9 @@
       },
       "em_bottomout_cooldown": {
         "name": "Bottom-out Cooldown"
+      },
+      "em_manual_override_timeout": {
+        "name": "Manual Override Timeout"
       }
     },
     "switch": {
