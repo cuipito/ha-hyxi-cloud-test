@@ -47,13 +47,13 @@ class HyxiFrequencyControlSwitch(CoordinatorEntity, SwitchEntity):
     _attr_has_entity_name = True
     _attr_translation_key = "frequency_control"
     _attr_icon = "mdi:sine-wave"
+    _attr_is_on: bool | None = None
 
     def __init__(self, coordinator, sn: str, dev_data: dict) -> None:
         """Initialize the frequency control switch."""
         super().__init__(coordinator)
         self._sn = sn
         self._attr_unique_id = f"hyxi_{sn}_frequency_control"
-        self._attr_is_on = None
         self._attr_device_info = {
             "identifiers": {(DOMAIN, sn)},
             "name": dev_data.get("device_name") or f"Device {sn}",

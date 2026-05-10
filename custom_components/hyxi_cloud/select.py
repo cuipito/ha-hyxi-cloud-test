@@ -33,8 +33,8 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        # Mode control for inverters, ESS, and all-in-one devices
-        if device_type in ("hybrid_inverter", "micro_ess", "all_in_one"):
+        # Mode control for hybrid inverters and all-in-one devices
+        if device_type in ("hybrid_inverter", "all_in_one"):
             entities.append(HyxiModeSelect(coordinator, sn, dev_data))
 
         # Peak Shaving for hybrid inverters and all-in-one devices
@@ -57,13 +57,13 @@ class HyxiModeSelect(CoordinatorEntity, SelectEntity):
     _attr_translation_key = "operating_mode"
     _attr_options = MODE_OPTIONS
     _attr_icon = "mdi:solar-power-variant-outline"
+    _attr_current_option: str | None = None
 
     def __init__(self, coordinator, sn: str, dev_data: dict) -> None:
         """Initialize the mode select entity."""
         super().__init__(coordinator)
         self._sn = sn
         self._attr_unique_id = f"hyxi_{sn}_operating_mode"
-        self._attr_current_option = None
         self._attr_device_info = {
             "identifiers": {(DOMAIN, sn)},
             "name": dev_data.get("device_name") or f"Device {sn}",
@@ -112,13 +112,13 @@ class HyxiPeakShavingSelect(CoordinatorEntity, SelectEntity):
     _attr_translation_key = "peak_shaving"
     _attr_options = PEAK_SHAVING_OPTIONS
     _attr_icon = "mdi:chart-bell-curve-cumulative"
+    _attr_current_option: str | None = None
 
     def __init__(self, coordinator, sn: str, dev_data: dict) -> None:
         """Initialize the peak shaving select entity."""
         super().__init__(coordinator)
         self._sn = sn
         self._attr_unique_id = f"hyxi_{sn}_peak_shaving"
-        self._attr_current_option = None
         self._attr_device_info = {
             "identifiers": {(DOMAIN, sn)},
             "name": dev_data.get("device_name") or f"Device {sn}",
@@ -138,7 +138,9 @@ class HyxiPeakShavingSelect(CoordinatorEntity, SelectEntity):
         except HyxiApiClient.ControlError as err:
             _LOGGER.error(
                 "Failed to set peak shaving to %s for %s: %s",
-                option, self._sn, err,
+                option,
+                self._sn,
+                err,
             )
             raise
 
@@ -163,7 +165,7 @@ def _get_power_value(hass: HomeAssistant, sn: str, direction: str) -> int:
     if state is not None and state.state not in ("unknown", "unavailable"):
         try:
             return int(float(state.state))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             pass
     _LOGGER.warning(
         "Power number entity %s not available, using default 100W", entity_id

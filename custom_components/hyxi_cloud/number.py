@@ -1,6 +1,7 @@
 """Number platform for HYXI Cloud device control power settings."""
 
 import logging
+from typing import ClassVar
 
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
@@ -30,26 +31,9 @@ async def async_setup_entry(
     for sn, dev_data in coordinator.data.items():
         device_type = normalize_device_type(get_raw_device_code(dev_data))
 
-        if device_type in ("hybrid_inverter", "micro_ess", "all_in_one"):
-            # Determine max power from device info, fall back to 10000W
-            metrics = dev_data.get("metrics") or {}
-            max_charge = _safe_int(metrics.get("maxChargePower"), 10000)
-            max_discharge = _safe_int(metrics.get("maxDischargePower"), 10000)
-
-            entities.append(
-                HyxiPowerNumber(
-                    coordinator, sn, dev_data,
-                    direction="charge",
-                    max_value=max_charge,
-                )
-            )
-            entities.append(
-                HyxiPowerNumber(
-                    coordinator, sn, dev_data,
-                    direction="discharge",
-                    max_value=max_discharge,
-                )
-            )
+        if device_type in ("hybrid_inverter", "all_in_one"):
+            entities.append(HyxiPowerNumber(coordinator, sn, dev_data, "charge"))
+            entities.append(HyxiPowerNumber(coordinator, sn, dev_data, "discharge"))
 
     if entities:
         async_add_entities(entities)
@@ -70,13 +54,17 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
     _attr_native_min_value = 0.0
     _attr_icon = "mdi:flash"
 
+    _MAX_POWER_KEYS: ClassVar[dict[str, str]] = {
+        "charge": "maxChargePower",
+        "discharge": "maxDischargePower",
+    }
+
     def __init__(
         self,
         coordinator,
         sn: str,
         dev_data: dict,
         direction: str,
-        max_value: int,
     ) -> None:
         """Initialize the power number entity."""
         super().__init__(coordinator)
@@ -84,7 +72,9 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
         self._direction = direction
         self._attr_unique_id = f"hyxi_{sn}_{direction}_power"
         self._attr_translation_key = f"{direction}_power"
-        self._attr_native_max_value = float(max_value)
+        metrics = dev_data.get("metrics") or {}
+        metric_key = self._MAX_POWER_KEYS.get(direction, "")
+        self._attr_native_max_value = float(_safe_int(metrics.get(metric_key), 10000))
         self._attr_native_value = 100.0
         self._attr_device_info = {
             "identifiers": {(DOMAIN, sn)},
@@ -100,7 +90,7 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
         if (last_state := await self.async_get_last_state()) is not None:
             try:
                 self._attr_native_value = float(last_state.state)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 pass
 
     async def async_set_native_value(self, value: float) -> None:
@@ -116,5 +106,5 @@ def _safe_int(val, default: int) -> int:
     try:
         result = int(float(val))
         return result if result > 0 else default
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return default

@@ -68,6 +68,23 @@
 > 2. Open a [GitHub Issue](https://github.com/Veldkornet/ha-hyxi-cloud/wiki/Supported-Devices#-support-for-new-devices) and attach a snippet of the debug log output.
 > 3. We will verify the sensor mappings and update the integration!
 
+### 🔧 Device Control
+
+This integration supports writing control commands to compatible inverters via the HYXI Cloud API.
+
+| Control | controlId | Phase | Supported Devices |
+| :--- | :--- | :--- | :--- |
+| **Operating Mode** (Idle / Charge / Discharge / Self-Consumption) | 1062–1065 | Three-Phase | Hybrid Inverter, All-in-One |
+| **Peak Shaving** (Close / Charge / Discharge / Stop / Hold) | 1021 | Single Phase | Hybrid Inverter, All-in-One |
+| **Frequency Control** (Enable / Disable) | 1020 | Single Phase | Hybrid Inverter, All-in-One |
+| **Charge / Discharge Power** | — | — | Hybrid Inverter, All-in-One |
+
+> [!NOTE]
+> The HYXI API defines controls by **phase type** (Single Phase / Three-Phase), not by device type. Both Hybrid Inverters and All-in-One devices exist in single-phase and three-phase variants. The integration exposes all applicable controls — the API will reject commands that are not supported by your specific hardware.
+
+> [!WARNING]
+> **Micro ESS (EMS):** Control entities are **not** enabled for EMS devices. The HYXI API documentation excludes EMS from standard device queries and does not list EMS as supporting energy storage control instructions (1020–1065). EMS uses a separate API section.
+
 ### 🛡️ Reliability & Diagnostics
 
 This integration includes a specialized diagnostic system to help you distinguish between local hardware issues and cloud service outages.
