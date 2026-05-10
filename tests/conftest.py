@@ -46,17 +46,84 @@ mock_ha.__path__ = []
 
 ensure_mock("homeassistant", mock_obj=mock_ha)
 ensure_mock("homeassistant.components")
-ensure_mock("homeassistant.components.sensor")
-ensure_mock("homeassistant.components.binary_sensor")
+
+
+# Stub base classes that can be subclassed without metaclass conflicts
+class _StubEntity:
+    """Stub entity base class."""
+
+
+class _StubSensorEntity(_StubEntity):
+    """Stub SensorEntity."""
+
+
+class _StubBinarySensorEntity(_StubEntity):
+    """Stub BinarySensorEntity."""
+
+
+class _StubNumberEntity(_StubEntity):
+    """Stub NumberEntity."""
+
+
+class _StubSwitchEntity(_StubEntity):
+    """Stub SwitchEntity."""
+
+
+class _StubSelectEntity(_StubEntity):
+    """Stub SelectEntity."""
+
+
+class _StubCoordinatorEntity(_StubEntity):
+    """Stub CoordinatorEntity."""
+
+    def __init__(self, coordinator, *args, **kwargs):
+        pass
+
+
+class _StubRestoreEntity(_StubEntity):
+    """Stub RestoreEntity."""
+
+
+ensure_mock(
+    "homeassistant.components.sensor",
+    {"SensorEntity": _StubSensorEntity, "SensorDeviceClass": MagicMock(),
+     "SensorStateClass": MagicMock()},
+)
+ensure_mock(
+    "homeassistant.components.binary_sensor",
+    {"BinarySensorEntity": _StubBinarySensorEntity,
+     "BinarySensorDeviceClass": MagicMock()},
+)
+ensure_mock(
+    "homeassistant.components.number",
+    {"NumberEntity": _StubNumberEntity, "NumberMode": MagicMock()},
+)
+ensure_mock(
+    "homeassistant.components.switch",
+    {"SwitchEntity": _StubSwitchEntity},
+)
+ensure_mock(
+    "homeassistant.components.select",
+    {"SelectEntity": _StubSelectEntity},
+)
 ensure_mock("homeassistant.config_entries")
 ensure_mock("homeassistant.core")
 ensure_mock("homeassistant.helpers")
 ensure_mock("homeassistant.helpers.aiohttp_client")
 ensure_mock("homeassistant.helpers.device_registry")
 ensure_mock("homeassistant.helpers.entity_platform")
-ensure_mock("homeassistant.helpers.restore_state")
 ensure_mock(
-    "homeassistant.helpers.update_coordinator", {"UpdateFailed": MockUpdateFailed}
+    "homeassistant.helpers.entity",
+    {"EntityCategory": MagicMock()},
+)
+ensure_mock(
+    "homeassistant.helpers.restore_state",
+    {"RestoreEntity": _StubRestoreEntity},
+)
+ensure_mock("homeassistant.helpers.selector")
+ensure_mock(
+    "homeassistant.helpers.update_coordinator",
+    {"UpdateFailed": MockUpdateFailed, "CoordinatorEntity": _StubCoordinatorEntity},
 )
 ensure_mock("homeassistant.util")
 ensure_mock("homeassistant.const")

@@ -49,8 +49,9 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
         )
         self.client = client
         self.entry = entry
+        self.engine = None  # EnergyManagerEngine, set by __init__.py if configured
 
-        # 🚀 Store metadata on the object, not in the data dictionary!
+        # Store metadata on the object, not in the data dictionary!
         self.hyxi_metadata: HyxiMetadata = {
             "last_attempts": 0,
             "last_success": None,

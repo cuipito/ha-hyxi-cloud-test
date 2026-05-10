@@ -121,6 +121,7 @@ def mock_entry():
         CONF_ACCESS_KEY: "test_access",
         CONF_SECRET_KEY: "test_secret",
     }
+    entry.options = {}
     entry.entry_id = "test_id"
     entry.add_update_listener = MagicMock()
     entry.async_on_unload = MagicMock()
@@ -140,6 +141,7 @@ async def test_async_setup_entry_success(mock_hass, mock_entry):
         patch("custom_components.hyxi_cloud.__init__.async_reload_entry"),
     ):
         mock_coordinator = mock_coordinator_class.return_value
+        mock_coordinator.engine = None
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator.data = {
             "TEST_SN_1": {
@@ -210,6 +212,7 @@ async def test_async_setup_entry_parent_link(mock_hass, mock_entry):
         patch("custom_components.hyxi_cloud.__init__.async_reload_entry"),
     ):
         mock_coordinator = mock_coordinator_class.return_value
+        mock_coordinator.engine = None
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator.data = {
             "CHILD_SN_1": {
@@ -258,6 +261,7 @@ async def test_async_setup_entry_auth_failed(mock_hass, mock_entry):
         patch("custom_components.hyxi_cloud.__init__.HyxiApiClient"),
     ):
         mock_coordinator = mock_coordinator_class.return_value
+        mock_coordinator.engine = None
         mock_coordinator.async_config_entry_first_refresh = AsyncMock(
             side_effect=ConfigEntryAuthFailed
         )
@@ -282,6 +286,7 @@ async def test_async_setup_entry_not_ready(mock_hass, mock_entry):
         patch("custom_components.hyxi_cloud.__init__.HyxiApiClient"),
     ):
         mock_coordinator = mock_coordinator_class.return_value
+        mock_coordinator.engine = None
         mock_coordinator.async_config_entry_first_refresh = AsyncMock(
             side_effect=UpdateFailed("Timeout")
         )
@@ -316,7 +321,9 @@ async def test_async_setup_entry_missing_keys(mock_hass):
 @pytest.mark.asyncio
 async def test_async_unload_entry_success(mock_hass, mock_entry):
     """Test successful unload of a config entry."""
-    mock_hass.data[DOMAIN] = {mock_entry.entry_id: MagicMock()}
+    mock_coord = MagicMock()
+    mock_coord.engine = None
+    mock_hass.data[DOMAIN] = {mock_entry.entry_id: mock_coord}
     mock_hass.config_entries.async_unload_platforms.return_value = True
 
     assert await async_unload_entry(mock_hass, mock_entry) is True
@@ -330,7 +337,9 @@ async def test_async_unload_entry_success(mock_hass, mock_entry):
 @pytest.mark.asyncio
 async def test_async_unload_entry_failure(mock_hass, mock_entry):
     """Test failed unload of a config entry."""
-    mock_hass.data[DOMAIN] = {mock_entry.entry_id: MagicMock()}
+    mock_coord = MagicMock()
+    mock_coord.engine = None
+    mock_hass.data[DOMAIN] = {mock_entry.entry_id: mock_coord}
     mock_hass.config_entries.async_unload_platforms.return_value = False
 
     assert await async_unload_entry(mock_hass, mock_entry) is False
@@ -375,6 +384,7 @@ async def test_async_setup_entry_battery_first_class_device(mock_hass, mock_entr
         patch("custom_components.hyxi_cloud.__init__.async_reload_entry"),
     ):
         mock_coordinator = mock_coordinator_class.return_value
+        mock_coordinator.engine = None
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator.data = {
             # Inverter knows about its battery via metrics

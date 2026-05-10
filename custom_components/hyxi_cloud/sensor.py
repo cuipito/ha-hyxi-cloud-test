@@ -17,6 +17,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    CONF_EM_ENABLED,
+    CONF_EM_INVERTER_SN,
     DOMAIN,
     MANUFACTURER,
     NULL_VALUES,
@@ -626,6 +628,38 @@ async def async_setup_entry(hass, entry, async_add_entities):
     # 2. Integration Health
     entities.append(HyxiLastUpdateSensor(coordinator, entry))
 
+    # 3. Energy Manager sensors (EM-only)
+    em_sn = entry.options.get(CONF_EM_INVERTER_SN)
+    if entry.options.get(CONF_EM_ENABLED) and em_sn and em_sn in coordinator.data:
+        em_device_info = {"identifiers": {(DOMAIN, f"{em_sn}_energy_manager")}}
+        entities.append(EMSensor(coordinator, em_sn, "current_decision", em_device_info))
+        entities.append(EMSensor(coordinator, em_sn, "last_action", em_device_info))
+        entities.append(
+            EMSensor(
+                coordinator, em_sn, "battery_energy_available", em_device_info,
+                unit="Wh", device_class=SensorDeviceClass.ENERGY,
+            )
+        )
+        entities.append(
+            EMSensor(
+                coordinator, em_sn, "hours_until_sunrise", em_device_info,
+                unit="h", icon="mdi:weather-sunset-up",
+            )
+        )
+        entities.append(
+            EMSensor(
+                coordinator, em_sn, "hours_until_sunset", em_device_info,
+                unit="h", icon="mdi:weather-sunset-down",
+            )
+        )
+        entities.append(
+            EMSensor(
+                coordinator, em_sn, "p1_average", em_device_info,
+                unit="W", device_class=SensorDeviceClass.POWER,
+                state_class=SensorStateClass.MEASUREMENT,
+            )
+        )
+
     # FINAL REGISTRATION
     if entities:
         async_add_entities(entities)
@@ -989,3 +1023,81 @@ class HyxiLastUpdateSensor(CoordinatorEntity, SensorEntity):
         """Handle updated data from the coordinator."""
         self._update_native_value()
         super()._handle_coordinator_update()
+
+
+class EMSensor(SensorEntity):
+    """Sensor entity backed by the Energy Manager engine.
+
+    Updates are pushed by the engine via a registered callback, not by the
+    coordinator poll cycle.
+    """
+
+    _attr_has_entity_name = True
+
+    _VALUE_GETTERS: ClassVar[dict[str, str]] = {
+        "current_decision": "decision",
+        "last_action": "last_action",
+        "battery_energy_available": "battery_energy_available_wh",
+        "hours_until_sunrise": "_hours_until_sunrise",
+        "hours_until_sunset": "_hours_until_sunset",
+        "p1_average": "p1_avg",
+    }
+
+    def __init__(
+        self,
+        coordinator,
+        sn: str,
+        key: str,
+        device_info: dict,
+        unit: str | None = None,
+        device_class: SensorDeviceClass | None = None,
+        state_class: SensorStateClass | None = None,
+        icon: str | None = None,
+    ) -> None:
+        """Initialize the EM sensor."""
+        self._coordinator = coordinator
+        self._sn = sn
+        self._key = key
+        self._attr_unique_id = f"hyxi_{sn}_em_{key}"
+        self._attr_translation_key = f"em_{key}"
+        self._attr_device_info = device_info
+        self._attr_native_unit_of_measurement = unit
+        self._attr_device_class = device_class
+        self._attr_state_class = state_class
+        if icon:
+            self._attr_icon = icon
+
+    async def async_added_to_hass(self) -> None:
+        """Register for engine updates."""
+        engine = self._coordinator.engine
+        if engine:
+            engine.register_update_callback(self._engine_updated)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unregister from engine updates."""
+        engine = self._coordinator.engine
+        if engine:
+            engine.unregister_update_callback(self._engine_updated)
+
+    @callback
+    def _engine_updated(self) -> None:
+        """Handle engine state change."""
+        self.async_write_ha_state()
+
+    @property
+    def native_value(self):
+        """Return the current value from the engine."""
+        engine = self._coordinator.engine
+        if not engine:
+            return None
+        getter_name = self._VALUE_GETTERS.get(self._key)
+        if not getter_name:
+            return None
+        attr = getattr(engine, getter_name, None)
+        if callable(attr):
+            value = attr()
+        else:
+            value = attr
+        if isinstance(value, float):
+            return round(value, 1)
+        return value

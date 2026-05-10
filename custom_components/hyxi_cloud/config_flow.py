@@ -14,8 +14,15 @@ from .const import (
     BASE_URL,
     CONF_ACCESS_KEY,
     CONF_BACK_DISCOVERY,
+    CONF_EM_ENABLED,
+    CONF_EM_FORECAST_ENTITY,
+    CONF_EM_FORECAST_POWER_ENTITY,
+    CONF_EM_INVERTER_SN,
+    CONF_EM_P1_ENTITY,
     CONF_SECRET_KEY,
     DOMAIN,
+    get_raw_device_code,
+    normalize_device_type,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -123,27 +130,131 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self._config_entry = config_entry
+        self._options: dict = {}
 
     async def async_step_init(self, user_input=None):
         """Manage the options form."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            # Preserve all existing options, update with new values
+            self._options = dict(self._config_entry.options)
+            self._options["update_interval"] = user_input["update_interval"]
+            self._options[CONF_BACK_DISCOVERY] = user_input.get(
+                CONF_BACK_DISCOVERY, False
+            )
+            enable_em = user_input.get("enable_energy_manager", False)
+
+            if enable_em:
+                self._options[CONF_EM_ENABLED] = True
+                return await self.async_step_energy_manager()
+
+            # EM disabled — remove EM keys if they were previously set
+            self._options.pop(CONF_EM_ENABLED, None)
+            for key in (
+                CONF_EM_INVERTER_SN,
+                CONF_EM_P1_ENTITY,
+                CONF_EM_FORECAST_ENTITY,
+                CONF_EM_FORECAST_POWER_ENTITY,
+            ):
+                self._options.pop(key, None)
+            return self.async_create_entry(title="", data=self._options)
 
         # Pull current values or defaults
         current_interval = self._config_entry.options.get("update_interval", 5)
+        em_enabled = self._config_entry.options.get(CONF_EM_ENABLED, False)
+        has_controllable = self._has_controllable_inverter()
 
-        options_schema = vol.Schema(
+        schema_dict = {
+            # Slider for Interval
+            vol.Required("update_interval", default=current_interval): vol.All(
+                vol.Coerce(int), vol.Range(min=1, max=60)
+            ),
+            # Toggle for Alarm-based discovery
+            vol.Optional(
+                CONF_BACK_DISCOVERY,
+                default=self._config_entry.options.get(CONF_BACK_DISCOVERY, False),
+            ): selector.BooleanSelector(),
+        }
+
+        # Only show EM toggle if controllable inverters exist
+        if has_controllable:
+            schema_dict[
+                vol.Optional("enable_energy_manager", default=em_enabled)
+            ] = selector.BooleanSelector()
+
+        return self.async_show_form(
+            step_id="init", data_schema=vol.Schema(schema_dict)
+        )
+
+    async def async_step_energy_manager(self, user_input=None):
+        """Configure the Energy Manager — P1 entity, forecast, inverter SN."""
+        if user_input is not None:
+            self._options[CONF_EM_P1_ENTITY] = user_input[CONF_EM_P1_ENTITY]
+            self._options[CONF_EM_INVERTER_SN] = user_input[CONF_EM_INVERTER_SN]
+            if user_input.get(CONF_EM_FORECAST_ENTITY):
+                self._options[CONF_EM_FORECAST_ENTITY] = user_input[
+                    CONF_EM_FORECAST_ENTITY
+                ]
+            if user_input.get(CONF_EM_FORECAST_POWER_ENTITY):
+                self._options[CONF_EM_FORECAST_POWER_ENTITY] = user_input[
+                    CONF_EM_FORECAST_POWER_ENTITY
+                ]
+            return self.async_create_entry(title="", data=self._options)
+
+        # Build inverter SN options from coordinator data
+        sn_options = self._get_controllable_sns()
+        current_sn = self._config_entry.options.get(CONF_EM_INVERTER_SN, "")
+        if not current_sn and len(sn_options) == 1:
+            current_sn = sn_options[0]
+
+        schema = vol.Schema(
             {
-                # Slider for Interval
-                vol.Required("update_interval", default=current_interval): vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=60)
+                vol.Required(
+                    CONF_EM_P1_ENTITY,
+                    default=self._config_entry.options.get(CONF_EM_P1_ENTITY, ""),
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="sensor")
                 ),
-                # Toggle for Alarm-based discovery
                 vol.Optional(
-                    CONF_BACK_DISCOVERY,
-                    default=self._config_entry.options.get(CONF_BACK_DISCOVERY, False),
-                ): selector.BooleanSelector(),
+                    CONF_EM_FORECAST_ENTITY,
+                    default=self._config_entry.options.get(
+                        CONF_EM_FORECAST_ENTITY, ""
+                    ),
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="sensor")
+                ),
+                vol.Optional(
+                    CONF_EM_FORECAST_POWER_ENTITY,
+                    default=self._config_entry.options.get(
+                        CONF_EM_FORECAST_POWER_ENTITY, ""
+                    ),
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="sensor")
+                ),
+                vol.Required(
+                    CONF_EM_INVERTER_SN, default=current_sn
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=sn_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
             }
         )
 
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+        return self.async_show_form(step_id="energy_manager", data_schema=schema)
+
+    def _get_controllable_sns(self) -> list[str]:
+        """Get serial numbers of controllable inverters from coordinator data."""
+        coordinator = self.hass.data.get(DOMAIN, {}).get(self._config_entry.entry_id)
+        if not coordinator or not coordinator.data:
+            return []
+        sns = []
+        for sn, dev_data in coordinator.data.items():
+            device_type = normalize_device_type(get_raw_device_code(dev_data))
+            if device_type in ("hybrid_inverter", "all_in_one"):
+                sns.append(sn)
+        return sns
+
+    def _has_controllable_inverter(self) -> bool:
+        """Check if any controllable inverter exists."""
+        return len(self._get_controllable_sns()) > 0

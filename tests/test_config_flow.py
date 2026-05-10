@@ -317,8 +317,11 @@ async def test_options_flow_show_form_default_fallback(mock_ha_environment):
 
     config_entry = MagicMock()
     config_entry.options = {}  # Empty options to trigger default fallback
+    config_entry.entry_id = "test_entry"
 
     options_flow = config_flow_mod.HyxiOptionsFlowHandler(config_entry)
+    options_flow.hass = MagicMock()
+    options_flow.hass.data = {}  # No coordinator data → no controllable inverters
     options_flow.async_show_form = MagicMock(
         return_value={"type": "form", "step_id": "init"}
     )
@@ -344,8 +347,11 @@ async def test_options_flow_show_form(mock_ha_environment):
 
     config_entry = MagicMock()
     config_entry.options = {"update_interval": 10}
+    config_entry.entry_id = "test_entry"
 
     options_flow = config_flow_mod.HyxiOptionsFlowHandler(config_entry)
+    options_flow.hass = MagicMock()
+    options_flow.hass.data = {}
     options_flow.async_show_form = MagicMock(
         return_value={"type": "form", "step_id": "init"}
     )
@@ -373,7 +379,8 @@ async def test_options_flow_success(mock_ha_environment):
     result = await options_flow.async_step_init(user_input=user_input)
 
     assert result["type"] == "create_entry"
-    options_flow.async_create_entry.assert_called_once_with(title="", data=user_input)
+    expected_data = {"update_interval": 30, "back_discovery": False}
+    options_flow.async_create_entry.assert_called_once_with(title="", data=expected_data)
 
 
 @pytest.mark.asyncio

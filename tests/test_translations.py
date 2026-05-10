@@ -36,6 +36,12 @@ def get_translation_keys():
         for k in attr_keys:
             keys["sensor"].add(k.lower())
 
+        # Find f-string translation keys like: f"em_{key}" with key values from code
+        # Match EMSensor instantiations: EMSensor(coordinator, em_sn, "key_name", ...)
+        em_keys = re.findall(r'EMSensor\([^)]*,\s*"([^"]+)"', content)
+        for k in em_keys:
+            keys["sensor"].add(f"em_{k}".lower())
+
     # 2. Binary Sensors from binary_sensor.py
     binary_path = (
         Path(__file__).parent / "../custom_components/hyxi_cloud/binary_sensor.py"
@@ -46,6 +52,11 @@ def get_translation_keys():
         binary_keys = re.findall(r'_attr_translation_key = "([^"]+)"', content)
         for k in binary_keys:
             keys["binary_sensor"].add(k.lower())
+
+        # Match EMBinarySensor instantiations: EMBinarySensor(..., "key_name", ...)
+        em_bs_keys = re.findall(r'EMBinarySensor\([^)]*,\s*"([^"]+)"', content)
+        for k in em_bs_keys:
+            keys["binary_sensor"].add(f"em_{k}".lower())
 
     return keys
 

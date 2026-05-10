@@ -54,9 +54,10 @@ mock_api = MagicMock()
 mock_api.__version__ = "1.0.4"
 sys.modules["hyxi_cloud_api"] = mock_api
 
-mock_const = MagicMock()
-mock_const.DOMAIN = "hyxi_cloud"
-sys.modules["custom_components.hyxi_cloud.const"] = mock_const
+if "custom_components.hyxi_cloud.const" not in sys.modules:
+    mock_const = MagicMock()
+    mock_const.DOMAIN = "hyxi_cloud"
+    sys.modules["custom_components.hyxi_cloud.const"] = mock_const
 
 
 import custom_components.hyxi_cloud.coordinator as hc_coord  # pylint: disable=wrong-import-position # noqa: E402

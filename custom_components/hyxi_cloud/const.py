@@ -167,6 +167,35 @@ def detect_phase_type(dev_data: dict) -> str:
     return "unknown"
 
 
+# Energy Manager option keys
+CONF_EM_ENABLED = "em_enabled"
+CONF_EM_INVERTER_SN = "em_inverter_sn"
+CONF_EM_P1_ENTITY = "em_p1_entity"
+CONF_EM_FORECAST_ENTITY = "em_forecast_entity"
+CONF_EM_FORECAST_POWER_ENTITY = "em_forecast_power_entity"
+
+# EM parameter defaults (match pyscript values)
+EM_DEFAULTS: dict[str, int | float] = {
+    "soc_min": 20,
+    "soc_max": 90,
+    "night_buffer_pct": 5,
+    "high_load_threshold": 6500,
+    "battery_capacity_wh": 14800,
+    "max_charge_power": 5000,
+    "max_discharge_power": 5000,
+    "min_solar_for_charge": 1000,
+    "mode_switch_cooldown": 60,
+    "power_change_threshold": 100,
+    "power_adjust_cooldown": 30,
+    "avg_night_consumption": 400,
+    "charge_margin": 150,
+    "charge_entry_threshold": 500,
+    "charge_reentry_delay": 300,
+    "bottomout_cooldown": 300,
+}
+EM_LOOP_INTERVAL = 15  # seconds
+
+
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,

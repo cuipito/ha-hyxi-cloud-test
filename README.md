@@ -107,6 +107,53 @@ The HYXI API defines controls by **phase type** (Single Phase / Three-Phase). Th
 > [!WARNING]
 > **Micro ESS (EMS):** Control entities are **not** enabled for EMS devices. The HYXI API documentation does not list any control endpoints for EMS — the EMS API section only provides read-only data queries.
 
+### 🤖 Energy Manager (Beta)
+
+> [!WARNING]
+> The Energy Manager is currently in **beta**. Use at your own risk and monitor its behaviour closely during the first few days.
+
+The Energy Manager is an **optional** automated battery control system that optimises charge/discharge decisions based on solar production, P1 grid meter readings, battery SOC, and solar forecast data.
+
+#### Without Energy Manager (default)
+
+When you install this integration with a compatible inverter, you get **manual control** out of the box:
+- Operating Mode buttons (Idle / Charge / Discharge / Self-Consumption)
+- Charge / Discharge Power numbers
+- Peak Shaving buttons
+- Frequency Control switch
+- SOC Minimum / Maximum numbers
+- Grid Charge Allowed toggle
+
+These entities let you manually control your inverter and battery without any automation.
+
+#### With Energy Manager enabled
+
+When you enable the Energy Manager in the integration options, an automated 15-second decision loop takes over battery control. It creates a virtual **Energy Manager** device with:
+
+| Entity Type | Entities |
+| :--- | :--- |
+| **Sensors** | Current Decision, Last Action, Battery Energy Available, Hours Until Sunrise/Sunset, P1 Average Power |
+| **Binary Sensors** | Night Mode Active, High Load Detected |
+| **Numbers** | 14 tunable parameters (thresholds, cooldowns, capacities) |
+| **Switches** | Energy Manager On/Off, High Load Battery Assist |
+
+**Decision priorities:**
+1. Emergency: SOC below minimum → force charge
+2. SOC above maximum → discharge excess
+3. High load detected → battery assist (if enabled)
+4. Night mode → preserve battery for overnight consumption
+5. Solar optimisation → smart charge from solar surplus
+
+#### Enabling the Energy Manager
+
+1. Go to **Settings > Devices & Services** > **HYXI Cloud** > **Configure**.
+2. Toggle **Enable Energy Manager**.
+3. Select your **P1 Smart Meter** entity (required), solar forecast entities (optional), and the inverter to control.
+4. The Energy Manager device and its entities will appear after reload.
+
+> [!NOTE]
+> Most of the Energy Manager code was AI-generated and human-reviewed.
+
 ### 🛡️ Reliability & Diagnostics
 
 This integration includes a specialized diagnostic system to help you distinguish between local hardware issues and cloud service outages.
@@ -136,6 +183,7 @@ Or alternatively, add the integration with the following:
 Click the **Configure** button on the HYXI integration card to access:
 * **Polling Interval:** Adjust frequency between 1–60 minutes (Default: 5).
 * **Enable Discovery via Alarms:** Proactively discover child devices reporting active alarms (Advanced).
+* **Enable Energy Manager (Beta):** Activate automated battery management. Requires a P1 smart meter entity. See [Energy Manager](#-energy-manager-beta) above.
 
 ## 🛡️ Quality Assurance
 

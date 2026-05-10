@@ -6,12 +6,12 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, MANUFACTURER
+from .const import CONF_EM_ENABLED, CONF_EM_INVERTER_SN, DOMAIN, MANUFACTURER
 
 ACTIVE_ALARM_STATES = {"0", "1", "2", 0, 1, 2}
 
@@ -27,6 +27,13 @@ async def async_setup_entry(
 
     for device_sn in coordinator.data:
         entities.append(HyxiDeviceAlarmSensor(coordinator, entry, device_sn))
+
+    # Energy Manager binary sensors (EM-only)
+    em_sn = entry.options.get(CONF_EM_INVERTER_SN)
+    if entry.options.get(CONF_EM_ENABLED) and em_sn and em_sn in coordinator.data:
+        em_device_info = {"identifiers": {(DOMAIN, f"{em_sn}_energy_manager")}}
+        entities.append(EMBinarySensor(coordinator, em_sn, "night_mode_active", em_device_info))
+        entities.append(EMBinarySensor(coordinator, em_sn, "high_load_detected", em_device_info))
 
     async_add_entities(entities)
 
@@ -174,3 +181,61 @@ class HyxiDeviceAlarmSensor(CoordinatorEntity, BinarySensorEntity):
             "active_alarms_count": self._active_alarms_count,
             "raw_alarms_payload": self._alarms,
         }
+
+
+class EMBinarySensor(BinarySensorEntity):
+    """Binary sensor backed by the Energy Manager engine."""
+
+    _attr_has_entity_name = True
+
+    _ICONS = {
+        "night_mode_active": "mdi:weather-night",
+        "high_load_detected": "mdi:flash-alert",
+    }
+
+    def __init__(
+        self,
+        coordinator,
+        sn: str,
+        key: str,
+        device_info: dict,
+    ) -> None:
+        """Initialize the EM binary sensor."""
+        self._coordinator = coordinator
+        self._sn = sn
+        self._key = key
+        self._attr_unique_id = f"hyxi_{sn}_em_{key}"
+        self._attr_translation_key = f"em_{key}"
+        self._attr_device_info = device_info
+        self._attr_icon = self._ICONS.get(key)
+
+    async def async_added_to_hass(self) -> None:
+        """Register for engine updates."""
+        engine = self._coordinator.engine
+        if engine:
+            engine.register_update_callback(self._engine_updated)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unregister from engine updates."""
+        engine = self._coordinator.engine
+        if engine:
+            engine.unregister_update_callback(self._engine_updated)
+
+    @callback
+    def _engine_updated(self) -> None:
+        """Handle engine state change."""
+        self.async_write_ha_state()
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return the current value from the engine."""
+        engine = self._coordinator.engine
+        if not engine:
+            return None
+        if self._key == "night_mode_active":
+            return engine._is_night()
+        if self._key == "high_load_detected":
+            home_load = engine._get_home_load()
+            threshold = engine._get_param("high_load_threshold")
+            return home_load > threshold
+        return None
