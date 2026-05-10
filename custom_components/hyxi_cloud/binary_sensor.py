@@ -1,5 +1,9 @@
 """Binary sensor platform for HYXI Cloud."""
 
+from __future__ import annotations
+
+from typing import ClassVar
+
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
@@ -32,8 +36,12 @@ async def async_setup_entry(
     em_sn = entry.options.get(CONF_EM_INVERTER_SN)
     if entry.options.get(CONF_EM_ENABLED) and em_sn and em_sn in coordinator.data:
         em_device_info = {"identifiers": {(DOMAIN, f"{em_sn}_energy_manager")}}
-        entities.append(EMBinarySensor(coordinator, em_sn, "night_mode_active", em_device_info))
-        entities.append(EMBinarySensor(coordinator, em_sn, "high_load_detected", em_device_info))
+        entities.append(
+            EMBinarySensor(coordinator, em_sn, "night_mode_active", em_device_info)
+        )
+        entities.append(
+            EMBinarySensor(coordinator, em_sn, "high_load_detected", em_device_info)
+        )
 
     async_add_entities(entities)
 
@@ -188,7 +196,7 @@ class EMBinarySensor(BinarySensorEntity):
 
     _attr_has_entity_name = True
 
-    _ICONS = {
+    _ICONS: ClassVar[dict[str, str]] = {
         "night_mode_active": "mdi:weather-night",
         "high_load_detected": "mdi:flash-alert",
     }

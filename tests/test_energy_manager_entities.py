@@ -3,15 +3,12 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from custom_components.hyxi_cloud.const import (
     CONF_EM_ENABLED,
     CONF_EM_INVERTER_SN,
     CONF_EM_P1_ENTITY,
     EM_DEFAULTS,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # EM Constants
@@ -24,11 +21,22 @@ class TestEMConstants:
     def test_em_defaults_has_all_required_keys(self):
         """EM_DEFAULTS should have all 16 parameter keys."""
         required_keys = [
-            "soc_min", "soc_max", "night_buffer_pct", "high_load_threshold",
-            "battery_capacity_wh", "max_charge_power", "max_discharge_power",
-            "min_solar_for_charge", "mode_switch_cooldown", "power_change_threshold",
-            "power_adjust_cooldown", "avg_night_consumption", "charge_margin",
-            "charge_entry_threshold", "charge_reentry_delay", "bottomout_cooldown",
+            "soc_min",
+            "soc_max",
+            "night_buffer_pct",
+            "high_load_threshold",
+            "battery_capacity_wh",
+            "max_charge_power",
+            "max_discharge_power",
+            "min_solar_for_charge",
+            "mode_switch_cooldown",
+            "power_change_threshold",
+            "power_adjust_cooldown",
+            "avg_night_consumption",
+            "charge_margin",
+            "charge_entry_threshold",
+            "charge_reentry_delay",
+            "bottomout_cooldown",
         ]
         for key in required_keys:
             assert key in EM_DEFAULTS, f"Missing EM_DEFAULTS key: {key}"
@@ -64,14 +72,18 @@ class TestEMNumberDefinitions:
         from custom_components.hyxi_cloud.number import EM_NUMBER_DEFS
 
         for numdef in EM_NUMBER_DEFS:
-            assert numdef.key in EM_DEFAULTS, f"EM_NUMBER_DEFS key '{numdef.key}' not in EM_DEFAULTS"
+            assert numdef.key in EM_DEFAULTS, (
+                f"EM_NUMBER_DEFS key '{numdef.key}' not in EM_DEFAULTS"
+            )
 
     def test_em_number_defs_ranges_valid(self):
         """Min should be less than max, step should be positive."""
         from custom_components.hyxi_cloud.number import EM_NUMBER_DEFS
 
         for numdef in EM_NUMBER_DEFS:
-            assert numdef.min_val < numdef.max_val, f"Invalid range for '{numdef.key}': {numdef.min_val} >= {numdef.max_val}"
+            assert numdef.min_val < numdef.max_val, (
+                f"Invalid range for '{numdef.key}': {numdef.min_val} >= {numdef.max_val}"
+            )
             assert numdef.step > 0, f"Invalid step for '{numdef.key}': {numdef.step}"
             default = EM_DEFAULTS[numdef.key]
             assert numdef.min_val <= default <= numdef.max_val, (
@@ -83,7 +95,9 @@ class TestEMNumberDefinitions:
         from custom_components.hyxi_cloud.number import EM_NUMBER_DEFS
 
         for numdef in EM_NUMBER_DEFS:
-            assert numdef.icon.startswith("mdi:"), f"Invalid icon for '{numdef.key}': {numdef.icon}"
+            assert numdef.icon.startswith("mdi:"), (
+                f"Invalid icon for '{numdef.key}': {numdef.icon}"
+            )
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -124,7 +138,11 @@ class TestEMTranslationCoverage:
         strings = self._load_strings()
         switch_translations = strings.get("entity", {}).get("switch", {})
 
-        for key in ("em_enabled", "em_grid_charge_allowed", "em_high_load_battery_assist"):
+        for key in (
+            "em_enabled",
+            "em_grid_charge_allowed",
+            "em_high_load_battery_assist",
+        ):
             assert key in switch_translations, (
                 f"Switch translation key '{key}' missing from strings.json"
             )
@@ -135,9 +153,12 @@ class TestEMTranslationCoverage:
         sensor_translations = strings.get("entity", {}).get("sensor", {})
 
         em_keys = [
-            "em_current_decision", "em_last_action",
-            "em_battery_energy_available", "em_hours_until_sunrise",
-            "em_hours_until_sunset", "em_p1_average",
+            "em_current_decision",
+            "em_last_action",
+            "em_battery_energy_available",
+            "em_hours_until_sunrise",
+            "em_hours_until_sunset",
+            "em_p1_average",
         ]
         for key in em_keys:
             assert key in sensor_translations, (

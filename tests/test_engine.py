@@ -252,9 +252,13 @@ class FakeEngine:
 
         # PRIORITY 4b: Night battery preservation during daytime
         p1_avg = self.p1_avg
-        if (not is_night and soc <= night_soc_target
-                and p1 > 0 and p1_avg > 0
-                and not self._solar_will_cover_charge(night_soc_target)):
+        if (
+            not is_night
+            and soc <= night_soc_target
+            and p1 > 0
+            and p1_avg > 0
+            and not self._solar_will_cover_charge(night_soc_target)
+        ):
             self._set_decision("night_preserve_idle")
             if self._current_mode != "idle":
                 await self._set_mode("idle")
@@ -290,12 +294,16 @@ class FakeEngine:
 
                 elif p1 < -charge_entry_threshold:
                     self._charge_entry_export_count += 1
-                    if (self._charge_entry_export_count >= readings_needed
-                            and solar >= min_solar_for_charge):
+                    if (
+                        self._charge_entry_export_count >= readings_needed
+                        and solar >= min_solar_for_charge
+                    ):
                         charge_target = min(abs(p1) - charge_margin - 100, solar - 500)
                         charge_target = min(charge_target, max_charge)
                         charge_target = max(charge_target, 300)
-                        decision = "pre_night_charge" if sunset_urgent else "solar_charge"
+                        decision = (
+                            "pre_night_charge" if sunset_urgent else "solar_charge"
+                        )
                         self._set_decision(decision)
                         if await self._set_mode("charge", int(charge_target)):
                             self._charge_entry_export_count = 0

@@ -1,6 +1,9 @@
 """Switch platform for HYXI Cloud device control."""
 
+from __future__ import annotations
+
 import logging
+from typing import ClassVar
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -61,8 +64,11 @@ async def async_setup_entry(
             )
             entities.append(
                 EMToggleSwitch(
-                    coordinator, sn, "high_load_battery_assist",
-                    default_on=False, em_device=True,
+                    coordinator,
+                    sn,
+                    "high_load_battery_assist",
+                    default_on=False,
+                    em_device=True,
                 )
             )
 
@@ -190,7 +196,7 @@ class EMToggleSwitch(SwitchEntity, RestoreEntity):
     _attr_entity_category = EntityCategory.CONFIG
     _attr_is_on: bool | None = None
 
-    _ICONS: dict[str, str] = {
+    _ICONS: ClassVar[dict[str, str]] = {
         "grid_charge_allowed": "mdi:transmission-tower-import",
         "enabled": "mdi:robot",
         "high_load_battery_assist": "mdi:flash-alert-outline",

@@ -177,13 +177,11 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
 
         # Only show EM toggle if controllable inverters exist
         if has_controllable:
-            schema_dict[
-                vol.Optional("enable_energy_manager", default=em_enabled)
-            ] = selector.BooleanSelector()
+            schema_dict[vol.Optional("enable_energy_manager", default=em_enabled)] = (
+                selector.BooleanSelector()
+            )
 
-        return self.async_show_form(
-            step_id="init", data_schema=vol.Schema(schema_dict)
-        )
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema_dict))
 
     async def async_step_energy_manager(self, user_input=None):
         """Configure the Energy Manager — P1 entity, forecast, inverter SN."""
@@ -216,9 +214,7 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
                 ),
                 vol.Optional(
                     CONF_EM_FORECAST_ENTITY,
-                    default=self._config_entry.options.get(
-                        CONF_EM_FORECAST_ENTITY, ""
-                    ),
+                    default=self._config_entry.options.get(CONF_EM_FORECAST_ENTITY, ""),
                 ): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="sensor")
                 ),

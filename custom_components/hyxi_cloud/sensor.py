@@ -632,30 +632,48 @@ async def async_setup_entry(hass, entry, async_add_entities):
     em_sn = entry.options.get(CONF_EM_INVERTER_SN)
     if entry.options.get(CONF_EM_ENABLED) and em_sn and em_sn in coordinator.data:
         em_device_info = {"identifiers": {(DOMAIN, f"{em_sn}_energy_manager")}}
-        entities.append(EMSensor(coordinator, em_sn, "current_decision", em_device_info))
+        entities.append(
+            EMSensor(coordinator, em_sn, "current_decision", em_device_info)
+        )
         entities.append(EMSensor(coordinator, em_sn, "last_action", em_device_info))
         entities.append(
             EMSensor(
-                coordinator, em_sn, "battery_energy_available", em_device_info,
-                unit="Wh", device_class=SensorDeviceClass.ENERGY,
+                coordinator,
+                em_sn,
+                "battery_energy_available",
+                em_device_info,
+                unit="Wh",
+                device_class=SensorDeviceClass.ENERGY,
             )
         )
         entities.append(
             EMSensor(
-                coordinator, em_sn, "hours_until_sunrise", em_device_info,
-                unit="h", icon="mdi:weather-sunset-up",
+                coordinator,
+                em_sn,
+                "hours_until_sunrise",
+                em_device_info,
+                unit="h",
+                icon="mdi:weather-sunset-up",
             )
         )
         entities.append(
             EMSensor(
-                coordinator, em_sn, "hours_until_sunset", em_device_info,
-                unit="h", icon="mdi:weather-sunset-down",
+                coordinator,
+                em_sn,
+                "hours_until_sunset",
+                em_device_info,
+                unit="h",
+                icon="mdi:weather-sunset-down",
             )
         )
         entities.append(
             EMSensor(
-                coordinator, em_sn, "p1_average", em_device_info,
-                unit="W", device_class=SensorDeviceClass.POWER,
+                coordinator,
+                em_sn,
+                "p1_average",
+                em_device_info,
+                unit="W",
+                device_class=SensorDeviceClass.POWER,
                 state_class=SensorStateClass.MEASUREMENT,
             )
         )

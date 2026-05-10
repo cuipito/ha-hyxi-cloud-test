@@ -380,7 +380,9 @@ async def test_options_flow_success(mock_ha_environment):
 
     assert result["type"] == "create_entry"
     expected_data = {"update_interval": 30, "back_discovery": False}
-    options_flow.async_create_entry.assert_called_once_with(title="", data=expected_data)
+    options_flow.async_create_entry.assert_called_once_with(
+        title="", data=expected_data
+    )
 
 
 @pytest.mark.asyncio

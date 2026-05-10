@@ -49,15 +49,21 @@ EM_NUMBER_DEFS: list[EMNumberDef] = [
     EMNumberDef("high_load_threshold", "W", 1000, 20000, 500, "mdi:flash-alert"),
     EMNumberDef("battery_capacity_wh", "Wh", 1000, 50000, 100, "mdi:battery"),
     EMNumberDef("max_charge_power", "W", 500, 15000, 100, "mdi:lightning-bolt"),
-    EMNumberDef("max_discharge_power", "W", 500, 15000, 100, "mdi:lightning-bolt-outline"),
-    EMNumberDef("min_solar_for_charge", "W", 200, 3000, 100, "mdi:solar-power-variant-outline"),
+    EMNumberDef(
+        "max_discharge_power", "W", 500, 15000, 100, "mdi:lightning-bolt-outline"
+    ),
+    EMNumberDef(
+        "min_solar_for_charge", "W", 200, 3000, 100, "mdi:solar-power-variant-outline"
+    ),
     EMNumberDef("mode_switch_cooldown", "s", 10, 300, 5, "mdi:timer-outline"),
     EMNumberDef("power_change_threshold", "W", 10, 500, 10, "mdi:delta"),
     EMNumberDef("power_adjust_cooldown", "s", 5, 120, 5, "mdi:timer-sand"),
     EMNumberDef("night_buffer_pct", "%", 0, 20, 1, "mdi:shield-half-full"),
     EMNumberDef("avg_night_consumption", "W", 100, 2000, 50, "mdi:weather-night"),
     EMNumberDef("charge_margin", "W", 0, 500, 25, "mdi:margin"),
-    EMNumberDef("charge_entry_threshold", "W", 100, 2000, 50, "mdi:solar-power-variant-outline"),
+    EMNumberDef(
+        "charge_entry_threshold", "W", 100, 2000, 50, "mdi:solar-power-variant-outline"
+    ),
     EMNumberDef("charge_reentry_delay", "s", 30, 600, 15, "mdi:timer-lock"),
     EMNumberDef("bottomout_cooldown", "s", 60, 900, 30, "mdi:timer-alert"),
 ]

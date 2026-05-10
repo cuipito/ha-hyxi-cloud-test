@@ -207,7 +207,7 @@ class EnergyManagerEngine:
             return default
         try:
             return float(val)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return default
 
     def _get_ha_state_float(self, entity_id: str | None, default: float = 0.0) -> float:
@@ -219,7 +219,7 @@ class EnergyManagerEngine:
             return default
         try:
             return float(state.state)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return default
 
     def _get_ha_state_bool(self, entity_id: str | None, default: bool = False) -> bool:
@@ -393,7 +393,7 @@ class EnergyManagerEngine:
         hours_remaining = min(hours_until_solar, night_hours)
         wh_needed = avg_load * hours_remaining
         buffer_pct = self._get_param("night_buffer_pct") / 100
-        wh_needed *= (1 + buffer_pct)
+        wh_needed *= 1 + buffer_pct
         return wh_needed
 
     def _soc_needed_for_night(self) -> float:
@@ -478,7 +478,12 @@ class EnergyManagerEngine:
         _LOGGER.debug(
             "EM TICK: SOC=%.0f%% P1=%.0fW solar=%.0fW load=%.0fW "
             "night=%s night_target=%.0f%%",
-            soc, p1, solar, home_load, is_night, night_soc_target,
+            soc,
+            p1,
+            solar,
+            home_load,
+            is_night,
+            night_soc_target,
         )
 
         # ── PRIORITY 1: Emergency — SOC below minimum ──────────────────
@@ -556,9 +561,13 @@ class EnergyManagerEngine:
 
         # ── PRIORITY 4b: Night battery preservation during daytime ─────
         p1_avg = self.p1_avg
-        if (not is_night and soc <= night_soc_target
-                and p1 > 0 and p1_avg > 0
-                and not self._solar_will_cover_charge(night_soc_target)):
+        if (
+            not is_night
+            and soc <= night_soc_target
+            and p1 > 0
+            and p1_avg > 0
+            and not self._solar_will_cover_charge(night_soc_target)
+        ):
             self._set_decision("night_preserve_idle")
             if self._current_mode != "idle":
                 await self._set_mode("idle")
@@ -597,12 +606,16 @@ class EnergyManagerEngine:
 
                 elif p1 < -charge_entry_threshold:
                     self._charge_entry_export_count += 1
-                    if (self._charge_entry_export_count >= readings_needed
-                            and solar >= min_solar_for_charge):
+                    if (
+                        self._charge_entry_export_count >= readings_needed
+                        and solar >= min_solar_for_charge
+                    ):
                         charge_target = min(abs(p1) - charge_margin - 100, solar - 500)
                         charge_target = min(charge_target, max_charge)
                         charge_target = max(charge_target, 300)
-                        decision = "pre_night_charge" if sunset_urgent else "solar_charge"
+                        decision = (
+                            "pre_night_charge" if sunset_urgent else "solar_charge"
+                        )
                         self._set_decision(decision)
                         if await self._set_mode("charge", int(charge_target)):
                             self._charge_entry_export_count = 0
@@ -703,7 +716,7 @@ class EnergyManagerEngine:
             try:
                 await self._set_mode("self_consume")
             except Exception:
-                pass
+                _LOGGER.debug("EM: Fallback self_consume also failed")
 
     @callback
     def _on_p1_change(self, event) -> None:
@@ -714,7 +727,7 @@ class EnergyManagerEngine:
 
         try:
             value = float(new_state.state)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return
 
         now = time.monotonic()
@@ -746,7 +759,7 @@ class EnergyManagerEngine:
 
         try:
             soc = float(new_state.state)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return
 
         soc_min = self._get_param("soc_min")
@@ -768,5 +781,6 @@ class EnergyManagerEngine:
                 new_avg = prev * 0.9 + current_p1 * 0.1
                 _LOGGER.info(
                     "EM: Night consumption estimate: %.0fW (sample: %.0fW)",
-                    new_avg, current_p1,
+                    new_avg,
+                    current_p1,
                 )

@@ -86,13 +86,18 @@ class _StubRestoreEntity(_StubEntity):
 
 ensure_mock(
     "homeassistant.components.sensor",
-    {"SensorEntity": _StubSensorEntity, "SensorDeviceClass": MagicMock(),
-     "SensorStateClass": MagicMock()},
+    {
+        "SensorEntity": _StubSensorEntity,
+        "SensorDeviceClass": MagicMock(),
+        "SensorStateClass": MagicMock(),
+    },
 )
 ensure_mock(
     "homeassistant.components.binary_sensor",
-    {"BinarySensorEntity": _StubBinarySensorEntity,
-     "BinarySensorDeviceClass": MagicMock()},
+    {
+        "BinarySensorEntity": _StubBinarySensorEntity,
+        "BinarySensorDeviceClass": MagicMock(),
+    },
 )
 ensure_mock(
     "homeassistant.components.number",
