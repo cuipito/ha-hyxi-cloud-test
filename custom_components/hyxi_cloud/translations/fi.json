@@ -294,27 +294,6 @@
         "name": "Sisäinen lämpötila"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Käyttötila",
-        "state": {
-          "idle": "Valmiustila",
-          "charge": "Lataus",
-          "discharge": "Purku",
-          "self_consume": "Omakulutus"
-        }
-      },
-      "peak_shaving": {
-        "name": "Huipputehon leikkaus",
-        "state": {
-          "close": "Pois",
-          "charge": "Lataus",
-          "discharge": "Purku",
-          "stop": "Pysäytä",
-          "hold": "Pidä"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Latausteho"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Käynnistä uudelleen"
+      },
+      "mode_idle": {
+        "name": "Valmiustila"
+      },
+      "mode_charge": {
+        "name": "Lataus"
+      },
+      "mode_discharge": {
+        "name": "Purku"
+      },
+      "mode_self_consume": {
+        "name": "Omakulutus"
+      },
+      "peak_shaving_close": {
+        "name": "Pois"
+      },
+      "peak_shaving_charge": {
+        "name": "Lataus"
+      },
+      "peak_shaving_discharge": {
+        "name": "Purku"
+      },
+      "peak_shaving_stop": {
+        "name": "Pysäytä"
+      },
+      "peak_shaving_hold": {
+        "name": "Pidä"
       }
     }
   }

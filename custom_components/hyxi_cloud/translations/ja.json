@@ -294,27 +294,6 @@
         "name": "内部温度"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "動作モード",
-        "state": {
-          "idle": "アイドル",
-          "charge": "充電",
-          "discharge": "放電",
-          "self_consume": "自家消費"
-        }
-      },
-      "peak_shaving": {
-        "name": "ピークシェービング",
-        "state": {
-          "close": "オフ",
-          "charge": "充電",
-          "discharge": "放電",
-          "stop": "停止",
-          "hold": "保持"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "充電電力"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "再起動"
+      },
+      "mode_idle": {
+        "name": "アイドル"
+      },
+      "mode_charge": {
+        "name": "充電"
+      },
+      "mode_discharge": {
+        "name": "放電"
+      },
+      "mode_self_consume": {
+        "name": "自家消費"
+      },
+      "peak_shaving_close": {
+        "name": "オフ"
+      },
+      "peak_shaving_charge": {
+        "name": "充電"
+      },
+      "peak_shaving_discharge": {
+        "name": "放電"
+      },
+      "peak_shaving_stop": {
+        "name": "停止"
+      },
+      "peak_shaving_hold": {
+        "name": "保持"
       }
     }
   }

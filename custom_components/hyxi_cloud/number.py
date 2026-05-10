@@ -63,15 +63,14 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
     """Number entity for setting the wattage used by charge/discharge mode commands.
 
     This entity stores the desired power level locally. The value is sent to
-    the inverter when the user selects 'charge' or 'discharge' in the
-    operating mode select entity.
+    the inverter when the user presses the Charge or Discharge mode button.
     """
 
     _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfPower.WATT
     _attr_mode = NumberMode.BOX
-    _attr_native_step = 100.0
-    _attr_native_min_value = 0.0
+    _attr_native_step = 1
+    _attr_native_min_value = 1
     _attr_icon = "mdi:flash"
 
     _MAX_POWER_KEYS: ClassVar[dict[str, str]] = {
@@ -94,8 +93,8 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
         self._attr_translation_key = f"{direction}_power"
         metrics = dev_data.get("metrics") or {}
         metric_key = self._MAX_POWER_KEYS.get(direction, "")
-        self._attr_native_max_value = float(_safe_int(metrics.get(metric_key), 10000))
-        self._attr_native_value = 100.0
+        self._attr_native_max_value = int(_safe_int(metrics.get(metric_key), 10000))
+        self._attr_native_value = 100
         self._attr_device_info = {
             "identifiers": {(DOMAIN, sn)},
             "name": dev_data.get("device_name") or f"Device {sn}",
@@ -109,13 +108,13 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
         await super().async_added_to_hass()
         if (last_state := await self.async_get_last_state()) is not None:
             try:
-                self._attr_native_value = float(last_state.state)
-            except ValueError, TypeError:
+                self._attr_native_value = int(float(last_state.state))
+            except (ValueError, TypeError):
                 pass
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the power value."""
-        self._attr_native_value = value
+        self._attr_native_value = int(value)
         self.async_write_ha_state()
 
 
@@ -155,7 +154,7 @@ class HyxiMicroPowerLimit(CoordinatorEntity, NumberEntity, RestoreEntity):
         if (last_state := await self.async_get_last_state()) is not None:
             try:
                 self._attr_native_value = float(last_state.state)
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 pass
 
     async def async_set_native_value(self, value: float) -> None:
@@ -182,5 +181,5 @@ def _safe_int(val, default: int) -> int:
     try:
         result = int(float(val))
         return result if result > 0 else default
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         return default

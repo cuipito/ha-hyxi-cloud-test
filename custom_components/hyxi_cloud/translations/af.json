@@ -294,27 +294,6 @@
         "name": "Interne Temperatuur"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Bedryfsmodus",
-        "state": {
-          "idle": "Ledige",
-          "charge": "Laai",
-          "discharge": "Ontlaai",
-          "self_consume": "Selfverbruik"
-        }
-      },
-      "peak_shaving": {
-        "name": "Piekverlaging",
-        "state": {
-          "close": "Af",
-          "charge": "Laai",
-          "discharge": "Ontlaai",
-          "stop": "Stop",
-          "hold": "Hou"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Laaikrag"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Herbegin"
+      },
+      "mode_idle": {
+        "name": "Ledige"
+      },
+      "mode_charge": {
+        "name": "Laai"
+      },
+      "mode_discharge": {
+        "name": "Ontlaai"
+      },
+      "mode_self_consume": {
+        "name": "Selfverbruik"
+      },
+      "peak_shaving_close": {
+        "name": "Af"
+      },
+      "peak_shaving_charge": {
+        "name": "Laai"
+      },
+      "peak_shaving_discharge": {
+        "name": "Ontlaai"
+      },
+      "peak_shaving_stop": {
+        "name": "Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Hou"
       }
     }
   }

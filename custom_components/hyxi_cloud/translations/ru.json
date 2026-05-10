@@ -294,27 +294,6 @@
         "name": "Внутренняя температура"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Режим работы",
-        "state": {
-          "idle": "Ожидание",
-          "charge": "Зарядка",
-          "discharge": "Разрядка",
-          "self_consume": "Собственное потребление"
-        }
-      },
-      "peak_shaving": {
-        "name": "Сглаживание пиков",
-        "state": {
-          "close": "Выключено",
-          "charge": "Зарядка",
-          "discharge": "Разрядка",
-          "stop": "Стоп",
-          "hold": "Удержание"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Мощность зарядки"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Перезапуск"
+      },
+      "mode_idle": {
+        "name": "Ожидание"
+      },
+      "mode_charge": {
+        "name": "Зарядка"
+      },
+      "mode_discharge": {
+        "name": "Разрядка"
+      },
+      "mode_self_consume": {
+        "name": "Собственное потребление"
+      },
+      "peak_shaving_close": {
+        "name": "Выключено"
+      },
+      "peak_shaving_charge": {
+        "name": "Зарядка"
+      },
+      "peak_shaving_discharge": {
+        "name": "Разрядка"
+      },
+      "peak_shaving_stop": {
+        "name": "Стоп"
+      },
+      "peak_shaving_hold": {
+        "name": "Удержание"
       }
     }
   }

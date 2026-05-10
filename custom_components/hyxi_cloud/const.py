@@ -131,8 +131,8 @@ def detect_phase_type(dev_data: dict) -> str:
 
     Detection strategy (in priority order):
     1. Model name suffix: -HT/-HTA = three-phase, -HS/-LS = single-phase
-    2. Runtime metrics: non-zero ph2v or ph3v = three-phase
-    3. Default: "unknown" — expose all controls and let the API reject unsupported ones
+    2. Runtime metrics: structural phase keys or non-zero ph2v/ph3v = three-phase
+    3. Default: "unknown" means no control entities are created (safety-first)
     """
     # 1. Model name suffix check
     model = (dev_data.get("model") or "").upper().strip()
@@ -145,13 +145,23 @@ def detect_phase_type(dev_data: dict) -> str:
             if suffix in model:
                 return "single_phase"
 
-    # 2. Runtime metrics — presence of phase 2/3 voltage with non-zero values
+    # 2. Runtime metrics — structural indicators of three-phase
+    # Power metric keys (ph3Loadp, ph3p, ph2p, ph2Loadp) are checked by PRESENCE only —
+    # the API only includes these keys for three-phase devices; the value can
+    # legitimately be zero (e.g. no load at night). Voltage metrics are
+    # checked by value since the schema may include them on single-phase devices.
     metrics = dev_data.get("metrics") or {}
+    for key in ("ph3Loadp", "ph3p", "ph2p", "ph2Loadp"):
+        if key in metrics:
+            return "three_phase"
+
+    # Voltage metrics are checked by value since the schema may include them
+    # on single-phase devices.
     for key in ("ph2v", "ph3v"):
         try:
             if float(metrics.get(key, 0)) > 0:
                 return "three_phase"
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             continue
 
     return "unknown"
@@ -161,7 +171,6 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
-    Platform.SELECT,
     Platform.NUMBER,
     Platform.SWITCH,
 ]

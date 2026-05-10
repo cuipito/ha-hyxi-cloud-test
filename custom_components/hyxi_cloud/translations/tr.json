@@ -294,27 +294,6 @@
         "name": "İç Sıcaklık"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Çalışma Modu",
-        "state": {
-          "idle": "Bekleme",
-          "charge": "Şarj",
-          "discharge": "Deşarj",
-          "self_consume": "Öz Tüketim"
-        }
-      },
-      "peak_shaving": {
-        "name": "Tepe Tıraşlama",
-        "state": {
-          "close": "Kapalı",
-          "charge": "Şarj",
-          "discharge": "Deşarj",
-          "stop": "Durdur",
-          "hold": "Tut"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Şarj Gücü"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Yeniden Başlat"
+      },
+      "mode_idle": {
+        "name": "Bekleme"
+      },
+      "mode_charge": {
+        "name": "Şarj"
+      },
+      "mode_discharge": {
+        "name": "Deşarj"
+      },
+      "mode_self_consume": {
+        "name": "Öz Tüketim"
+      },
+      "peak_shaving_close": {
+        "name": "Kapalı"
+      },
+      "peak_shaving_charge": {
+        "name": "Şarj"
+      },
+      "peak_shaving_discharge": {
+        "name": "Deşarj"
+      },
+      "peak_shaving_stop": {
+        "name": "Durdur"
+      },
+      "peak_shaving_hold": {
+        "name": "Tut"
       }
     }
   }

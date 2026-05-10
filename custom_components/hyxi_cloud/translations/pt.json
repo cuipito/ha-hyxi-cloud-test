@@ -294,27 +294,6 @@
         "name": "Temperatura Interna"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Modo de operação",
-        "state": {
-          "idle": "Inativo",
-          "charge": "Carga",
-          "discharge": "Descarga",
-          "self_consume": "Autoconsumo"
-        }
-      },
-      "peak_shaving": {
-        "name": "Corte de pico",
-        "state": {
-          "close": "Desligado",
-          "charge": "Carga",
-          "discharge": "Descarga",
-          "stop": "Parar",
-          "hold": "Manter"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Potência de carga"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Reiniciar"
+      },
+      "mode_idle": {
+        "name": "Inativo"
+      },
+      "mode_charge": {
+        "name": "Carga"
+      },
+      "mode_discharge": {
+        "name": "Descarga"
+      },
+      "mode_self_consume": {
+        "name": "Autoconsumo"
+      },
+      "peak_shaving_close": {
+        "name": "Desligado"
+      },
+      "peak_shaving_charge": {
+        "name": "Carga"
+      },
+      "peak_shaving_discharge": {
+        "name": "Descarga"
+      },
+      "peak_shaving_stop": {
+        "name": "Parar"
+      },
+      "peak_shaving_hold": {
+        "name": "Manter"
       }
     }
   }

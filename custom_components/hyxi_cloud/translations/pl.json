@@ -294,27 +294,6 @@
         "name": "Temperatura wewnętrzna"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Tryb pracy",
-        "state": {
-          "idle": "Bezczynny",
-          "charge": "Ładowanie",
-          "discharge": "Rozładowanie",
-          "self_consume": "Autokonsumpcja"
-        }
-      },
-      "peak_shaving": {
-        "name": "Redukcja szczytów",
-        "state": {
-          "close": "Wyłączony",
-          "charge": "Ładowanie",
-          "discharge": "Rozładowanie",
-          "stop": "Stop",
-          "hold": "Utrzymaj"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Moc ładowania"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Restart"
+      },
+      "mode_idle": {
+        "name": "Bezczynny"
+      },
+      "mode_charge": {
+        "name": "Ładowanie"
+      },
+      "mode_discharge": {
+        "name": "Rozładowanie"
+      },
+      "mode_self_consume": {
+        "name": "Autokonsumpcja"
+      },
+      "peak_shaving_close": {
+        "name": "Wyłączony"
+      },
+      "peak_shaving_charge": {
+        "name": "Ładowanie"
+      },
+      "peak_shaving_discharge": {
+        "name": "Rozładowanie"
+      },
+      "peak_shaving_stop": {
+        "name": "Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Utrzymaj"
       }
     }
   }

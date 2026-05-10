@@ -294,27 +294,6 @@
         "name": "Belső hőmérséklet"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Üzemmód",
-        "state": {
-          "idle": "Készenléti",
-          "charge": "Töltés",
-          "discharge": "Kisütés",
-          "self_consume": "Önfogyasztás"
-        }
-      },
-      "peak_shaving": {
-        "name": "Csúcsterhelés-csökkentés",
-        "state": {
-          "close": "Ki",
-          "charge": "Töltés",
-          "discharge": "Kisütés",
-          "stop": "Leállítás",
-          "hold": "Tartás"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Töltési teljesítmény"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Újraindítás"
+      },
+      "mode_idle": {
+        "name": "Készenléti"
+      },
+      "mode_charge": {
+        "name": "Töltés"
+      },
+      "mode_discharge": {
+        "name": "Kisütés"
+      },
+      "mode_self_consume": {
+        "name": "Önfogyasztás"
+      },
+      "peak_shaving_close": {
+        "name": "Ki"
+      },
+      "peak_shaving_charge": {
+        "name": "Töltés"
+      },
+      "peak_shaving_discharge": {
+        "name": "Kisütés"
+      },
+      "peak_shaving_stop": {
+        "name": "Leállítás"
+      },
+      "peak_shaving_hold": {
+        "name": "Tartás"
       }
     }
   }

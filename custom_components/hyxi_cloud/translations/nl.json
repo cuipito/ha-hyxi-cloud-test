@@ -294,27 +294,6 @@
         "name": "Interne Temperatuur"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Bedrijfsmodus",
-        "state": {
-          "idle": "Inactief",
-          "charge": "Laden",
-          "discharge": "Ontladen",
-          "self_consume": "Eigenverbruik"
-        }
-      },
-      "peak_shaving": {
-        "name": "Piekafvlakking",
-        "state": {
-          "close": "Uit",
-          "charge": "Laden",
-          "discharge": "Ontladen",
-          "stop": "Stop",
-          "hold": "Vasthouden"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Laadvermogen"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Herstarten"
+      },
+      "mode_idle": {
+        "name": "Inactief"
+      },
+      "mode_charge": {
+        "name": "Laden"
+      },
+      "mode_discharge": {
+        "name": "Ontladen"
+      },
+      "mode_self_consume": {
+        "name": "Eigenverbruik"
+      },
+      "peak_shaving_close": {
+        "name": "Uit"
+      },
+      "peak_shaving_charge": {
+        "name": "Laden"
+      },
+      "peak_shaving_discharge": {
+        "name": "Ontladen"
+      },
+      "peak_shaving_stop": {
+        "name": "Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Vasthouden"
       }
     }
   }

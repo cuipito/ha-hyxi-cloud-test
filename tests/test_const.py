@@ -166,6 +166,12 @@ def test_detect_phase_type_model_suffix():
 
 def test_detect_phase_type_metrics():
     """Test phase detection from runtime metrics."""
+    # Three-phase: structural power keys are conclusive even when values are zero.
+    assert detect_phase_type({"metrics": {"ph2Loadp": 0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph3Loadp": 0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph2p": 0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph3p": 0}}) == "three_phase"
+
     # Three-phase: non-zero ph2v/ph3v
     assert detect_phase_type({"metrics": {"ph2v": 230.0}}) == "three_phase"
     assert detect_phase_type({"metrics": {"ph3v": 228.5}}) == "three_phase"

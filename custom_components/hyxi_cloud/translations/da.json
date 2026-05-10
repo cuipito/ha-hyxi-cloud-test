@@ -294,27 +294,6 @@
         "name": "Intern temperatur"
       }
     },
-    "select": {
-      "operating_mode": {
-        "name": "Driftstilstand",
-        "state": {
-          "idle": "Inaktiv",
-          "charge": "Opladning",
-          "discharge": "Afladning",
-          "self_consume": "Egetforbrug"
-        }
-      },
-      "peak_shaving": {
-        "name": "Spidsbelastning",
-        "state": {
-          "close": "Fra",
-          "charge": "Opladning",
-          "discharge": "Afladning",
-          "stop": "Stop",
-          "hold": "Hold"
-        }
-      }
-    },
     "number": {
       "charge_power": {
         "name": "Opladningseffekt"
@@ -337,6 +316,33 @@
     "button": {
       "micro_restart": {
         "name": "Genstart"
+      },
+      "mode_idle": {
+        "name": "Inaktiv"
+      },
+      "mode_charge": {
+        "name": "Opladning"
+      },
+      "mode_discharge": {
+        "name": "Afladning"
+      },
+      "mode_self_consume": {
+        "name": "Egetforbrug"
+      },
+      "peak_shaving_close": {
+        "name": "Fra"
+      },
+      "peak_shaving_charge": {
+        "name": "Opladning"
+      },
+      "peak_shaving_discharge": {
+        "name": "Afladning"
+      },
+      "peak_shaving_stop": {
+        "name": "Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Hold"
       }
     }
   }
