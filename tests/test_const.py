@@ -1,6 +1,7 @@
 """Tests for the hyxi_cloud const module."""
 
 from custom_components.hyxi_cloud.const import (
+    detect_phase_type,
     get_raw_device_code,
     get_software_version,
     mask_sn,
@@ -44,11 +45,13 @@ def test_normalize_device_type():
     # 5. String aliases defined in DEVICE_TYPE_KEYS
     assert normalize_device_type("EMS") == "micro_ess"
     assert normalize_device_type("COLLECTOR") == "collector"
+    assert normalize_device_type("MICRO_INVERTER") == "micro_inverter"
 
     # 6. Substring match (if API returned a name instead of code)
     assert normalize_device_type("SOME_COLLECTOR") == "collector"
     assert normalize_device_type("FOO_DMU_BAR") == "collector"
     assert normalize_device_type("GRID_INVERTER") == "grid_connected_inverter"
+    assert normalize_device_type("SOME_MICRO_INVERTER") == "micro_inverter"
     assert normalize_device_type("MY_INVERTER") == "hybrid_inverter"
     assert normalize_device_type("HALO_DEVICE") == "micro_ess"
     assert normalize_device_type("ESS_DEVICE") == "micro_ess"
@@ -142,3 +145,59 @@ def test_get_software_version():
     # 6. Edge case: nothing present
     assert get_software_version({}) is None
     assert get_software_version({"metrics": {}}) is None
+
+
+def test_detect_phase_type_model_suffix():
+    """Test phase detection from model name suffix."""
+    # Three-phase models
+    assert detect_phase_type({"model": "H5K-HT"}) == "three_phase"
+    assert detect_phase_type({"model": "H12K-HTA"}) == "three_phase"
+    assert detect_phase_type({"model": "H50K-125K-ET"}) == "three_phase"
+
+    # Single-phase models
+    assert detect_phase_type({"model": "H3K-HS"}) == "single_phase"
+    assert detect_phase_type({"model": "H6K-LS"}) == "single_phase"
+    assert detect_phase_type({"model": "H3K-HS1"}) == "single_phase"
+
+    # Case insensitive
+    assert detect_phase_type({"model": "h5k-ht"}) == "three_phase"
+    assert detect_phase_type({"model": "h3k-hs"}) == "single_phase"
+
+
+def test_detect_phase_type_metrics():
+    """Test phase detection from runtime metrics."""
+    # Three-phase: structural power keys are conclusive even when values are zero.
+    assert detect_phase_type({"metrics": {"ph2Loadp": 0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph3Loadp": 0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph2p": 0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph3p": 0}}) == "three_phase"
+
+    # Three-phase: non-zero ph2v/ph3v
+    assert detect_phase_type({"metrics": {"ph2v": 230.0}}) == "three_phase"
+    assert detect_phase_type({"metrics": {"ph3v": 228.5}}) == "three_phase"
+    assert (
+        detect_phase_type({"metrics": {"ph2v": 230.0, "ph3v": 229.0}}) == "three_phase"
+    )
+
+    # Zero values — not conclusive
+    assert detect_phase_type({"metrics": {"ph2v": 0, "ph3v": 0}}) == "unknown"
+    assert detect_phase_type({"metrics": {"ph2v": "0"}}) == "unknown"
+
+    # Invalid metric values
+    assert detect_phase_type({"metrics": {"ph2v": "N/A"}}) == "unknown"
+    assert detect_phase_type({"metrics": {"ph2v": None}}) == "unknown"
+
+
+def test_detect_phase_type_model_takes_priority():
+    """Model suffix takes priority over metrics."""
+    # Single-phase model but three-phase metrics — model wins
+    dev = {"model": "H3K-HS", "metrics": {"ph2v": 230.0, "ph3v": 229.0}}
+    assert detect_phase_type(dev) == "single_phase"
+
+
+def test_detect_phase_type_unknown():
+    """Test unknown phase detection fallback."""
+    assert detect_phase_type({}) == "unknown"
+    assert detect_phase_type({"model": ""}) == "unknown"
+    assert detect_phase_type({"model": "SomeRandomModel"}) == "unknown"
+    assert detect_phase_type({"model": None, "metrics": {}}) == "unknown"

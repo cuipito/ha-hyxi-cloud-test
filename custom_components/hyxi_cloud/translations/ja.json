@@ -250,7 +250,8 @@
           "grid_connected_inverter": "系統連系インバーター",
           "collector": "データロガー",
           "micro_ess": "マイクロESS",
-          "unknown": "不明"
+          "unknown": "不明",
+          "micro_inverter": "マイクロインバーター"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "内部温度"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "充電電力"
+      },
+      "discharge_power": {
+        "name": "放電電力"
+      },
+      "micro_power_limit": {
+        "name": "出力制限"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "周波数制御"
+      },
+      "micro_power": {
+        "name": "電源"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "再起動"
+      },
+      "mode_idle": {
+        "name": "アイドル"
+      },
+      "mode_charge": {
+        "name": "充電"
+      },
+      "mode_discharge": {
+        "name": "放電"
+      },
+      "mode_self_consume": {
+        "name": "自家消費"
+      },
+      "peak_shaving_close": {
+        "name": "オフ"
+      },
+      "peak_shaving_charge": {
+        "name": "充電"
+      },
+      "peak_shaving_discharge": {
+        "name": "放電"
+      },
+      "peak_shaving_stop": {
+        "name": "停止"
+      },
+      "peak_shaving_hold": {
+        "name": "保持"
       }
     }
   }

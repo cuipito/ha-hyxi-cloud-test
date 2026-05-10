@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Nätansluten växelriktare",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Okänd"
+          "unknown": "Okänd",
+          "micro_inverter": "Mikroinverter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Intern temperatur"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Laddningseffekt"
+      },
+      "discharge_power": {
+        "name": "Urladdningseffekt"
+      },
+      "micro_power_limit": {
+        "name": "Effektgräns"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenskontroll"
+      },
+      "micro_power": {
+        "name": "Ström"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Omstart"
+      },
+      "mode_idle": {
+        "name": "Inaktiv"
+      },
+      "mode_charge": {
+        "name": "Laddning"
+      },
+      "mode_discharge": {
+        "name": "Urladdning"
+      },
+      "mode_self_consume": {
+        "name": "Egenförbrukning"
+      },
+      "peak_shaving_close": {
+        "name": "Av"
+      },
+      "peak_shaving_charge": {
+        "name": "Laddning"
+      },
+      "peak_shaving_discharge": {
+        "name": "Urladdning"
+      },
+      "peak_shaving_stop": {
+        "name": "Stopp"
+      },
+      "peak_shaving_hold": {
+        "name": "Håll"
       }
     }
   }

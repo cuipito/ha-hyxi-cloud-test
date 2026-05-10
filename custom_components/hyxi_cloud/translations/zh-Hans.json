@@ -250,7 +250,8 @@
           "grid_connected_inverter": "并网逆变器",
           "collector": "数据采集器",
           "micro_ess": "微型储能",
-          "unknown": "未知"
+          "unknown": "未知",
+          "micro_inverter": "微型逆变器"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "内部温度"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "充电功率"
+      },
+      "discharge_power": {
+        "name": "放电功率"
+      },
+      "micro_power_limit": {
+        "name": "功率限制"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "频率控制"
+      },
+      "micro_power": {
+        "name": "电源"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "重启"
+      },
+      "mode_idle": {
+        "name": "待机"
+      },
+      "mode_charge": {
+        "name": "充电"
+      },
+      "mode_discharge": {
+        "name": "放电"
+      },
+      "mode_self_consume": {
+        "name": "自发自用"
+      },
+      "peak_shaving_close": {
+        "name": "关闭"
+      },
+      "peak_shaving_charge": {
+        "name": "充电"
+      },
+      "peak_shaving_discharge": {
+        "name": "放电"
+      },
+      "peak_shaving_stop": {
+        "name": "停止"
+      },
+      "peak_shaving_hold": {
+        "name": "保持"
       }
     }
   }

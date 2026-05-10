@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Netzgekoppelter Wechselrichter",
           "collector": "Datalogger",
           "micro_ess": "Micro-Energiespeichersystem (Micro ESS)",
-          "unknown": "Unbekannt"
+          "unknown": "Unbekannt",
+          "micro_inverter": "Mikrowechselrichter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Innentemperatur"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Ladeleistung"
+      },
+      "discharge_power": {
+        "name": "Entladeleistung"
+      },
+      "micro_power_limit": {
+        "name": "Leistungsbegrenzung"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequenzregelung"
+      },
+      "micro_power": {
+        "name": "Strom"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Neustart"
+      },
+      "mode_idle": {
+        "name": "Leerlauf"
+      },
+      "mode_charge": {
+        "name": "Laden"
+      },
+      "mode_discharge": {
+        "name": "Entladen"
+      },
+      "mode_self_consume": {
+        "name": "Eigenverbrauch"
+      },
+      "peak_shaving_close": {
+        "name": "Aus"
+      },
+      "peak_shaving_charge": {
+        "name": "Laden"
+      },
+      "peak_shaving_discharge": {
+        "name": "Entladen"
+      },
+      "peak_shaving_stop": {
+        "name": "Stopp"
+      },
+      "peak_shaving_hold": {
+        "name": "Halten"
       }
     }
   }

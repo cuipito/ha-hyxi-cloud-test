@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Сетевой инвертор",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Неизвестно"
+          "unknown": "Неизвестно",
+          "micro_inverter": "Микроинвертор"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Внутренняя температура"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Мощность зарядки"
+      },
+      "discharge_power": {
+        "name": "Мощность разрядки"
+      },
+      "micro_power_limit": {
+        "name": "Ограничение мощности"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Управление частотой"
+      },
+      "micro_power": {
+        "name": "Питание"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Перезапуск"
+      },
+      "mode_idle": {
+        "name": "Ожидание"
+      },
+      "mode_charge": {
+        "name": "Зарядка"
+      },
+      "mode_discharge": {
+        "name": "Разрядка"
+      },
+      "mode_self_consume": {
+        "name": "Собственное потребление"
+      },
+      "peak_shaving_close": {
+        "name": "Выключено"
+      },
+      "peak_shaving_charge": {
+        "name": "Зарядка"
+      },
+      "peak_shaving_discharge": {
+        "name": "Разрядка"
+      },
+      "peak_shaving_stop": {
+        "name": "Стоп"
+      },
+      "peak_shaving_hold": {
+        "name": "Удержание"
       }
     }
   }

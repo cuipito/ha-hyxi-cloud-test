@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Onduleur connecté au réseau",
           "collector": "Collecteur de données",
           "micro_ess": "Système de stockage d'énergie micro (Micro ESS)",
-          "unknown": "Inconnu"
+          "unknown": "Inconnu",
+          "micro_inverter": "Micro-onduleur"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Température interne"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Puissance de charge"
+      },
+      "discharge_power": {
+        "name": "Puissance de décharge"
+      },
+      "micro_power_limit": {
+        "name": "Limite de puissance"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Contrôle de fréquence"
+      },
+      "micro_power": {
+        "name": "Alimentation"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Redémarrer"
+      },
+      "mode_idle": {
+        "name": "Inactif"
+      },
+      "mode_charge": {
+        "name": "Charge"
+      },
+      "mode_discharge": {
+        "name": "Décharge"
+      },
+      "mode_self_consume": {
+        "name": "Autoconsommation"
+      },
+      "peak_shaving_close": {
+        "name": "Désactivé"
+      },
+      "peak_shaving_charge": {
+        "name": "Charge"
+      },
+      "peak_shaving_discharge": {
+        "name": "Décharge"
+      },
+      "peak_shaving_stop": {
+        "name": "Arrêt"
+      },
+      "peak_shaving_hold": {
+        "name": "Maintien"
       }
     }
   }

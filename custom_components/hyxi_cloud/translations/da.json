@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Net-tilsluttet inverter",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Ukendt"
+          "unknown": "Ukendt",
+          "micro_inverter": "Mikroinverter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Intern temperatur"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Opladningseffekt"
+      },
+      "discharge_power": {
+        "name": "Afladningseffekt"
+      },
+      "micro_power_limit": {
+        "name": "Effektgrænse"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenskontrol"
+      },
+      "micro_power": {
+        "name": "Strøm"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Genstart"
+      },
+      "mode_idle": {
+        "name": "Inaktiv"
+      },
+      "mode_charge": {
+        "name": "Opladning"
+      },
+      "mode_discharge": {
+        "name": "Afladning"
+      },
+      "mode_self_consume": {
+        "name": "Egetforbrug"
+      },
+      "peak_shaving_close": {
+        "name": "Fra"
+      },
+      "peak_shaving_charge": {
+        "name": "Opladning"
+      },
+      "peak_shaving_discharge": {
+        "name": "Afladning"
+      },
+      "peak_shaving_stop": {
+        "name": "Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Hold"
       }
     }
   }

@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Nettilkoblet vekselretter",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Ukjent"
+          "unknown": "Ukjent",
+          "micro_inverter": "Mikroinverter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Intern temperatur"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Ladeeffekt"
+      },
+      "discharge_power": {
+        "name": "Utladingseffekt"
+      },
+      "micro_power_limit": {
+        "name": "Effektgrense"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenskontroll"
+      },
+      "micro_power": {
+        "name": "Strøm"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Omstart"
+      },
+      "mode_idle": {
+        "name": "Inaktiv"
+      },
+      "mode_charge": {
+        "name": "Lading"
+      },
+      "mode_discharge": {
+        "name": "Utlading"
+      },
+      "mode_self_consume": {
+        "name": "Egetforbruk"
+      },
+      "peak_shaving_close": {
+        "name": "Av"
+      },
+      "peak_shaving_charge": {
+        "name": "Lading"
+      },
+      "peak_shaving_discharge": {
+        "name": "Utlading"
+      },
+      "peak_shaving_stop": {
+        "name": "Stopp"
+      },
+      "peak_shaving_hold": {
+        "name": "Hold"
       }
     }
   }

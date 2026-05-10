@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Inversor conectado a red",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Desconocido"
+          "unknown": "Desconocido",
+          "micro_inverter": "Microinversor"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "Temperatura interna"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Potencia de carga"
+      },
+      "discharge_power": {
+        "name": "Potencia de descarga"
+      },
+      "micro_power_limit": {
+        "name": "Límite de potencia"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Control de frecuencia"
+      },
+      "micro_power": {
+        "name": "Alimentación"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Reiniciar"
+      },
+      "mode_idle": {
+        "name": "Inactivo"
+      },
+      "mode_charge": {
+        "name": "Carga"
+      },
+      "mode_discharge": {
+        "name": "Descarga"
+      },
+      "mode_self_consume": {
+        "name": "Autoconsumo"
+      },
+      "peak_shaving_close": {
+        "name": "Apagado"
+      },
+      "peak_shaving_charge": {
+        "name": "Carga"
+      },
+      "peak_shaving_discharge": {
+        "name": "Descarga"
+      },
+      "peak_shaving_stop": {
+        "name": "Parar"
+      },
+      "peak_shaving_hold": {
+        "name": "Mantener"
       }
     }
   }

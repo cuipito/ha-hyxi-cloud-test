@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Şebekeye Bağlı İnverter",
           "collector": "Veri Toplayıcı",
           "micro_ess": "Mikro ESS",
-          "unknown": "Bilinmiyor"
+          "unknown": "Bilinmiyor",
+          "micro_inverter": "Mikro İnvertör"
         }
       },
       "ratedpower": {
@@ -291,6 +292,57 @@
       },
       "internal_temperature": {
         "name": "İç Sıcaklık"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Şarj Gücü"
+      },
+      "discharge_power": {
+        "name": "Deşarj Gücü"
+      },
+      "micro_power_limit": {
+        "name": "Güç Sınırı"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekans Kontrolü"
+      },
+      "micro_power": {
+        "name": "Güç"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Yeniden Başlat"
+      },
+      "mode_idle": {
+        "name": "Bekleme"
+      },
+      "mode_charge": {
+        "name": "Şarj"
+      },
+      "mode_discharge": {
+        "name": "Deşarj"
+      },
+      "mode_self_consume": {
+        "name": "Öz Tüketim"
+      },
+      "peak_shaving_close": {
+        "name": "Kapalı"
+      },
+      "peak_shaving_charge": {
+        "name": "Şarj"
+      },
+      "peak_shaving_discharge": {
+        "name": "Deşarj"
+      },
+      "peak_shaving_stop": {
+        "name": "Durdur"
+      },
+      "peak_shaving_hold": {
+        "name": "Tut"
       }
     }
   }

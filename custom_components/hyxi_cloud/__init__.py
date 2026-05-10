@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from hyxi_cloud_api import HyxiApiClient
@@ -121,6 +122,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 via_device=(DOMAIN, parent_sn),
             )
 
+    _remove_legacy_select_entities(hass, coordinator.data)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -140,3 +143,17 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry when options change."""
     _LOGGER.debug("HYXI: Options updated, reloading integration to apply new settings")
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+def _remove_legacy_select_entities(hass: HomeAssistant, devices: dict) -> None:
+    """Remove obsolete select entities replaced by stateless buttons."""
+    registry = er.async_get(hass)
+    for sn in devices:
+        for unique_id in (
+            f"hyxi_{sn}_operating_mode",
+            f"hyxi_{sn}_peak_shaving",
+        ):
+            entity_id = registry.async_get_entity_id("select", DOMAIN, unique_id)
+            if entity_id is not None:
+                _LOGGER.debug("Removing legacy HYXI select entity %s", entity_id)
+                registry.async_remove(entity_id)

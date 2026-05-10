@@ -25,10 +25,11 @@ DEVICE_TYPE_KEYS = {
     "607": "collector",
     "HYBRID_INVERTER": "hybrid_inverter",
     "STRING_INVERTER": "grid_connected_inverter",
-    "MICRO_INVERTER": "grid_connected_inverter",
+    "MICRO_INVERTER": "micro_inverter",
     "EMS": "micro_ess",
     "DMU": "collector",
     "COLLECTOR": "collector",
+    "ALL_IN_ONE": "all_in_one",
 }
 
 
@@ -112,11 +113,56 @@ def normalize_device_type(code: str | int | float) -> str:
     if "COLLECTOR" in code_str or "DMU" in code_str:
         return "collector"
     if "INVERTER" in code_str:
+        if "MICRO" in code_str:
+            return "micro_inverter"
         if "GRID" in code_str:
             return "grid_connected_inverter"
         return "hybrid_inverter"
     if "ESS" in code_str or "HALO" in code_str:
         return "micro_ess"
+    if "ALL_IN_ONE" in code_str or "ALL-IN-ONE" in code_str:
+        return "all_in_one"
+
+    return "unknown"
+
+
+def detect_phase_type(dev_data: dict) -> str:
+    """Detect whether a device is single-phase or three-phase.
+
+    Detection strategy (in priority order):
+    1. Model name suffix: -HT/-HTA = three-phase, -HS/-LS = single-phase
+    2. Runtime metrics: structural phase keys or non-zero ph2v/ph3v = three-phase
+    3. Default: "unknown" means no control entities are created (safety-first)
+    """
+    # 1. Model name suffix check
+    model = (dev_data.get("model") or "").upper().strip()
+    if model:
+        # Strip trailing power rating (e.g. "H5K-HT" -> check "-HT")
+        for suffix in ("-HTA", "-HT", "-ET"):
+            if suffix in model:
+                return "three_phase"
+        for suffix in ("-HS", "-LS", "-HS1"):
+            if suffix in model:
+                return "single_phase"
+
+    # 2. Runtime metrics — structural indicators of three-phase
+    # Power metric keys (ph3Loadp, ph3p, ph2p, ph2Loadp) are checked by PRESENCE only —
+    # the API only includes these keys for three-phase devices; the value can
+    # legitimately be zero (e.g. no load at night). Voltage metrics are
+    # checked by value since the schema may include them on single-phase devices.
+    metrics = dev_data.get("metrics") or {}
+    for key in ("ph3Loadp", "ph3p", "ph2p", "ph2Loadp"):
+        if key in metrics:
+            return "three_phase"
+
+    # Voltage metrics are checked by value since the schema may include them
+    # on single-phase devices.
+    for key in ("ph2v", "ph3v"):
+        try:
+            if float(metrics.get(key, 0)) > 0:
+                return "three_phase"
+        except ValueError, TypeError:
+            continue
 
     return "unknown"
 
@@ -124,4 +170,7 @@ def normalize_device_type(code: str | int | float) -> str:
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SWITCH,
 ]
