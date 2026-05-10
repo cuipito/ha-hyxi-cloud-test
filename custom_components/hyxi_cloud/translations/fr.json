@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Onduleur connecté au réseau",
           "collector": "Collecteur de données",
           "micro_ess": "Système de stockage d'énergie micro (Micro ESS)",
-          "unknown": "Inconnu"
+          "unknown": "Inconnu",
+          "micro_inverter": "Micro-onduleur"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Température interne"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Mode de fonctionnement",
+        "state": {
+          "idle": "Inactif",
+          "charge": "Charge",
+          "discharge": "Décharge",
+          "self_consume": "Autoconsommation"
+        }
+      },
+      "peak_shaving": {
+        "name": "Écrêtement des pointes",
+        "state": {
+          "close": "Désactivé",
+          "charge": "Charge",
+          "discharge": "Décharge",
+          "stop": "Arrêt",
+          "hold": "Maintien"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Puissance de charge"
+      },
+      "discharge_power": {
+        "name": "Puissance de décharge"
+      },
+      "micro_power_limit": {
+        "name": "Limite de puissance"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Contrôle de fréquence"
+      },
+      "micro_power": {
+        "name": "Alimentation"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Redémarrer"
       }
     }
   }

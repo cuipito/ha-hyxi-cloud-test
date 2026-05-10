@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Verkkoon kytketty invertteri",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Tuntematon"
+          "unknown": "Tuntematon",
+          "micro_inverter": "Mikroinvertteri"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Sisäinen lämpötila"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Käyttötila",
+        "state": {
+          "idle": "Valmiustila",
+          "charge": "Lataus",
+          "discharge": "Purku",
+          "self_consume": "Omakulutus"
+        }
+      },
+      "peak_shaving": {
+        "name": "Huipputehon leikkaus",
+        "state": {
+          "close": "Pois",
+          "charge": "Lataus",
+          "discharge": "Purku",
+          "stop": "Pysäytä",
+          "hold": "Pidä"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Latausteho"
+      },
+      "discharge_power": {
+        "name": "Purkuteho"
+      },
+      "micro_power_limit": {
+        "name": "Tehoraja"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Taajuussäätö"
+      },
+      "micro_power": {
+        "name": "Virta"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Käynnistä uudelleen"
       }
     }
   }

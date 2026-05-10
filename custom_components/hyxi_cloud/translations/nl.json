@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Netgekoppelde omvormer",
           "collector": "Datalogger",
           "micro_ess": "Micro-energieopslagsysteem (Micro ESS)",
-          "unknown": "Onbekend"
+          "unknown": "Onbekend",
+          "micro_inverter": "Micro-omvormer"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Interne Temperatuur"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Bedrijfsmodus",
+        "state": {
+          "idle": "Inactief",
+          "charge": "Laden",
+          "discharge": "Ontladen",
+          "self_consume": "Eigenverbruik"
+        }
+      },
+      "peak_shaving": {
+        "name": "Piekafvlakking",
+        "state": {
+          "close": "Uit",
+          "charge": "Laden",
+          "discharge": "Ontladen",
+          "stop": "Stop",
+          "hold": "Vasthouden"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Laadvermogen"
+      },
+      "discharge_power": {
+        "name": "Ontlaadvermogen"
+      },
+      "micro_power_limit": {
+        "name": "Vermogenslimiet"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequentieregeling"
+      },
+      "micro_power": {
+        "name": "Voeding"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Herstarten"
       }
     }
   }

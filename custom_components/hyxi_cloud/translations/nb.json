@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Nettilkoblet vekselretter",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Ukjent"
+          "unknown": "Ukjent",
+          "micro_inverter": "Mikroinverter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Intern temperatur"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Driftsmodus",
+        "state": {
+          "idle": "Inaktiv",
+          "charge": "Lading",
+          "discharge": "Utlading",
+          "self_consume": "Egetforbruk"
+        }
+      },
+      "peak_shaving": {
+        "name": "Toppbelastning",
+        "state": {
+          "close": "Av",
+          "charge": "Lading",
+          "discharge": "Utlading",
+          "stop": "Stopp",
+          "hold": "Hold"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Ladeeffekt"
+      },
+      "discharge_power": {
+        "name": "Utladingseffekt"
+      },
+      "micro_power_limit": {
+        "name": "Effektgrense"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenskontroll"
+      },
+      "micro_power": {
+        "name": "Strøm"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Omstart"
       }
     }
   }

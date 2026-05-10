@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Inwerter sieciowy",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Nieznany"
+          "unknown": "Nieznany",
+          "micro_inverter": "Mikrofalownik"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Temperatura wewnętrzna"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Tryb pracy",
+        "state": {
+          "idle": "Bezczynny",
+          "charge": "Ładowanie",
+          "discharge": "Rozładowanie",
+          "self_consume": "Autokonsumpcja"
+        }
+      },
+      "peak_shaving": {
+        "name": "Redukcja szczytów",
+        "state": {
+          "close": "Wyłączony",
+          "charge": "Ładowanie",
+          "discharge": "Rozładowanie",
+          "stop": "Stop",
+          "hold": "Utrzymaj"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Moc ładowania"
+      },
+      "discharge_power": {
+        "name": "Moc rozładowania"
+      },
+      "micro_power_limit": {
+        "name": "Limit mocy"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Kontrola częstotliwości"
+      },
+      "micro_power": {
+        "name": "Zasilanie"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Restart"
       }
     }
   }

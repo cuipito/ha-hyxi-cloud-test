@@ -250,7 +250,8 @@
           "grid_connected_inverter": "并网逆变器",
           "collector": "数据采集器",
           "micro_ess": "微型储能",
-          "unknown": "未知"
+          "unknown": "未知",
+          "micro_inverter": "微型逆变器"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "内部温度"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "运行模式",
+        "state": {
+          "idle": "待机",
+          "charge": "充电",
+          "discharge": "放电",
+          "self_consume": "自发自用"
+        }
+      },
+      "peak_shaving": {
+        "name": "削峰",
+        "state": {
+          "close": "关闭",
+          "charge": "充电",
+          "discharge": "放电",
+          "stop": "停止",
+          "hold": "保持"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "充电功率"
+      },
+      "discharge_power": {
+        "name": "放电功率"
+      },
+      "micro_power_limit": {
+        "name": "功率限制"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "频率控制"
+      },
+      "micro_power": {
+        "name": "电源"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "重启"
       }
     }
   }

@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Síťový střídač",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Neznámý"
+          "unknown": "Neznámý",
+          "micro_inverter": "Mikroinvertor"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Vnitřní teplota"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Provozní režim",
+        "state": {
+          "idle": "Nečinný",
+          "charge": "Nabíjení",
+          "discharge": "Vybíjení",
+          "self_consume": "Vlastní spotřeba"
+        }
+      },
+      "peak_shaving": {
+        "name": "Řízení špiček",
+        "state": {
+          "close": "Vypnuto",
+          "charge": "Nabíjení",
+          "discharge": "Vybíjení",
+          "stop": "Stop",
+          "hold": "Držet"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Nabíjecí výkon"
+      },
+      "discharge_power": {
+        "name": "Vybíjecí výkon"
+      },
+      "micro_power_limit": {
+        "name": "Limit výkonu"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Řízení frekvence"
+      },
+      "micro_power": {
+        "name": "Napájení"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Restart"
       }
     }
   }

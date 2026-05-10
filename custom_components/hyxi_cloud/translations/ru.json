@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Сетевой инвертор",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Неизвестно"
+          "unknown": "Неизвестно",
+          "micro_inverter": "Микроинвертор"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Внутренняя температура"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Режим работы",
+        "state": {
+          "idle": "Ожидание",
+          "charge": "Зарядка",
+          "discharge": "Разрядка",
+          "self_consume": "Собственное потребление"
+        }
+      },
+      "peak_shaving": {
+        "name": "Сглаживание пиков",
+        "state": {
+          "close": "Выключено",
+          "charge": "Зарядка",
+          "discharge": "Разрядка",
+          "stop": "Стоп",
+          "hold": "Удержание"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Мощность зарядки"
+      },
+      "discharge_power": {
+        "name": "Мощность разрядки"
+      },
+      "micro_power_limit": {
+        "name": "Ограничение мощности"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Управление частотой"
+      },
+      "micro_power": {
+        "name": "Питание"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Перезапуск"
       }
     }
   }

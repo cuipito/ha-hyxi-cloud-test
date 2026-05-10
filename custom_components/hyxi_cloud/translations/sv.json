@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Nätansluten växelriktare",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Okänd"
+          "unknown": "Okänd",
+          "micro_inverter": "Mikroinverter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Intern temperatur"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Driftsläge",
+        "state": {
+          "idle": "Inaktiv",
+          "charge": "Laddning",
+          "discharge": "Urladdning",
+          "self_consume": "Egenförbrukning"
+        }
+      },
+      "peak_shaving": {
+        "name": "Toppbelastning",
+        "state": {
+          "close": "Av",
+          "charge": "Laddning",
+          "discharge": "Urladdning",
+          "stop": "Stopp",
+          "hold": "Håll"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Laddningseffekt"
+      },
+      "discharge_power": {
+        "name": "Urladdningseffekt"
+      },
+      "micro_power_limit": {
+        "name": "Effektgräns"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenskontroll"
+      },
+      "micro_power": {
+        "name": "Ström"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Omstart"
       }
     }
   }

@@ -251,6 +251,7 @@
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
           "all_in_one": "All-in-One",
+          "micro_inverter": "Microinverter",
           "unknown": "Unknown"
         }
       },
@@ -321,11 +322,22 @@
       },
       "discharge_power": {
         "name": "Discharge Power"
+      },
+      "micro_power_limit": {
+        "name": "Power Limit"
       }
     },
     "switch": {
       "frequency_control": {
         "name": "Frequency Control"
+      },
+      "micro_power": {
+        "name": "Power"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Restart"
       }
     }
   }

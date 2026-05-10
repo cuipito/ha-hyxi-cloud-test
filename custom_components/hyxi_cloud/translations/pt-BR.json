@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Inversor Grid-Tie",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Desconhecido"
+          "unknown": "Desconhecido",
+          "micro_inverter": "Microinversor"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Temperatura Interna"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Modo de operação",
+        "state": {
+          "idle": "Inativo",
+          "charge": "Carga",
+          "discharge": "Descarga",
+          "self_consume": "Autoconsumo"
+        }
+      },
+      "peak_shaving": {
+        "name": "Corte de pico",
+        "state": {
+          "close": "Desligado",
+          "charge": "Carga",
+          "discharge": "Descarga",
+          "stop": "Parar",
+          "hold": "Manter"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Potência de carga"
+      },
+      "discharge_power": {
+        "name": "Potência de descarga"
+      },
+      "micro_power_limit": {
+        "name": "Limite de potência"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Controle de frequência"
+      },
+      "micro_power": {
+        "name": "Energia"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Reiniciar"
       }
     }
   }

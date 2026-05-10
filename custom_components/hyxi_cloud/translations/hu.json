@@ -250,7 +250,8 @@
           "grid_connected_inverter": "Hálózatra kapcsolt inverter",
           "collector": "Adatgyűjtő",
           "micro_ess": "Micro ESS",
-          "unknown": "Ismeretlen"
+          "unknown": "Ismeretlen",
+          "micro_inverter": "Mikroinverter"
         }
       },
       "ratedpower": {
@@ -291,6 +292,51 @@
       },
       "internal_temperature": {
         "name": "Belső hőmérséklet"
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Üzemmód",
+        "state": {
+          "idle": "Készenléti",
+          "charge": "Töltés",
+          "discharge": "Kisütés",
+          "self_consume": "Önfogyasztás"
+        }
+      },
+      "peak_shaving": {
+        "name": "Csúcsterhelés-csökkentés",
+        "state": {
+          "close": "Ki",
+          "charge": "Töltés",
+          "discharge": "Kisütés",
+          "stop": "Leállítás",
+          "hold": "Tartás"
+        }
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Töltési teljesítmény"
+      },
+      "discharge_power": {
+        "name": "Kisütési teljesítmény"
+      },
+      "micro_power_limit": {
+        "name": "Teljesítménykorlát"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenciaszabályozás"
+      },
+      "micro_power": {
+        "name": "Tápellátás"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Újraindítás"
       }
     }
   }

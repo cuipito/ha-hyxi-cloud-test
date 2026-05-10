@@ -952,7 +952,10 @@ class HyxiSensor(HyxiBaseSensor):
         # If acE is not provided or zero, attempt fallback to efpv for Micro Inverters.
         if key == "acE" and (value is None or str(value) == "0.0"):
             raw_code = get_raw_device_code(dev_data)
-            if normalize_device_type(raw_code) == "grid_connected_inverter":
+            if normalize_device_type(raw_code) in (
+                "grid_connected_inverter",
+                "micro_inverter",
+            ):
                 value = metrics.get("efpv")
 
         self._attr_native_value = self._parser_func(dev_data, value)

@@ -25,7 +25,7 @@ DEVICE_TYPE_KEYS = {
     "607": "collector",
     "HYBRID_INVERTER": "hybrid_inverter",
     "STRING_INVERTER": "grid_connected_inverter",
-    "MICRO_INVERTER": "grid_connected_inverter",
+    "MICRO_INVERTER": "micro_inverter",
     "EMS": "micro_ess",
     "DMU": "collector",
     "COLLECTOR": "collector",
@@ -113,6 +113,8 @@ def normalize_device_type(code: str | int | float) -> str:
     if "COLLECTOR" in code_str or "DMU" in code_str:
         return "collector"
     if "INVERTER" in code_str:
+        if "MICRO" in code_str:
+            return "micro_inverter"
         if "GRID" in code_str:
             return "grid_connected_inverter"
         return "hybrid_inverter"
@@ -158,6 +160,7 @@ def detect_phase_type(dev_data: dict) -> str:
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.SELECT,
     Platform.NUMBER,
     Platform.SWITCH,

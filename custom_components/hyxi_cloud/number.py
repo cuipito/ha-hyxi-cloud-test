@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from hyxi_cloud_api import HyxiApiClient
 
 from .const import (
     DOMAIN,
@@ -47,6 +48,12 @@ async def async_setup_entry(
         if phase == "three_phase":
             entities.append(HyxiPowerNumber(coordinator, sn, dev_data, "charge"))
             entities.append(HyxiPowerNumber(coordinator, sn, dev_data, "discharge"))
+
+    # Microinverter power limit (controlId 3012)
+    for sn, dev_data in coordinator.data.items():
+        device_type = normalize_device_type(get_raw_device_code(dev_data))
+        if device_type == "micro_inverter":
+            entities.append(HyxiMicroPowerLimit(coordinator, sn, dev_data))
 
     if entities:
         async_add_entities(entities)
@@ -110,6 +117,62 @@ class HyxiPowerNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
         """Set the power value."""
         self._attr_native_value = value
         self.async_write_ha_state()
+
+
+class HyxiMicroPowerLimit(CoordinatorEntity, NumberEntity, RestoreEntity):
+    """Number entity for microinverter power limit (controlId 3012).
+
+    Sets the maximum power output as a percentage of rated power.
+    The value is sent to the inverter immediately on change.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "micro_power_limit"
+    _attr_native_unit_of_measurement = "%"
+    _attr_mode = NumberMode.SLIDER
+    _attr_native_step = 1.0
+    _attr_native_min_value = 0.0
+    _attr_native_max_value = 100.0
+    _attr_native_value = 100.0
+    _attr_icon = "mdi:speedometer"
+
+    def __init__(self, coordinator, sn: str, dev_data: dict) -> None:
+        """Initialize the micro power limit entity."""
+        super().__init__(coordinator)
+        self._sn = sn
+        self._attr_unique_id = f"hyxi_{sn}_micro_power_limit"
+        self._attr_device_info = {
+            "identifiers": {(DOMAIN, sn)},
+            "name": dev_data.get("device_name") or f"Device {sn}",
+            "manufacturer": MANUFACTURER,
+            "model": dev_data.get("model"),
+            "serial_number": sn,
+        }
+
+    async def async_added_to_hass(self) -> None:
+        """Restore last known value on startup."""
+        await super().async_added_to_hass()
+        if (last_state := await self.async_get_last_state()) is not None:
+            try:
+                self._attr_native_value = float(last_state.state)
+            except ValueError, TypeError:
+                pass
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the power limit and send to inverter."""
+        client = self.coordinator.client
+        try:
+            await client.set_micro_power_limit(self._sn, int(value))
+            self._attr_native_value = value
+            self.async_write_ha_state()
+        except HyxiApiClient.ControlError as err:
+            _LOGGER.error(
+                "Failed to set power limit to %d%% for %s: %s",
+                int(value),
+                self._sn,
+                err,
+            )
+            raise
 
 
 def _safe_int(val, default: int) -> int:

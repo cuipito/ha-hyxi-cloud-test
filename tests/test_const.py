@@ -45,11 +45,13 @@ def test_normalize_device_type():
     # 5. String aliases defined in DEVICE_TYPE_KEYS
     assert normalize_device_type("EMS") == "micro_ess"
     assert normalize_device_type("COLLECTOR") == "collector"
+    assert normalize_device_type("MICRO_INVERTER") == "micro_inverter"
 
     # 6. Substring match (if API returned a name instead of code)
     assert normalize_device_type("SOME_COLLECTOR") == "collector"
     assert normalize_device_type("FOO_DMU_BAR") == "collector"
     assert normalize_device_type("GRID_INVERTER") == "grid_connected_inverter"
+    assert normalize_device_type("SOME_MICRO_INVERTER") == "micro_inverter"
     assert normalize_device_type("MY_INVERTER") == "hybrid_inverter"
     assert normalize_device_type("HALO_DEVICE") == "micro_ess"
     assert normalize_device_type("ESS_DEVICE") == "micro_ess"
