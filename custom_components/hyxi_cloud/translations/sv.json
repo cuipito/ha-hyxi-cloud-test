@@ -377,20 +377,7 @@
       },
       "em_bottomout_cooldown": {
         "name": "Bottom-out Cooldown"
-      }
-    },
-    "switch": {
-      "em_grid_charge_allowed": {
-        "name": "Grid Charge Allowed"
       },
-      "em_enabled": {
-        "name": "Energy Manager"
-      },
-      "em_high_load_battery_assist": {
-        "name": "High Load Battery Assist"
-      }
-    },
-    "number": {
       "charge_power": {
         "name": "Laddningseffekt"
       },
@@ -402,6 +389,15 @@
       }
     },
     "switch": {
+      "em_grid_charge_allowed": {
+        "name": "Grid Charge Allowed"
+      },
+      "em_enabled": {
+        "name": "Energy Manager"
+      },
+      "em_high_load_battery_assist": {
+        "name": "High Load Battery Assist"
+      },
       "frequency_control": {
         "name": "Frekvenskontroll"
       },

@@ -11,6 +11,7 @@ If engine.py _make_decision changes, update the copy here.
 import logging
 import time
 from collections import deque
+from dataclasses import dataclass
 
 import pytest
 
@@ -20,59 +21,92 @@ _LOGGER = logging.getLogger(__name__)
 # ── Helpers to build a testable engine without real HA ──────────────────
 
 
+@dataclass
+class DecisionState:
+    """Snapshot of current system state for the decision engine."""
+
+    soc: float
+    solar: float
+    p1: float
+    home_load: float
+    soc_min: float
+    soc_max: float
+    max_charge: float
+    max_discharge: float
+    is_night: bool
+    solar_producing: bool
+    night_soc_target: float
+
+
+@dataclass
+class SolarConfig:
+    """Computed solar charge parameters for a single decision tick."""
+
+    min_solar_for_charge: float
+    charge_margin: float
+    charge_entry_threshold: float
+    readings_needed: int
+    sunset_urgent: bool
+
+
+@dataclass
+class FakeEngineConfig:
+    """Configuration for FakeEngine — keeps __init__ argument count low."""
+
+    soc: float = 50.0
+    solar: float = 0.0
+    home_load: float = 0.0
+    p1: float = 0.0
+    is_night: bool = False
+    current_mode: str | None = None
+    soc_min: float = 20.0
+    soc_max: float = 90.0
+    max_charge: float = 5000.0
+    max_discharge: float = 5000.0
+    grid_charge_allowed: bool = False
+    high_load_assist: bool = True
+
+
 class FakeEngine:
     """Stripped-down engine that replicates decision logic without HA imports."""
 
-    def __init__(
-        self,
-        soc=50.0,
-        solar=0.0,
-        home_load=0.0,
-        p1=0.0,
-        is_night=False,
-        current_mode=None,
-        soc_min=20.0,
-        soc_max=90.0,
-        max_charge=5000.0,
-        max_discharge=5000.0,
-        grid_charge_allowed=False,
-        high_load_assist=True,
-    ):
-        self.soc = soc
-        self.solar = solar
-        self.home_load = home_load
-        self.p1 = p1
-        self._is_night_val = is_night
-        self.soc_min = soc_min
-        self.soc_max = soc_max
-        self.max_charge = max_charge
-        self.max_discharge = max_discharge
-        self.grid_charge_allowed = grid_charge_allowed
-        self.high_load_assist = high_load_assist
+    def __init__(self, **kwargs):
+        cfg = FakeEngineConfig(**kwargs)
+        self.soc = cfg.soc
+        self.solar = cfg.solar
+        self.home_load = cfg.home_load
+        self.p1 = cfg.p1
+        self._is_night_val = cfg.is_night
+        self.soc_min = cfg.soc_min
+        self.soc_max = cfg.soc_max
+        self.max_charge = cfg.max_charge
+        self.max_discharge = cfg.max_discharge
+        self.grid_charge_allowed = cfg.grid_charge_allowed
+        self.high_load_assist = cfg.high_load_assist
 
         # Engine state
         self._sn = "TEST_SN"
-        self._current_mode = current_mode
+        self._current_mode = cfg.current_mode
         self._last_decision = ""
         self._last_action = ""
-        self._last_mode_switch = 0
-        self._last_power_adjust = 0
-        self._last_charge_exit = 0
-        self._last_bottomout_exit = 0
+        self._last_mode_switch: float = 0
+        self._last_power_adjust: float = 0
+        self._last_charge_exit: float = 0
+        self._last_bottomout_exit: float = 0
         self._charge_entry_export_count = 0
         self._charge_bottomout_count = 0
-        self._p1_buffer = deque()
+        self._p1_buffer: deque = deque()
 
         # Track API calls
-        self.mode_calls = []
-        self.adjust_calls = []
+        self.mode_calls: list = []
+        self.adjust_calls: list = []
 
         # Default params
         self.params = {
-            "soc_min": soc_min,
-            "soc_max": soc_max,
-            "max_charge_power": max_charge,
-            "max_discharge_power": max_discharge,
+            "soc_min": cfg.soc_min,
+            "soc_max": cfg.soc_max,
+            "max_charge_power": cfg.max_charge,
+            "max_discharge_power": cfg.max_discharge,
             "high_load_threshold": 6500,
             "battery_capacity_wh": 14800,
             "mode_switch_cooldown": 60,
@@ -159,76 +193,98 @@ class FakeEngine:
     def _notify_sensors(self):
         pass
 
-    # ── Decision logic — 1:1 copy from engine.py _make_decision ────────
+    # ── Decision logic — 1:1 copy from engine.py ────────────────────────
     # Keep in sync with custom_components/hyxi_cloud/engine.py
 
     async def _make_decision(self) -> None:
-        soc = self._get_soc()
         solar = self._get_solar()
-        p1 = self._get_p1()
+        s = DecisionState(
+            soc=self._get_soc(),
+            solar=solar,
+            p1=self._get_p1(),
+            home_load=self._get_home_load(),
+            soc_min=self._get_param("soc_min"),
+            soc_max=self._get_param("soc_max"),
+            max_charge=self._get_param("max_charge_power"),
+            max_discharge=self._get_param("max_discharge_power"),
+            is_night=self._is_night(),
+            solar_producing=solar > 50,
+            night_soc_target=self._soc_needed_for_night(),
+        )
 
-        soc_min = self._get_param("soc_min")
-        soc_max = self._get_param("soc_max")
-        max_charge = self._get_param("max_charge_power")
-        max_discharge = self._get_param("max_discharge_power")
+        # PRIORITY 1 & 2: SOC safety limits
+        if await self._check_soc_limits(s):
+            return
+        # PRIORITY 3: Sustained high load
+        if await self._check_high_load(s):
+            return
+        # PRIORITY 4 & 4b: Night mode
+        if await self._check_night(s):
+            return
+        # PRIORITY 5: Solar optimization
+        if await self._check_solar(s):
+            return
 
-        is_night = self._is_night()
-        solar_producing = solar > 50
-        night_soc_target = self._soc_needed_for_night()
-        home_load = self._get_home_load()
+        # DEFAULT: self_consume as safe fallback
+        self._set_decision("idle_default")
+        if self._current_mode in ("charge", "discharge"):
+            await self._set_mode("self_consume")
 
-        # PRIORITY 1: Emergency — SOC below minimum
-        if soc < soc_min:
-            if solar_producing:
-                charge_target = min(solar - 50, max_charge)
+    async def _check_soc_limits(self, s: DecisionState) -> bool:
+        """PRIORITY 1: Emergency SOC below minimum. PRIORITY 2: SOC above maximum."""
+        if s.soc < s.soc_min:
+            if s.solar_producing:
+                charge_target = min(s.solar - 50, s.max_charge)
                 charge_target = max(charge_target, 300)
                 self._set_decision("emergency_solar_charge")
                 if self._current_mode != "charge":
                     await self._set_mode("charge", int(charge_target))
                 else:
                     await self._adjust_power("charge", int(charge_target))
-                return
+                return True
 
             grid_charge_uid = f"hyxi_{self._sn}_em_grid_charge_allowed"
             grid_entity = self._find_entity_id("switch", grid_charge_uid)
             if self._get_ha_state_bool(grid_entity):
-                grid_charge_w = min(2000, int(max_charge))
+                grid_charge_w = min(2000, int(s.max_charge))
                 self._set_decision("grid_charge_emergency")
                 if self._current_mode != "charge":
                     await self._set_mode("charge", grid_charge_w)
                 else:
                     await self._adjust_power("charge", grid_charge_w)
-                return
-            else:
-                self._set_decision("low_soc_idle")
-                if self._current_mode != "idle":
-                    await self._set_mode("idle")
-                return
+                return True
+            self._set_decision("low_soc_idle")
+            if self._current_mode != "idle":
+                await self._set_mode("idle")
+            return True
 
-        # PRIORITY 2: SOC above maximum — force discharge
-        if soc > soc_max:
-            discharge_w = max(p1, 1000)
-            discharge_w = min(discharge_w, max_discharge)
+        # SOC above maximum — force discharge
+        if s.soc > s.soc_max:
+            discharge_w = max(s.p1, 1000)
+            discharge_w = min(discharge_w, s.max_discharge)
             self._set_decision("forced_discharge_over_max")
             if self._current_mode != "discharge":
                 await self._set_mode("discharge", int(discharge_w))
             else:
                 await self._adjust_power("discharge", int(discharge_w))
-            return
+            return True
 
-        # PRIORITY 3: Sustained high load
+        return False
+
+    async def _check_high_load(self, s: DecisionState) -> bool:
+        """PRIORITY 3: Sustained high load — battery assist or grid only."""
         high_load_threshold = self._get_param("high_load_threshold")
 
         high_load_assist_uid = f"hyxi_{self._sn}_em_high_load_battery_assist"
         high_load_entity = self._find_entity_id("switch", high_load_assist_uid)
         high_load_assist = self._get_ha_state_bool(high_load_entity, True)
 
-        if home_load > high_load_threshold and high_load_assist:
-            high_load_wh = max_discharge * 0.5
+        if s.home_load > high_load_threshold and high_load_assist:
+            high_load_wh = s.max_discharge * 0.5
             capacity = self._get_param("battery_capacity_wh")
             soc_cost = (high_load_wh / capacity) * 100 if capacity > 0 else 100
 
-            if (soc - soc_cost) > night_soc_target:
+            if (s.soc - soc_cost) > s.night_soc_target:
                 self._set_decision("high_load_battery_assist")
                 if self._current_mode != "self_consume":
                     await self._set_mode("self_consume")
@@ -236,11 +292,14 @@ class FakeEngine:
                 self._set_decision("high_load_grid_only")
                 if self._current_mode != "idle":
                     await self._set_mode("idle")
-            return
+            return True
 
-        # PRIORITY 4: Night
-        if not solar_producing and is_night:
-            if soc > soc_min:
+        return False
+
+    async def _check_night(self, s: DecisionState) -> bool:
+        """PRIORITY 4: Night self_consume/idle. PRIORITY 4b: Night battery preservation."""
+        if not s.solar_producing and s.is_night:
+            if s.soc > s.soc_min:
                 self._set_decision("night_self_consume")
                 if self._current_mode != "self_consume":
                     await self._set_mode("self_consume")
@@ -248,130 +307,174 @@ class FakeEngine:
                 self._set_decision("night_reserve_hold")
                 if self._current_mode != "idle":
                     await self._set_mode("idle")
-            return
+            return True
 
-        # PRIORITY 4b: Night battery preservation during daytime
+        # Night battery preservation during daytime
         p1_avg = self.p1_avg
         if (
-            not is_night
-            and soc <= night_soc_target
-            and p1 > 0
+            not s.is_night
+            and s.soc <= s.night_soc_target
+            and s.p1 > 0
             and p1_avg > 0
-            and not self._solar_will_cover_charge(night_soc_target)
+            and not self._solar_will_cover_charge(s.night_soc_target)
         ):
             self._set_decision("night_preserve_idle")
             if self._current_mode != "idle":
                 await self._set_mode("idle")
-            return
+            return True
 
-        # PRIORITY 5: Solar active
+        return False
+
+    async def _check_solar(self, s: DecisionState) -> bool:
+        """PRIORITY 5: Solar charge entry/exit and battery full."""
+        if s.solar_producing and s.soc < s.soc_max:
+            await self._solar_charge_logic(s)
+            return True
+
+        if s.solar_producing and s.soc >= s.soc_max:
+            self._set_decision("solar_battery_full")
+            if self._current_mode != "self_consume":
+                await self._set_mode("self_consume")
+            return True
+
+        return False
+
+    async def _solar_charge_logic(self, s: DecisionState) -> None:
+        """Solar charge entry/exit and power tuning logic."""
         min_solar_for_charge = self._get_param("min_solar_for_charge")
         charge_margin = self._get_param("charge_margin")
         charge_entry_threshold = self._get_param("charge_entry_threshold")
         charge_reentry_delay = self._get_param("charge_reentry_delay")
         readings_needed = max(int(charge_reentry_delay / 15 / 3), 2)
 
+        # After a bottomout exit, double the readings needed
         bottomout_cooldown = self._get_param("bottomout_cooldown")
         if (time.monotonic() - self._last_bottomout_exit) < bottomout_cooldown:
             readings_needed = readings_needed * 2
 
+        # Sunset urgency
         hours_to_sunset = self._hours_until_sunset()
         sunset_urgent = False
-        if solar_producing and hours_to_sunset < 4 and soc < night_soc_target:
-            if not self._solar_will_cover_charge(night_soc_target):
+        if hours_to_sunset < 4 and s.soc < s.night_soc_target:
+            if not self._solar_will_cover_charge(s.night_soc_target):
                 sunset_urgent = True
                 charge_entry_threshold = max(charge_entry_threshold // 2, 100)
                 readings_needed = max(readings_needed // 2, 1)
                 min_solar_for_charge = max(min_solar_for_charge - 300, 200)
 
-        if solar_producing and soc < soc_max:
-            if self._current_mode != "charge":
-                if solar < min_solar_for_charge:
-                    self._set_decision("solar_self_consume")
-                    if self._current_mode not in ("self_consume", "idle"):
-                        await self._set_mode("self_consume")
-                    self._charge_entry_export_count = 0
+        sc = SolarConfig(
+            min_solar_for_charge=min_solar_for_charge,
+            charge_margin=charge_margin,
+            charge_entry_threshold=charge_entry_threshold,
+            readings_needed=readings_needed,
+            sunset_urgent=sunset_urgent,
+        )
 
-                elif p1 < -charge_entry_threshold:
-                    self._charge_entry_export_count += 1
-                    if (
-                        self._charge_entry_export_count >= readings_needed
-                        and solar >= min_solar_for_charge
-                    ):
-                        charge_target = min(abs(p1) - charge_margin - 100, solar - 500)
-                        charge_target = min(charge_target, max_charge)
-                        charge_target = max(charge_target, 300)
-                        decision = (
-                            "pre_night_charge" if sunset_urgent else "solar_charge"
-                        )
-                        self._set_decision(decision)
-                        if await self._set_mode("charge", int(charge_target)):
-                            self._charge_entry_export_count = 0
-                    else:
-                        self._set_decision("solar_export_waiting")
-                        if self._current_mode not in ("self_consume", "idle"):
-                            await self._set_mode("self_consume")
-                else:
-                    self._charge_entry_export_count = 0
-                    self._set_decision("solar_self_consume")
-                    if self._current_mode not in ("self_consume", "idle"):
-                        await self._set_mode("self_consume")
-            else:
-                current_charge = self._get_current_power_setting("charge")
-                solar_cap = max(solar - charge_margin, 100)
+        if self._current_mode != "charge":
+            await self._solar_entry_logic(s, sc)
+        else:
+            # In charge mode: fine-tune power, cap at solar, exit if sustained import
+            await self._solar_tune_logic(s, sc)
 
-                if solar < min_solar_for_charge - 150:
-                    self._set_decision("solar_self_consume")
-                    self._last_charge_exit = time.monotonic()
-                    self._charge_entry_export_count = 0
-                    self._charge_bottomout_count = 0
-                    await self._set_mode("self_consume")
-
-                elif p1 > charge_margin:
-                    charge_target = current_charge - (p1 + charge_margin)
-                    charge_target = min(charge_target, solar_cap)
-                    charge_target = max(charge_target, 100)
-
-                    if charge_target <= 100:
-                        self._charge_bottomout_count += 1
-                        if self._charge_bottomout_count >= 3:
-                            self._set_decision("solar_self_consume")
-                            self._last_charge_exit = time.monotonic()
-                            self._last_bottomout_exit = time.monotonic()
-                            self._charge_entry_export_count = 0
-                            self._charge_bottomout_count = 0
-                            await self._set_mode("self_consume")
-                        else:
-                            self._set_decision("solar_charge_reduced")
-                            await self._adjust_power("charge", 100)
-                    else:
-                        self._charge_bottomout_count = 0
-                        self._set_decision("solar_charge")
-                        await self._adjust_power("charge", int(charge_target))
-
-                elif p1 < -(charge_margin + 100):
-                    self._charge_bottomout_count = 0
-                    excess_export = abs(p1) - charge_margin
-                    charge_target = current_charge + excess_export
-                    charge_target = min(charge_target, max_charge)
-                    charge_target = min(charge_target, solar_cap)
-                    self._set_decision("solar_charge")
-                    await self._adjust_power("charge", int(charge_target))
-                else:
-                    self._charge_bottomout_count = 0
-                    self._set_decision("solar_charge")
-            return
-
-        if solar_producing and soc >= soc_max:
-            self._set_decision("solar_battery_full")
-            if self._current_mode != "self_consume":
+    async def _solar_entry_logic(
+        self,
+        s: DecisionState,
+        sc: SolarConfig,
+    ) -> None:
+        """Handle charge entry — stay in self_consume, only charge on sustained export."""
+        if s.solar < sc.min_solar_for_charge:
+            self._set_decision("solar_self_consume")
+            if self._current_mode not in ("self_consume", "idle"):
                 await self._set_mode("self_consume")
-            return
+            self._charge_entry_export_count = 0
 
-        # DEFAULT: self_consume as safe fallback
-        self._set_decision("idle_default")
-        if self._current_mode in ("charge", "discharge"):
+        elif s.p1 < -sc.charge_entry_threshold:
+            self._charge_entry_export_count += 1
+            if (
+                self._charge_entry_export_count >= sc.readings_needed
+                and s.solar >= sc.min_solar_for_charge
+            ):
+                charge_target = min(abs(s.p1) - sc.charge_margin - 100, s.solar - 500)
+                charge_target = min(charge_target, s.max_charge)
+                charge_target = max(charge_target, 300)
+                decision = "pre_night_charge" if sc.sunset_urgent else "solar_charge"
+                self._set_decision(decision)
+                if await self._set_mode("charge", int(charge_target)):
+                    self._charge_entry_export_count = 0
+            else:
+                self._set_decision("solar_export_waiting")
+                if self._current_mode not in ("self_consume", "idle"):
+                    await self._set_mode("self_consume")
+        else:
+            self._charge_entry_export_count = 0
+            self._set_decision("solar_self_consume")
+            if self._current_mode not in ("self_consume", "idle"):
+                await self._set_mode("self_consume")
+
+    async def _solar_tune_logic(
+        self,
+        s: DecisionState,
+        sc: SolarConfig,
+    ) -> None:
+        """Fine-tune charge power — cap at solar, exit if sustained import."""
+        current_charge = self._get_current_power_setting("charge")
+        solar_cap = max(s.solar - sc.charge_margin, 100)
+
+        if s.solar < sc.min_solar_for_charge - 150:
+            self._set_decision("solar_self_consume")
+            self._last_charge_exit = time.monotonic()
+            self._charge_entry_export_count = 0
+            self._charge_bottomout_count = 0
             await self._set_mode("self_consume")
+
+        elif s.p1 > sc.charge_margin:
+            # Importing — reduce charge power
+            await self._solar_reduce_charge(
+                s.p1, current_charge, solar_cap, sc.charge_margin
+            )
+
+        elif s.p1 < -(sc.charge_margin + 100):
+            # Exporting too much — increase charge
+            self._charge_bottomout_count = 0
+            excess_export = abs(s.p1) - sc.charge_margin
+            charge_target = current_charge + excess_export
+            charge_target = min(charge_target, s.max_charge)
+            charge_target = min(charge_target, solar_cap)
+            self._set_decision("solar_charge")
+            await self._adjust_power("charge", int(charge_target))
+        else:
+            # P1 within target range — balanced
+            self._charge_bottomout_count = 0
+            self._set_decision("solar_charge")
+
+    async def _solar_reduce_charge(
+        self,
+        p1,
+        current_charge,
+        solar_cap,
+        charge_margin,
+    ) -> None:
+        """Reduce charge power when importing from grid."""
+        charge_target = current_charge - (p1 + charge_margin)
+        charge_target = min(charge_target, solar_cap)
+        charge_target = max(charge_target, 100)
+
+        if charge_target <= 100:
+            self._charge_bottomout_count += 1
+            if self._charge_bottomout_count >= 3:
+                self._set_decision("solar_self_consume")
+                self._last_charge_exit = time.monotonic()
+                self._last_bottomout_exit = time.monotonic()
+                self._charge_entry_export_count = 0
+                self._charge_bottomout_count = 0
+                await self._set_mode("self_consume")
+            else:
+                self._set_decision("solar_charge_reduced")
+                await self._adjust_power("charge", 100)
+        else:
+            self._charge_bottomout_count = 0
+            self._set_decision("solar_charge")
+            await self._adjust_power("charge", int(charge_target))
 
 
 async def run_decision(engine):

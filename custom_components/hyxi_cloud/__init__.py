@@ -133,16 +133,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     em_enabled = entry.options.get(CONF_EM_ENABLED, False)
     em_sn = entry.options.get(CONF_EM_INVERTER_SN)
     if em_enabled and em_sn and em_sn in coordinator.data:
-        from .engine import EnergyManagerEngine
+        from .engine import EMEntityConfig, EnergyManagerEngine
 
-        engine = EnergyManagerEngine(
-            hass,
-            coordinator,
-            em_sn,
+        em_config = EMEntityConfig(
+            sn=em_sn,
             p1_entity=entry.options.get(CONF_EM_P1_ENTITY, ""),
             forecast_entity=entry.options.get(CONF_EM_FORECAST_ENTITY),
             forecast_power_entity=entry.options.get(CONF_EM_FORECAST_POWER_ENTITY),
         )
+        engine = EnergyManagerEngine(hass, coordinator, em_config)
         coordinator.engine = engine
 
         # Register EM virtual device

@@ -37,8 +37,8 @@ def get_translation_keys():
             keys["sensor"].add(k.lower())
 
         # Find f-string translation keys like: f"em_{key}" with key values from code
-        # Match EMSensor instantiations: EMSensor(coordinator, em_sn, "key_name", ...)
-        em_keys = re.findall(r'EMSensor\([^)]*,\s*"([^"]+)"', content)
+        # Match EMSensorDef("key_name", ...) instantiations
+        em_keys = re.findall(r'EMSensorDef\(\s*"([^"]+)"', content)
         for k in em_keys:
             keys["sensor"].add(f"em_{k}".lower())
 

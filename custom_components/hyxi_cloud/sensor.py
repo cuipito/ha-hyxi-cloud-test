@@ -1,6 +1,7 @@
 """HYXI Cloud Sensor platform."""
 
 import logging
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, ClassVar
 
@@ -633,48 +634,60 @@ async def async_setup_entry(hass, entry, async_add_entities):
     if entry.options.get(CONF_EM_ENABLED) and em_sn and em_sn in coordinator.data:
         em_device_info = {"identifiers": {(DOMAIN, f"{em_sn}_energy_manager")}}
         entities.append(
-            EMSensor(coordinator, em_sn, "current_decision", em_device_info)
+            EMSensor(
+                coordinator, em_sn, EMSensorDef("current_decision", em_device_info)
+            )
         )
-        entities.append(EMSensor(coordinator, em_sn, "last_action", em_device_info))
+        entities.append(
+            EMSensor(coordinator, em_sn, EMSensorDef("last_action", em_device_info))
+        )
         entities.append(
             EMSensor(
                 coordinator,
                 em_sn,
-                "battery_energy_available",
-                em_device_info,
-                unit="Wh",
-                device_class=SensorDeviceClass.ENERGY,
+                EMSensorDef(
+                    "battery_energy_available",
+                    em_device_info,
+                    unit="Wh",
+                    device_class=SensorDeviceClass.ENERGY,
+                ),
             )
         )
         entities.append(
             EMSensor(
                 coordinator,
                 em_sn,
-                "hours_until_sunrise",
-                em_device_info,
-                unit="h",
-                icon="mdi:weather-sunset-up",
+                EMSensorDef(
+                    "hours_until_sunrise",
+                    em_device_info,
+                    unit="h",
+                    icon="mdi:weather-sunset-up",
+                ),
             )
         )
         entities.append(
             EMSensor(
                 coordinator,
                 em_sn,
-                "hours_until_sunset",
-                em_device_info,
-                unit="h",
-                icon="mdi:weather-sunset-down",
+                EMSensorDef(
+                    "hours_until_sunset",
+                    em_device_info,
+                    unit="h",
+                    icon="mdi:weather-sunset-down",
+                ),
             )
         )
         entities.append(
             EMSensor(
                 coordinator,
                 em_sn,
-                "p1_average",
-                em_device_info,
-                unit="W",
-                device_class=SensorDeviceClass.POWER,
-                state_class=SensorStateClass.MEASUREMENT,
+                EMSensorDef(
+                    "p1_average",
+                    em_device_info,
+                    unit="W",
+                    device_class=SensorDeviceClass.POWER,
+                    state_class=SensorStateClass.MEASUREMENT,
+                ),
             )
         )
 
@@ -1043,6 +1056,18 @@ class HyxiLastUpdateSensor(CoordinatorEntity, SensorEntity):
         super()._handle_coordinator_update()
 
 
+@dataclass
+class EMSensorDef:
+    """Definition for an EM sensor entity."""
+
+    key: str
+    device_info: dict = field(default_factory=dict)
+    unit: str | None = None
+    device_class: SensorDeviceClass | None = None
+    state_class: SensorStateClass | None = None
+    icon: str | None = None
+
+
 class EMSensor(SensorEntity):
     """Sensor entity backed by the Energy Manager engine.
 
@@ -1065,25 +1090,20 @@ class EMSensor(SensorEntity):
         self,
         coordinator,
         sn: str,
-        key: str,
-        device_info: dict,
-        unit: str | None = None,
-        device_class: SensorDeviceClass | None = None,
-        state_class: SensorStateClass | None = None,
-        icon: str | None = None,
+        sensor_def: EMSensorDef,
     ) -> None:
         """Initialize the EM sensor."""
         self._coordinator = coordinator
         self._sn = sn
-        self._key = key
-        self._attr_unique_id = f"hyxi_{sn}_em_{key}"
-        self._attr_translation_key = f"em_{key}"
-        self._attr_device_info = device_info
-        self._attr_native_unit_of_measurement = unit
-        self._attr_device_class = device_class
-        self._attr_state_class = state_class
-        if icon:
-            self._attr_icon = icon
+        self._key = sensor_def.key
+        self._attr_unique_id = f"hyxi_{sn}_em_{sensor_def.key}"
+        self._attr_translation_key = f"em_{sensor_def.key}"
+        self._attr_device_info = sensor_def.device_info
+        self._attr_native_unit_of_measurement = sensor_def.unit
+        self._attr_device_class = sensor_def.device_class
+        self._attr_state_class = sensor_def.state_class
+        if sensor_def.icon:
+            self._attr_icon = sensor_def.icon
 
     async def async_added_to_hass(self) -> None:
         """Register for engine updates."""

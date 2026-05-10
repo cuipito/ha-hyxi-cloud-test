@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import ClassVar
 
 from homeassistant.components.switch import SwitchEntity
@@ -53,22 +54,24 @@ async def async_setup_entry(
             entities.append(HyxiFrequencyControlSwitch(coordinator, sn, dev_data))
 
         # Always-on: grid charge allowed toggle
-        entities.append(EMToggleSwitch(coordinator, sn, "grid_charge_allowed"))
+        entities.append(
+            EMToggleSwitch(coordinator, sn, EMToggleDef("grid_charge_allowed"))
+        )
 
         # EM-only switches — only when EM is enabled for this inverter
         if entry.options.get(CONF_EM_ENABLED) and em_sn == sn:
             entities.append(
                 EMToggleSwitch(
-                    coordinator, sn, "enabled", default_on=True, em_device=True
+                    coordinator,
+                    sn,
+                    EMToggleDef("enabled", default_on=True, em_device=True),
                 )
             )
             entities.append(
                 EMToggleSwitch(
                     coordinator,
                     sn,
-                    "high_load_battery_assist",
-                    default_on=False,
-                    em_device=True,
+                    EMToggleDef("high_load_battery_assist", em_device=True),
                 )
             )
 
@@ -186,6 +189,15 @@ class HyxiMicroPowerSwitch(CoordinatorEntity, SwitchEntity):
             raise
 
 
+@dataclass
+class EMToggleDef:
+    """Definition for an EM toggle switch."""
+
+    key: str
+    default_on: bool = False
+    em_device: bool = False
+
+
 class EMToggleSwitch(SwitchEntity, RestoreEntity):
     """Toggle switch for Energy Manager parameters.
 
@@ -206,19 +218,18 @@ class EMToggleSwitch(SwitchEntity, RestoreEntity):
         self,
         coordinator,
         sn: str,
-        key: str,
-        default_on: bool = False,
-        em_device: bool = False,
+        toggle_def: EMToggleDef,
     ) -> None:
         """Initialize the EM toggle switch."""
         self._sn = sn
-        self._default_on = default_on
+        key = toggle_def.key
+        self._default_on = toggle_def.default_on
         self._attr_unique_id = f"hyxi_{sn}_em_{key}"
         self._attr_translation_key = f"em_{key}"
         self._attr_icon = self._ICONS.get(key, "mdi:toggle-switch")
-        self._attr_is_on = default_on
+        self._attr_is_on = toggle_def.default_on
 
-        if em_device:
+        if toggle_def.em_device:
             self._attr_device_info = {
                 "identifiers": {(DOMAIN, f"{sn}_energy_manager")},
             }

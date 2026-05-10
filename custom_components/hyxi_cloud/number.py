@@ -275,7 +275,7 @@ class EMParameterNumber(NumberEntity, RestoreEntity):
         if (last_state := await self.async_get_last_state()) is not None:
             try:
                 self._attr_native_value = float(last_state.state)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 pass
 
     async def async_set_native_value(self, value: float) -> None:

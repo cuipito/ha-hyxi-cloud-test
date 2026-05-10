@@ -1,8 +1,10 @@
 """DataUpdateCoordinator for HYXI Cloud."""
 
+from __future__ import annotations
+
 import logging
 from datetime import datetime, timedelta
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from aiohttp import ClientError
 from homeassistant.config_entries import ConfigEntry
@@ -49,7 +51,7 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
         )
         self.client = client
         self.entry = entry
-        self.engine = None  # EnergyManagerEngine, set by __init__.py if configured
+        self.engine: Any = None  # EnergyManagerEngine, set by __init__.py if configured
 
         # Store metadata on the object, not in the data dictionary!
         self.hyxi_metadata: HyxiMetadata = {
