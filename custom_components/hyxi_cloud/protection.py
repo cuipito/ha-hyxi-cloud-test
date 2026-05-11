@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import time
 from typing import TYPE_CHECKING
 
@@ -13,8 +12,6 @@ from .const import DOMAIN, detect_phase_type
 
 if TYPE_CHECKING:
     from .coordinator import HyxiDataUpdateCoordinator
-
-_LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SOC_MIN = 20
 DEFAULT_SOC_MAX = 90

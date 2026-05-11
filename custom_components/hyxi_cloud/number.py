@@ -266,7 +266,11 @@ class HyxiProtectionNumber(CoordinatorEntity, NumberEntity, RestoreEntity):
             try:
                 self._attr_native_value = int(float(last_state.state))
             except ValueError, TypeError:
-                pass
+                _LOGGER.debug(
+                    "Could not restore protection number %s from state %s",
+                    self.unique_id,
+                    last_state.state,
+                )
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the protection threshold value."""
