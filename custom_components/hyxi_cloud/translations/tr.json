@@ -290,6 +290,9 @@
       "ph3p": {
         "name": "Faz 3 Gücü"
       },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      },
       "internal_temperature": {
         "name": "İç Sıcaklık"
       }
@@ -303,6 +306,18 @@
       },
       "micro_power_limit": {
         "name": "Güç Sınırı"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Minimum Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Maximum Hysteresis"
       }
     },
     "switch": {

@@ -25,6 +25,7 @@
 
 - **⚡ Energy Dashboard Ready:** Native support for Home Assistant's built-in Energy Dashboard. Track daily solar yield, grid dependency, and battery cycles.
 - **🔧 Device Control:** Send supported HYXI Cloud control commands from Home Assistant, including inverter mode buttons, peak shaving buttons, frequency control, and microinverter power controls.
+- **🔋 Battery SOC Protection:** Configure minimum and maximum SOC guardrails with hysteresis for supported battery control entities, with last-command visibility in Home Assistant.
 - **📊 Advanced Diagnostics:** Track cloud connectivity, API success rates, and data sync latency with dedicated diagnostic sensors.
 - **🕥 Adjustable Polling:** Fine-tune your data refresh rate between 1 and 60 minutes via the integration options.
 - **🛡️ Reliable Quality Assurance:** Built with **99%+ automated test coverage** and robust numeric safety nets to ensure your energy data is accurate and resilient.
@@ -83,8 +84,12 @@ The HYXI API defines controls by **phase type** (Single Phase / Three-Phase). Th
 | :--- | :--- | :--- |
 | **Three-Phase** | Operating Mode buttons (Idle / Charge / Discharge / Self-Consumption) | 1062–1065 |
 | **Three-Phase** | Charge / Discharge Power | — |
+| **Three-Phase** | Battery Protection Numbers (`SOC Minimum`, `SOC Maximum`, min/max hysteresis) | — |
+| **Three-Phase** | Last Sent Mode sensor | — |
 | **Single Phase** | Peak Shaving buttons (Close / Charge / Discharge / Stop / Hold) | 1021 |
 | **Single Phase** | Frequency Control (Enable / Disable) | 1020 |
+| **Single Phase** | Battery Protection Numbers (`SOC Minimum`, `SOC Maximum`, min/max hysteresis) | — |
+| **Single Phase** | Last Sent Mode sensor | — |
 
 **Phase Detection** — determined in priority order:
 
@@ -93,6 +98,43 @@ The HYXI API defines controls by **phase type** (Single Phase / Three-Phase). Th
 
 > [!IMPORTANT]
 > If the phase type cannot be determined from either the model name or runtime metrics, **no control entities are created**. This is a safety measure to prevent sending unsupported commands to your inverter. If you believe your device should have controls, please open a [GitHub Issue](https://github.com/Veldkornet/ha-hyxi-cloud/issues) with your device model and we will add support.
+
+#### Battery Protection
+
+For supported hybrid inverter and all-in-one devices, the integration exposes battery protection entities in Home Assistant for both **three-phase operating modes** and **single-phase peak shaving**.
+
+Configurable `number` entities:
+
+- `SOC Minimum`
+- `SOC Maximum`
+- `SOC Minimum Hysteresis`
+- `SOC Maximum Hysteresis`
+
+Read-only sensor:
+
+- `Last Sent Mode`
+
+Protection behavior depends on the control surface the device supports:
+
+##### Three-Phase Operating Modes
+
+- At or below `SOC Minimum`, manual `discharge` and `self_consume` commands are blocked.
+- Manual `charge` remains allowed for recovery.
+- Low-SOC protection stays active until SOC rises to `soc_min + soc_min_hysteresis_pct`.
+- At or above `SOC Maximum`, manual `charge` is blocked.
+- `self_consume` and `discharge` remain allowed on the high-SOC side.
+- High-SOC protection stays active until SOC falls to `soc_max - soc_max_hysteresis_pct`.
+
+##### Single-Phase Peak Shaving
+
+- At or below `SOC Minimum`, peak-shaving `discharge` is blocked.
+- Peak-shaving `charge` remains allowed for recovery.
+- Low-SOC protection uses `hold` as the safe neutral state so PV can keep generating while the battery remains idle.
+- At or above `SOC Maximum`, peak-shaving `charge` is blocked.
+- Peak-shaving `discharge` and `hold` remain allowed on the high-SOC side.
+- High-SOC protection stays active until SOC falls to `soc_max - soc_max_hysteresis_pct`.
+
+The `Last Sent Mode` sensor records the last supported control action sent by Home Assistant, is restored across Home Assistant restarts, and re-sends that last action after restore so the device is returned to the same control state that Home Assistant expects.
 
 #### Microinverter
 
