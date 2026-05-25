@@ -1,5 +1,7 @@
 """Constants for the HYXI Cloud integration."""
 
+from typing import Any
+
 from homeassistant.const import Platform
 
 DOMAIN = "hyxi_cloud"
@@ -13,6 +15,14 @@ VERSION = "1.4.2"
 CONF_BACK_DISCOVERY = "back_discovery"
 
 NULL_VALUES = {"", "null", "none", "na", "--"}
+
+
+def is_null_value(value: Any) -> bool:
+    """Check if a value is considered null or equivalent."""
+    return value is None or (
+        isinstance(value, str) and value.strip().lower() in NULL_VALUES
+    )
+
 
 # Helper to map device codes to translation keys for HA sensor states
 DEVICE_TYPE_KEYS = {
