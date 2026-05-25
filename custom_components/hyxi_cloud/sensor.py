@@ -1158,6 +1158,7 @@ class HyxiSensor(HyxiBaseSensor):
         except (
             ValueError,
             TypeError,
+            OverflowError,
         ):
             return self._process_numeric_value(value)
 
