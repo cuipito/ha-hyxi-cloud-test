@@ -24,6 +24,7 @@
 ## ✨ Features
 
 - **⚡ Energy Dashboard Ready:** Native support for Home Assistant's built-in Energy Dashboard. Track daily solar yield, grid dependency, and battery cycles.
+- **🔧 Device Control:** Send supported HYXI Cloud control commands from Home Assistant, including inverter mode buttons, peak shaving buttons, frequency control, and microinverter power controls.
 - **📊 Advanced Diagnostics:** Track cloud connectivity, API success rates, and data sync latency with dedicated diagnostic sensors.
 - **🕥 Adjustable Polling:** Fine-tune your data refresh rate between 1 and 60 minutes via the integration options.
 - **🛡️ Reliable Quality Assurance:** Built with **99%+ automated test coverage** and robust numeric safety nets to ensure your energy data is accurate and resilient.
@@ -68,6 +69,44 @@
 > 2. Open a [GitHub Issue](https://github.com/Veldkornet/ha-hyxi-cloud/wiki/Supported-Devices#-support-for-new-devices) and attach a snippet of the debug log output.
 > 3. We will verify the sensor mappings and update the integration!
 
+### 🔧 Device Control
+
+This integration supports writing control commands to compatible inverters via the HYXI Cloud API.
+
+Controls are scoped per device type — each device only gets the controls it supports:
+
+#### Hybrid Inverter / All-in-One
+
+The HYXI API defines controls by **phase type** (Single Phase / Three-Phase). The integration auto-detects phase type and exposes matching controls:
+
+| Phase | Controls | controlId |
+| :--- | :--- | :--- |
+| **Three-Phase** | Operating Mode buttons (Mode: Idle / Mode: Charge / Mode: Discharge / Mode: Self-Consumption) | 1062–1065 |
+| **Three-Phase** | Target Charge / Discharge Power | — |
+| **Single Phase** | Peak Shaving buttons (Peak Shaving: Turn Off / Peak Shaving: Force Charge / Peak Shaving: Force Discharge / Peak Shaving: Stop / Peak Shaving: Hold) | 1021 |
+| **Single Phase** | Frequency Control (Enable / Disable) | 1020 |
+
+**Phase Detection** — determined in priority order:
+
+1. **Model name suffix:** `-HT` / `-HTA` / `-ET` → Three-Phase, `-HS` / `-LS` → Single Phase
+2. **Runtime metrics:** Phase power keys (`ph2Loadp` / `ph3Loadp` / `ph2p` / `ph3p`) or non-zero phase 2/3 voltage (`ph2v` / `ph3v`) → Three-Phase
+
+> [!IMPORTANT]
+> If the phase type cannot be determined from either the model name or runtime metrics, **no control entities are created**. This is a safety measure to prevent sending unsupported commands to your inverter. If you believe your device should have controls, please open a [GitHub Issue](https://github.com/Veldkornet/ha-hyxi-cloud/issues) with your device model and we will add support.
+
+#### Microinverter
+
+| Controls | controlId |
+| :--- | :--- |
+| Power On/Off | 3011 |
+| Power Limit (0–100%) | 3012 |
+| Restart | 3013 |
+
+#### Unsupported Device Types
+
+> [!WARNING]
+> **Micro ESS (EMS):** Control entities are **not** enabled for EMS devices. The HYXI API documentation does not list any control endpoints for EMS — the EMS API section only provides read-only data queries.
+
 ### 🛡️ Reliability & Diagnostics
 
 This integration includes a specialized diagnostic system to help you distinguish between local hardware issues and cloud service outages.
@@ -97,6 +136,7 @@ Or alternatively, add the integration with the following:
 Click the **Configure** button on the HYXI integration card to access:
 * **Polling Interval:** Adjust frequency between 1–60 minutes (Default: 5).
 * **Enable Discovery via Alarms:** Proactively discover child devices reporting active alarms (Advanced).
+* **Enable Device Control & Protection:** Opt-in to enable inverter mode buttons, charge/discharge power settings, automatic battery protection thresholds, and micro-inverter power limits or switches. By default, this is disabled to prevent conflicts with external control systems (e.g. energy providers or grid constraints).
 
 ## 🛡️ Quality Assurance
 

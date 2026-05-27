@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "HYXIサーバーへの接続に失敗しました",
       "invalid_auth": "アクセスキーまたはシークレットキーが無効です",
-      "unknown": "予期しないエラーが発生しました"
+      "unknown": "予期しないエラーが発生しました",
+      "no_devices": "プラントまたはデバイスが見つかりません。開発者用メールアドレスがアプリ用メールアドレスと異なる場合は、まずアプリから開発者用メールアドレスにプラントを共有する必要があります。"
     },
     "abort": {
       "already_configured": "このHYXIアカウントは既に設定されています。",
@@ -35,7 +36,8 @@
         "description": "統合がHYXI Cloudと通信する方法を調整します。\n\n---",
         "data": {
           "update_interval": "ポーリング間隔 (1-60分, デフォルト: 5)",
-          "back_discovery": "アラーム経由の検出を有効にする (高度)"
+          "back_discovery": "アラーム経由の検出を有効にする (高度)",
+          "enable_battery_control": "デバイス制御と保護を有効にする"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "系統連系インバーター",
           "collector": "データロガー",
           "micro_ess": "マイクロESS",
-          "unknown": "不明"
+          "unknown": "不明",
+          "micro_inverter": "マイクロインバーター",
+          "optimizer": "オプティマイザ",
+          "meter": "電力量計",
+          "battery": "バッテリー",
+          "ac_battery": "ACバッテリー"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "内部温度"
+      },
+      "invsts": {
+        "name": "インバータ状態",
+        "state": {
+          "0": "待機",
+          "1": "正常",
+          "2": "アラーム",
+          "3": "障害",
+          "4": "シャットダウン"
+        }
+      },
+      "faultsts": {
+        "name": "障害状態",
+        "state": {
+          "0": "障害",
+          "1": "障害なし"
+        }
+      },
+      "gridsts": {
+        "name": "グリッド状態",
+        "state": {
+          "0": "自立運転",
+          "1": "系統連系"
+        }
+      },
+      "devicegridconn": {
+        "name": "系統接続状態",
+        "state": {
+          "0": "自立運転",
+          "1": "系統連系"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "スイッチ状態",
+        "state": {
+          "0": "シャットダウン",
+          "1": "電源オン"
+        }
+      },
+      "pvpower": {
+        "name": "PV総電力"
+      },
+      "pvnum": {
+        "name": "PV数"
+      },
+      "acsidetemper": {
+        "name": "AC側温度"
+      },
+      "dcsidetemper": {
+        "name": "DC側温度"
+      },
+      "gridf": {
+        "name": "系統周波数"
+      },
+      "gridp": {
+        "name": "系統電力"
+      },
+      "gridq": {
+        "name": "系統無効電力"
+      },
+      "gridpfd": {
+        "name": "系統力率"
+      },
+      "gridap": {
+        "name": "系統皮相電力"
+      },
+      "offgridf": {
+        "name": "オフグリッド周波数"
+      },
+      "offgridp": {
+        "name": "オフグリッド電力"
+      },
+      "offgridq": {
+        "name": "オフグリッド無効電力"
+      },
+      "offgridpfd": {
+        "name": "オフグリッド力率"
+      },
+      "offgridap": {
+        "name": "オフグリッド皮相電力"
+      },
+      "batvch": {
+        "name": "最高セル電圧"
+      },
+      "batvcl": {
+        "name": "最低セル電圧"
+      },
+      "battch": {
+        "name": "最高セル温度"
+      },
+      "battcl": {
+        "name": "最低セル温度"
+      },
+      "baticm": {
+        "name": "最大充電電流"
+      },
+      "batidm": {
+        "name": "最大放電電流"
+      },
+      "batcharge": {
+        "name": "日次充電電力量"
+      },
+      "batdischarge": {
+        "name": "日次放電電力量"
+      },
+      "totalechg": {
+        "name": "総充電電力量"
+      },
+      "totaledchg": {
+        "name": "総放電電力量"
+      },
+      "ratedfrequency": {
+        "name": "定格周波数"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "目標充電電力"
+      },
+      "discharge_power": {
+        "name": "目標放電電力"
+      },
+      "micro_power_limit": {
+        "name": "出力制限"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "周波数制御"
+      },
+      "micro_power": {
+        "name": "電源"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "デバイスを再起動"
+      },
+      "mode_idle": {
+        "name": "モード: アイドル"
+      },
+      "mode_charge": {
+        "name": "モード: 充電"
+      },
+      "mode_discharge": {
+        "name": "モード: 放電"
+      },
+      "mode_self_consume": {
+        "name": "モード: 自家消費"
+      },
+      "peak_shaving_close": {
+        "name": "ピークカット: オフにする"
+      },
+      "peak_shaving_charge": {
+        "name": "ピークカット: 充電を強制"
+      },
+      "peak_shaving_discharge": {
+        "name": "ピークカット: 放電を強制"
+      },
+      "peak_shaving_stop": {
+        "name": "ピークカット: 停止"
+      },
+      "peak_shaving_hold": {
+        "name": "ピークカット: 維持"
+      },
+      "clear_alarms": {
+        "name": "アクティブなアラームをクリア"
       }
     }
   }

@@ -77,7 +77,7 @@ mock_api.__name__ = "hyxi_cloud_api"
 mock_api.__version__ = "1.0.4"
 sys.modules["hyxi_cloud_api"] = mock_api
 
-import custom_components.hyxi_cloud.__init__ as hc_init  # pylint: disable=wrong-import-position # noqa: E402
+import custom_components.hyxi_cloud.__init__ as hc_init  # pylint: disable=wrong-import-position
 
 # DIRECT NAMESPACE INJECTION: Force the component to use our authoritative classes
 # This is the only way to guarantee class identity consistency in a mocked environment.
@@ -98,7 +98,7 @@ async_reload_entry = hc_init.async_reload_entry
 
 # Inject back into the module if they were mocked by mistake during the import process
 
-from custom_components.hyxi_cloud.const import (  # pylint: disable=wrong-import-position # noqa: E402  # pylint: disable=wrong-import-position # noqa: E402
+from custom_components.hyxi_cloud.const import (  # pylint: disable=wrong-import-position # pylint: disable=wrong-import-position
     DOMAIN,
     PLATFORMS,
 )
@@ -423,3 +423,40 @@ async def test_async_setup_entry_battery_first_class_device(mock_hass, mock_entr
         assert "name" not in calls[2].kwargs
         assert "model" not in calls[2].kwargs
         assert "serial_number" not in calls[2].kwargs
+
+
+@pytest.mark.asyncio
+async def test_async_setup_battery_protection_options(mock_hass, mock_entry):
+    """Test that battery protection is set up only when option is enabled."""
+    from custom_components.hyxi_cloud.__init__ import _async_setup_battery_protection
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {
+        "INVERTER_SN": {
+            "device_name": "Hybrid Inverter",
+            "deviceType": "HYBRID_INVERTER",
+            "model": "H5K-HT",
+            "metrics": {},
+        }
+    }
+    mock_coordinator.protection_controllers = {}
+
+    # Case 1: Option is False (default)
+    mock_entry.options = {"enable_battery_control": False}
+    mock_coordinator.entry = mock_entry
+
+    await _async_setup_battery_protection(mock_hass, mock_coordinator)
+    assert len(mock_coordinator.protection_controllers) == 0
+
+    # Case 2: Option is True
+    mock_entry.options = {"enable_battery_control": True}
+    with patch(
+        "custom_components.hyxi_cloud.__init__.HyxiBatteryProtectionController"
+    ) as mock_controller_class:
+        mock_controller = mock_controller_class.return_value
+        mock_controller.async_start = AsyncMock()
+
+        await _async_setup_battery_protection(mock_hass, mock_coordinator)
+
+        assert "INVERTER_SN" in mock_coordinator.protection_controllers
+        mock_controller.async_start.assert_called_once()

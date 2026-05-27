@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Failed to connect to HYXI servers",
       "invalid_auth": "Invalid Access Key or Secret Key",
-      "unknown": "Unexpected error occurred"
+      "unknown": "Unexpected error occurred",
+      "no_devices": "No plants or devices found. If your developer email differs from your app email, you must share your Plant from the app to the developer email first."
     },
     "abort": {
       "already_configured": "This HYXI account is already configured.",
@@ -35,7 +36,8 @@
         "description": "Adjust how your integration communicates with the HYXI Cloud.\n\n---",
         "data": {
           "update_interval": "Polling Interval (1-60 Minutes, Default: 5)",
-          "back_discovery": "Enable discovery via alarms (Advanced)"
+          "back_discovery": "Enable discovery via alarms (Advanced)",
+          "enable_battery_control": "Enable Device Control & Protection"
         }
       }
     }
@@ -250,6 +252,12 @@
           "grid_connected_inverter": "Grid-Connected Inverter",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
+          "all_in_one": "All-in-One",
+          "micro_inverter": "Microinverter",
+          "optimizer": "Optimizer",
+          "meter": "Meter",
+          "battery": "Battery",
+          "ac_battery": "AC Battery",
           "unknown": "Unknown"
         }
       },
@@ -291,6 +299,188 @@
       },
       "internal_temperature": {
         "name": "Internal Temperature"
+      },
+      "invsts": {
+        "name": "Inverter Status",
+        "state": {
+          "0": "Standby",
+          "1": "Normal",
+          "2": "Alarm",
+          "3": "Fault",
+          "4": "Shutdown"
+        }
+      },
+      "faultsts": {
+        "name": "Fault Status",
+        "state": {
+          "0": "Fault",
+          "1": "No Fault"
+        }
+      },
+      "gridsts": {
+        "name": "Grid Status",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "devicegridconn": {
+        "name": "Grid Connection Status",
+        "state": {
+          "0": "Off Grid",
+          "1": "On Grid"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Switch Status",
+        "state": {
+          "0": "Shutdown",
+          "1": "Power On"
+        }
+      },
+      "pvpower": {
+        "name": "PV Power"
+      },
+      "pvnum": {
+        "name": "PV Quantity"
+      },
+      "acsidetemper": {
+        "name": "AC Side Temperature"
+      },
+      "dcsidetemper": {
+        "name": "DC Side Temperature"
+      },
+      "gridf": {
+        "name": "On-grid Frequency"
+      },
+      "gridp": {
+        "name": "On-grid Power"
+      },
+      "gridq": {
+        "name": "On-grid Reactive Power"
+      },
+      "gridpfd": {
+        "name": "On-grid Power Factor"
+      },
+      "gridap": {
+        "name": "On-grid Apparent Power"
+      },
+      "offgridf": {
+        "name": "Off-grid Frequency"
+      },
+      "offgridp": {
+        "name": "Off-grid Power"
+      },
+      "offgridq": {
+        "name": "Off-grid Reactive Power"
+      },
+      "offgridpfd": {
+        "name": "Off-grid Power Factor"
+      },
+      "offgridap": {
+        "name": "Off-grid Apparent Power"
+      },
+      "batvch": {
+        "name": "Max Cell Voltage"
+      },
+      "batvcl": {
+        "name": "Min Cell Voltage"
+      },
+      "battch": {
+        "name": "Max Cell Temperature"
+      },
+      "battcl": {
+        "name": "Min Cell Temperature"
+      },
+      "baticm": {
+        "name": "Max Charging Current"
+      },
+      "batidm": {
+        "name": "Max Discharging Current"
+      },
+      "batcharge": {
+        "name": "Daily Charging Energy"
+      },
+      "batdischarge": {
+        "name": "Daily Discharging Energy"
+      },
+      "totalechg": {
+        "name": "Total Charging Energy"
+      },
+      "totaledchg": {
+        "name": "Total Discharging Energy"
+      },
+      "ratedfrequency": {
+        "name": "Rated Frequency"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Target Charge Power"
+      },
+      "discharge_power": {
+        "name": "Target Discharge Power"
+      },
+      "micro_power_limit": {
+        "name": "Power Limit"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequency Control"
+      },
+      "micro_power": {
+        "name": "Power"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Restart Device"
+      },
+      "mode_idle": {
+        "name": "Mode: Idle"
+      },
+      "mode_charge": {
+        "name": "Mode: Charge"
+      },
+      "mode_discharge": {
+        "name": "Mode: Discharge"
+      },
+      "mode_self_consume": {
+        "name": "Mode: Self-Consumption"
+      },
+      "peak_shaving_close": {
+        "name": "Peak Shaving: Turn Off"
+      },
+      "peak_shaving_charge": {
+        "name": "Peak Shaving: Force Charge"
+      },
+      "peak_shaving_discharge": {
+        "name": "Peak Shaving: Force Discharge"
+      },
+      "peak_shaving_stop": {
+        "name": "Peak Shaving: Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Peak Shaving: Hold"
+      },
+      "clear_alarms": {
+        "name": "Clear Active Alarms"
       }
     }
   }

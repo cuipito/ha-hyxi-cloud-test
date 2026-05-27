@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from aiohttp import ClientError
 from homeassistant.config_entries import ConfigEntry
@@ -13,7 +13,14 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from hyxi_cloud_api import HyxiApiClient
 
-from .const import CONF_BACK_DISCOVERY, DOMAIN, get_software_version, mask_sn
+from .const import (
+    CONF_BACK_DISCOVERY,
+    DOMAIN,
+    get_raw_device_code,
+    get_software_version,
+    mask_sn,
+    normalize_device_type,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +56,7 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
         )
         self.client = client
         self.entry = entry
+        self.protection_controllers: dict[str, Any] = {}
 
         # 🚀 Store metadata on the object, not in the data dictionary!
         self.hyxi_metadata: HyxiMetadata = {
@@ -83,6 +91,26 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
 
             # ✅ Success! Update metadata attributes.
             devices = result["data"]
+
+            if not devices:
+                _LOGGER.warning(
+                    "HYXI Cloud returned success, but no plants or devices were found. "
+                    "If your developer email differs from your app email, you must share your Plant "
+                    "from the app to the developer email first."
+                )
+
+            # Raise UpdateFailed if all non-collector devices return empty telemetry metrics.
+            non_collectors = [
+                dev_data
+                for dev_data in devices.values()
+                if normalize_device_type(get_raw_device_code(dev_data)) != "collector"
+            ]
+            if non_collectors and all(
+                not (set(dev_data.get("metrics") or {}) - {"last_seen"})
+                for dev_data in non_collectors
+            ):
+                raise UpdateFailed("HYXI telemetry data is currently unavailable.")
+
             self.hyxi_metadata["last_attempts"] = result.get("attempts", 1)
             self.hyxi_metadata["last_success"] = dt_util.utcnow()
             self.hyxi_metadata["api_status"] = "Online"
@@ -119,13 +147,21 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
             if not device:
                 continue
 
+            model = dev_data.get("model")
             hw_version = dev_data.get("hw_version")
 
             # Only update if changed
-            if device.sw_version != sw_version or device.hw_version != hw_version:
+            if (
+                device.model != model
+                or device.sw_version != sw_version
+                or device.hw_version != hw_version
+            ):
                 _LOGGER.debug(
                     "Updating device registry for %s: %s", mask_sn(sn), sw_version
                 )
                 dev_reg.async_update_device(
-                    device.id, sw_version=sw_version, hw_version=hw_version
+                    device.id,
+                    model=model,
+                    sw_version=sw_version,
+                    hw_version=hw_version,
                 )

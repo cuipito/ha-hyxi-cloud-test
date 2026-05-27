@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "HYXI sunucularına bağlanılamadı",
       "invalid_auth": "Geçersiz Erişim Anahtarı veya Gizli Anahtar",
-      "unknown": "Beklenmedik bir hata oluştu"
+      "unknown": "Beklenmedik bir hata oluştu",
+      "no_devices": "Herhangi bir santral veya cihaz bulunamadı. Geliştirici e-posta adresiniz uygulama e-posta adresinizden farklıysa, öncelikle santralinizi uygulamadan geliştirici e-posta adresinizle paylaşmalısınız."
     },
     "abort": {
       "already_configured": "Bu HYXI hesabı zaten yapılandırılmış.",
@@ -35,7 +36,8 @@
         "description": "Entegrasyonunuzun HYXI Cloud ile nasıl iletişim kuracağını ayarlayın.\n\n---",
         "data": {
           "update_interval": "Sorgulama Aralığı (1-60 Dakika, Varsayılan: 5)",
-          "back_discovery": "Alarmlar aracılığıyla keşfi etkinleştir (Gelişmiş)"
+          "back_discovery": "Alarmlar aracılığıyla keşfi etkinleştir (Gelişmiş)",
+          "enable_battery_control": "Cihaz kontrolünü ve korumasını etkinleştir"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Şebekeye Bağlı İnverter",
           "collector": "Veri Toplayıcı",
           "micro_ess": "Mikro ESS",
-          "unknown": "Bilinmiyor"
+          "unknown": "Bilinmiyor",
+          "micro_inverter": "Mikro İnvertör",
+          "optimizer": "Optimizör",
+          "meter": "Sayaç",
+          "battery": "Batarya",
+          "ac_battery": "AC Batarya"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "İç Sıcaklık"
+      },
+      "invsts": {
+        "name": "İnverter Durumu",
+        "state": {
+          "0": "Bekleme",
+          "1": "Normal",
+          "2": "Alarm",
+          "3": "Hata",
+          "4": "Kapatma"
+        }
+      },
+      "faultsts": {
+        "name": "Hata Durumu",
+        "state": {
+          "0": "Hata",
+          "1": "Hata yok"
+        }
+      },
+      "gridsts": {
+        "name": "Şebeke Durumu",
+        "state": {
+          "0": "Şebeke Dışı",
+          "1": "Şebeke İçi"
+        }
+      },
+      "devicegridconn": {
+        "name": "Şebeke Bağlantı Durumu",
+        "state": {
+          "0": "Şebeke Dışı",
+          "1": "Şebeke İçi"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Anahtar Durumu",
+        "state": {
+          "0": "Kapatma",
+          "1": "Açma"
+        }
+      },
+      "pvpower": {
+        "name": "Toplam PV Gücü"
+      },
+      "pvnum": {
+        "name": "PV Miktarı"
+      },
+      "acsidetemper": {
+        "name": "AC Tarafı Sıcaklığı"
+      },
+      "dcsidetemper": {
+        "name": "DC Tarafı Sıcaklığı"
+      },
+      "gridf": {
+        "name": "Şebeke Frekansı"
+      },
+      "gridp": {
+        "name": "Şebeke Gücü"
+      },
+      "gridq": {
+        "name": "Şebeke Reaktif Gücü"
+      },
+      "gridpfd": {
+        "name": "Şebeke Güç Faktörü"
+      },
+      "gridap": {
+        "name": "Şebeke Görünür Gücü"
+      },
+      "offgridf": {
+        "name": "Şebeke Dışı Frekans"
+      },
+      "offgridp": {
+        "name": "Şebeke Dışı Güç"
+      },
+      "offgridq": {
+        "name": "Şebeke Dışı Reaktif Güç"
+      },
+      "offgridpfd": {
+        "name": "Şebeke Dışı Güç Faktörü"
+      },
+      "offgridap": {
+        "name": "Şebeke Dışı Görünür Güç"
+      },
+      "batvch": {
+        "name": "Maks Hücre Voltajı"
+      },
+      "batvcl": {
+        "name": "Min Hücre Voltajı"
+      },
+      "battch": {
+        "name": "Maks Hücre Sıcaklığı"
+      },
+      "battcl": {
+        "name": "Min Hücre Sıcaklığı"
+      },
+      "baticm": {
+        "name": "Maks Şarj Akımı"
+      },
+      "batidm": {
+        "name": "Maks Deşarj Akımı"
+      },
+      "batcharge": {
+        "name": "Günlük Şarj Enerjisi"
+      },
+      "batdischarge": {
+        "name": "Günlük Deşarj Enerjisi"
+      },
+      "totalechg": {
+        "name": "Toplam Şarj Enerjisi"
+      },
+      "totaledchg": {
+        "name": "Toplam Deşarj Enerjisi"
+      },
+      "ratedfrequency": {
+        "name": "Nominal Frekans"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Hedef Şarj Gücü"
+      },
+      "discharge_power": {
+        "name": "Hedef Deşarj Gücü"
+      },
+      "micro_power_limit": {
+        "name": "Güç Sınırı"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekans Kontrolü"
+      },
+      "micro_power": {
+        "name": "Güç"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Cihazı Yeniden Başlat"
+      },
+      "mode_idle": {
+        "name": "Mod: Bekleme"
+      },
+      "mode_charge": {
+        "name": "Mod: Şarj"
+      },
+      "mode_discharge": {
+        "name": "Mod: Deşarj"
+      },
+      "mode_self_consume": {
+        "name": "Mod: Öz Tüketim"
+      },
+      "peak_shaving_close": {
+        "name": "Pik Tıraşlama: Kapat"
+      },
+      "peak_shaving_charge": {
+        "name": "Pik Tıraşlama: Şarjı Zorla"
+      },
+      "peak_shaving_discharge": {
+        "name": "Pik Tıraşlama: Deşarjı Zorla"
+      },
+      "peak_shaving_stop": {
+        "name": "Pik Tıraşlama: Durdur"
+      },
+      "peak_shaving_hold": {
+        "name": "Pik Tıraşlama: Tut"
+      },
+      "clear_alarms": {
+        "name": "Aktif alarmları temizle"
       }
     }
   }

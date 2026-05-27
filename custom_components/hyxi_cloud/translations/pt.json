@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Falha ao conectar aos servidores HYXI",
       "invalid_auth": "Chave de Acesso ou Chave Secreta inválida",
-      "unknown": "Ocorreu um erro inesperado"
+      "unknown": "Ocorreu um erro inesperado",
+      "no_devices": "Nenhuma central ou dispositivo encontrado. Se o seu e-mail de desenvolvedor for diferente do e-mail da aplicação, deve primeiro partilhar a sua central a partir da aplicação para o e-mail de desenvolvedor."
     },
     "abort": {
       "already_configured": "Esta conta HYXI já está configurada.",
@@ -35,7 +36,8 @@
         "description": "Ajuste como a integração se comunica com o HYXI Cloud.\n\n---",
         "data": {
           "update_interval": "Intervalo de Atualização (1-60 minutos, padrão: 5)",
-          "back_discovery": "Habilitar descoberta via alarmes (Avançado)"
+          "back_discovery": "Habilitar descoberta via alarmes (Avançado)",
+          "enable_battery_control": "Ativar controle e proteção do dispositivo"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Inversor Grid-Tie",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Desconhecido"
+          "unknown": "Desconhecido",
+          "micro_inverter": "Microinversor",
+          "optimizer": "Otimizador",
+          "meter": "Medidor",
+          "battery": "Bateria",
+          "ac_battery": "Bateria CA"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "Temperatura Interna"
+      },
+      "invsts": {
+        "name": "Estado do inversor",
+        "state": {
+          "0": "Espera",
+          "1": "Normal",
+          "2": "Alarme",
+          "3": "Falha",
+          "4": "Desligamento"
+        }
+      },
+      "faultsts": {
+        "name": "Estado de falha",
+        "state": {
+          "0": "Falha",
+          "1": "Sem falha"
+        }
+      },
+      "gridsts": {
+        "name": "Estado da rede",
+        "state": {
+          "0": "Fora da rede",
+          "1": "Na rede"
+        }
+      },
+      "devicegridconn": {
+        "name": "Estado de ligação à rede",
+        "state": {
+          "0": "Fora da rede",
+          "1": "Na rede"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Estado do interruptor",
+        "state": {
+          "0": "Desligado",
+          "1": "Ligado"
+        }
+      },
+      "pvpower": {
+        "name": "Potência PV total"
+      },
+      "pvnum": {
+        "name": "Quantidade de PV"
+      },
+      "acsidetemper": {
+        "name": "Temperatura do lado AC"
+      },
+      "dcsidetemper": {
+        "name": "Temperatura do lado DC"
+      },
+      "gridf": {
+        "name": "Frequência da rede"
+      },
+      "gridp": {
+        "name": "Potência da rede"
+      },
+      "gridq": {
+        "name": "Potência reativa da rede"
+      },
+      "gridpfd": {
+        "name": "Fator de potência da rede"
+      },
+      "gridap": {
+        "name": "Potência aparente da rede"
+      },
+      "offgridf": {
+        "name": "Frequência fora da rede"
+      },
+      "offgridp": {
+        "name": "Potência fora da rede"
+      },
+      "offgridq": {
+        "name": "Potência reativa fora da rede"
+      },
+      "offgridpfd": {
+        "name": "Fator de potência fora da rede"
+      },
+      "offgridap": {
+        "name": "Potência aparente fora da rede"
+      },
+      "batvch": {
+        "name": "Tensão máxima da célula"
+      },
+      "batvcl": {
+        "name": "Tensão mínima da célula"
+      },
+      "battch": {
+        "name": "Temperatura máxima da célula"
+      },
+      "battcl": {
+        "name": "Temperatura mínima da célula"
+      },
+      "baticm": {
+        "name": "Corrente máxima de carga"
+      },
+      "batidm": {
+        "name": "Corrente máxima de descarga"
+      },
+      "batcharge": {
+        "name": "Energia diária de carga"
+      },
+      "batdischarge": {
+        "name": "Energia diária de descarga"
+      },
+      "totalechg": {
+        "name": "Energia total de carga"
+      },
+      "totaledchg": {
+        "name": "Energia total de descarga"
+      },
+      "ratedfrequency": {
+        "name": "Frequência nominal"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Potência de carga alvo"
+      },
+      "discharge_power": {
+        "name": "Potência de descarga alvo"
+      },
+      "micro_power_limit": {
+        "name": "Limite de potência"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Controlo de frequência"
+      },
+      "micro_power": {
+        "name": "Energia"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Reiniciar dispositivo"
+      },
+      "mode_idle": {
+        "name": "Modo: Inativo"
+      },
+      "mode_charge": {
+        "name": "Modo: Carga"
+      },
+      "mode_discharge": {
+        "name": "Modo: Descarga"
+      },
+      "mode_self_consume": {
+        "name": "Modo: Autoconsumo"
+      },
+      "peak_shaving_close": {
+        "name": "Limitação de picos: Desativar"
+      },
+      "peak_shaving_charge": {
+        "name": "Limitação de picos: Forçar carga"
+      },
+      "peak_shaving_discharge": {
+        "name": "Limitação de picos: Forçar descarga"
+      },
+      "peak_shaving_stop": {
+        "name": "Limitação de picos: Parar"
+      },
+      "peak_shaving_hold": {
+        "name": "Limitação de picos: Manter"
+      },
+      "clear_alarms": {
+        "name": "Limpar alarmes ativos"
       }
     }
   }

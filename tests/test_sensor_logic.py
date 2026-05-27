@@ -1,6 +1,6 @@
 """Tests for the Hyxi Cloud sensor entity logic."""
 
-# pylint: disable=missing-module-docstring, wrong-import-position, import-outside-toplevel
+# pylint: disable=missing-module-docstring, wrong-import-position, import-outside-toplevel, too-many-lines
 import importlib
 import sys
 from datetime import datetime
@@ -84,8 +84,8 @@ sys.modules["homeassistant.util"] = mock_ha
 sys.modules["aiohttp"] = MagicMock()
 
 # Standardize import style to resolve code scanning alert no. 50
-import custom_components.hyxi_cloud.const as const_mod  # noqa: E402
-import custom_components.hyxi_cloud.sensor as sensor_mod  # noqa: E402
+import custom_components.hyxi_cloud.const as const_mod
+import custom_components.hyxi_cloud.sensor as sensor_mod
 
 try:
     importlib.reload(const_mod)
@@ -108,7 +108,7 @@ except ImportError:
 sensor_mod.normalize_device_type = const_mod.normalize_device_type
 sensor_mod.get_raw_device_code = const_mod.get_raw_device_code
 sensor_mod.mask_sn = const_mod.mask_sn
-sensor_mod.NULL_VALUES = const_mod.NULL_VALUES
+sensor_mod.is_null_value = const_mod.is_null_value
 
 
 @pytest.fixture
@@ -135,16 +135,16 @@ def test_mask_sn():
     assert mask_sn("") == "****"
 
     # Short string handling
-    assert mask_sn("1234567") == "****"
+    assert mask_sn("1234567") == "8bb0cf6e"
 
     # Exact length of 8
-    assert mask_sn("12345678") == "XXXX5678"
+    assert mask_sn("12345678") == "ef797c81"
 
     # Longer string
-    assert mask_sn("1234567890") == "XXXXXX7890"
+    assert mask_sn("1234567890") == "c775e7b7"
 
     # Integer values
-    assert mask_sn(12345678) == "XXXX5678"
+    assert mask_sn(12345678) == "ef797c81"
 
 
 def test_anti_dip_recovery(base_sensor):
@@ -926,6 +926,8 @@ def test_get_metric_float_method():
     sensor = HyxiSensor.__new__(HyxiSensor)  # pylint: disable=no-value-for-parameter
     sensor.coordinator = coordinator
     sensor._sn = "sn_123"
+    sensor._dev_data = coordinator.data.get("sn_123") or {}
+    sensor._metrics = sensor._dev_data.get("metrics") or {}
 
     assert sensor._get_metric_float("valid") == 5.5
     assert sensor._get_metric_float("int") == 10.0
@@ -934,3 +936,146 @@ def test_get_metric_float_method():
     assert sensor._get_metric_float("invalid") is None
     assert sensor._get_metric_float("none") is None
     assert sensor._get_metric_float("missing") is None
+
+
+@pytest.mark.asyncio
+async def test_new_telemetry_keys_registration_and_parsing():
+    """Verify that all 29 new telemetry/Micro ESS sensors are registered and cast correctly."""
+    from custom_components.hyxi_cloud.const import DOMAIN
+
+    hass = MagicMock()
+    entry = MagicMock()
+    entry.entry_id = "test_entry"
+    entry.options = {}
+
+    # Mock coordinator with all 29 new metrics
+    coordinator = MagicMock()
+    coordinator.data = {
+        "INV123": {
+            "device_type_code": "HYBRID_INVERTER",
+            "device_name": "My Inverter",
+            "metrics": {
+                "invSts": "2",  # enum state -> Alarm (cast as integer)
+                "faultSts": "1",  # enum state -> Fault (cast as integer)
+                "gridSts": "0",  # enum state -> Normal (cast as integer)
+                "deviceGridConn": "1",  # enum state -> On Grid (cast as integer)
+                "deviceSwitchStatus": "0",  # enum state -> Shutdown (cast as integer)
+                "pvPower": "1200.5",  # float
+                "pvNum": "4",  # integer
+                "acSideTemper": "45.2",  # float
+                "dcSideTemper": "50.1",  # float
+                "gridF": "50.02",  # float
+                "gridP": "800.0",  # float
+                "gridQ": "-200.0",  # float
+                "gridPfd": "0.95",  # float
+                "gridAp": "850.0",  # float
+                "offGridF": "50.00",  # float
+                "offGridP": "0.0",  # float
+                "offGridQ": "0.0",  # float
+                "offGridPfd": "1.0",  # float
+                "offGridAp": "0.0",  # float
+                "batVch": "3.45",  # float (battery)
+                "batVcl": "3.21",  # float (battery)
+                "batTch": "28.5",  # float (battery)
+                "batTcl": "22.1",  # float (battery)
+                "batIcm": "50.0",  # float (battery)
+                "batIdm": "100.0",  # float (battery)
+                "batCharge": "15.5",  # float (battery)
+                "batDisCharge": "12.3",  # float (battery)
+                "totalEchg": "1500.5",  # float (battery)
+                "totalEdchg": "1200.2",  # float (battery)
+                "batP": "150.7",  # float (battery)
+                "ratedFrequency": "50",  # integer (from queryDeviceInfo)
+                "batSn": "BAT_REAL_123",
+            },
+        }
+    }
+    hass.data = {DOMAIN: {"test_entry": coordinator}}
+
+    registered_entities = []
+
+    def mock_async_add_entities(entities):
+        registered_entities.extend(entities)
+
+    await sensor_mod.async_setup_entry(hass, entry, mock_async_add_entities)
+
+    registered_keys = []
+    registered_by_key = {}
+    for entity in registered_entities:
+        if hasattr(entity, "entity_description"):
+            key = entity.entity_description.key
+            registered_keys.append(key)
+            registered_by_key[key] = entity
+
+    # Check that all 29 keys + ratedFrequency are registered
+    expected_new_keys = [
+        "invSts",
+        "faultSts",
+        "gridSts",
+        "deviceGridConn",
+        "deviceSwitchStatus",
+        "pvPower",
+        "pvNum",
+        "acSideTemper",
+        "dcSideTemper",
+        "gridF",
+        "gridP",
+        "gridQ",
+        "gridPfd",
+        "gridAp",
+        "offGridF",
+        "offGridP",
+        "offGridQ",
+        "offGridPfd",
+        "offGridAp",
+        "batVch",
+        "batVcl",
+        "batTch",
+        "batTcl",
+        "batIcm",
+        "batIdm",
+        "batCharge",
+        "batDisCharge",
+        "totalEchg",
+        "totalEdchg",
+        "batP",
+        "ratedFrequency",
+    ]
+
+    for key in expected_new_keys:
+        assert key in registered_keys, f"{key} was not registered as a sensor"
+
+    # Verify enum and integer casting of metrics
+    assert registered_by_key["invSts"].native_value == "2"
+    assert registered_by_key["faultSts"].native_value == "1"
+    assert registered_by_key["gridSts"].native_value == "0"
+    assert registered_by_key["deviceGridConn"].native_value == "1"
+    assert registered_by_key["deviceSwitchStatus"].native_value == "0"
+    assert registered_by_key["ratedFrequency"].native_value == 50
+
+    assert registered_by_key["pvPower"].native_value == 1200.5
+    assert registered_by_key["pvNum"].native_value == 4
+    assert registered_by_key["acSideTemper"].native_value == 45.2
+    assert registered_by_key["dcSideTemper"].native_value == 50.1
+    assert registered_by_key["batP"].native_value == 150.7
+
+    # Verify battery SN routing
+    battery_keys = [
+        "batVch",
+        "batVcl",
+        "batTch",
+        "batTcl",
+        "batIcm",
+        "batIdm",
+        "batCharge",
+        "batDisCharge",
+        "totalEchg",
+        "totalEdchg",
+        "batP",
+    ]
+    for key in battery_keys:
+        sensor_entity = registered_by_key[key]
+        assert sensor_entity._actual_sn == "BAT_REAL_123"
+        assert sensor_entity.device_info["identifiers"] == {
+            ("hyxi_cloud", "BAT_REAL_123")
+        }

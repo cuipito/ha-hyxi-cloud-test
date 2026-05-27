@@ -54,12 +54,8 @@ mock_api = MagicMock()
 mock_api.__version__ = "1.0.4"
 sys.modules["hyxi_cloud_api"] = mock_api
 
-mock_const = MagicMock()
-mock_const.DOMAIN = "hyxi_cloud"
-sys.modules["custom_components.hyxi_cloud.const"] = mock_const
 
-
-import custom_components.hyxi_cloud.coordinator as hc_coord  # pylint: disable=wrong-import-position # noqa: E402
+import custom_components.hyxi_cloud.coordinator as hc_coord  # pylint: disable=wrong-import-position
 
 importlib.reload(hc_coord)
 
@@ -128,12 +124,15 @@ async def test_async_update_data_none_result():
 
 @pytest.mark.asyncio
 async def test_async_update_data_success():
-    """Test successful data update."""
+    """Test successful data update with non-empty metrics."""
     mock_entry = MagicMock()
     mock_entry.options = {"update_interval": 5}
     mock_client = MagicMock()
     mock_client.get_all_device_data = AsyncMock(
-        return_value={"data": {"SN123": {"metrics": {}}}, "attempts": 1}
+        return_value={"data": {"SN123": {"metrics": {"tinv": "45.0"}}}, "attempts": 1}
+    )
+    mock_client._request = AsyncMock(  # pylint: disable=protected-access
+        return_value=(200, {"success": False})
     )
 
     coordinator = hc_coord.HyxiDataUpdateCoordinator(
@@ -142,9 +141,59 @@ async def test_async_update_data_success():
 
     result = await coordinator._async_update_data()
 
-    # We only care about the metrics in this test; _sw_version_cached is added by optimization
-    assert result["SN123"]["metrics"] == {}
+    assert result["SN123"]["metrics"] == {"tinv": "45.0"}
     assert coordinator.hyxi_metadata["last_attempts"] == 1
+    assert coordinator.hyxi_metadata["last_success"] is not None
+
+
+@pytest.mark.asyncio
+async def test_async_update_data_empty_telemetry():
+    """Test that empty telemetry raises UpdateFailed."""
+    mock_entry = MagicMock()
+    mock_entry.options = {"update_interval": 5}
+    mock_client = MagicMock()
+    # Device with empty metrics (only last_seen) should trigger UpdateFailed
+    mock_client.get_all_device_data = AsyncMock(
+        return_value={
+            "data": {"SN123": {"metrics": {"last_seen": "2026-05-22"}}},
+            "attempts": 1,
+        }
+    )
+
+    coordinator = hc_coord.HyxiDataUpdateCoordinator(
+        MagicMock(), mock_client, mock_entry
+    )
+
+    with pytest.raises(hc_coord.UpdateFailed) as excinfo:
+        await coordinator._async_update_data()
+
+    assert "HYXI telemetry data is currently unavailable." in str(excinfo.value)
+    assert coordinator.hyxi_metadata["api_status"] == "Error"
+
+
+@pytest.mark.asyncio
+async def test_async_update_data_empty_telemetry_collector_only():
+    """Test that empty metrics for collectors only does not raise UpdateFailed."""
+    mock_entry = MagicMock()
+    mock_entry.options = {"update_interval": 5}
+    mock_client = MagicMock()
+    # Device type "3" (collector) with empty metrics should NOT trigger UpdateFailed
+    mock_client.get_all_device_data = AsyncMock(
+        return_value={
+            "data": {"SN123": {"device_type_code": "3", "metrics": {}}},
+            "attempts": 1,
+        }
+    )
+    mock_client._request = AsyncMock(  # pylint: disable=protected-access
+        return_value=(200, {"success": False})
+    )
+
+    coordinator = hc_coord.HyxiDataUpdateCoordinator(
+        MagicMock(), mock_client, mock_entry
+    )
+
+    result = await coordinator._async_update_data()
+    assert result["SN123"]["metrics"] == {}
     assert coordinator.hyxi_metadata["last_success"] is not None
 
 
@@ -169,6 +218,7 @@ async def test_async_sync_device_metadata_no_change():
         ),
     ):
         mock_device = MagicMock()
+        mock_device.model = None
         mock_device.sw_version = "1.2.3"
         mock_device.hw_version = "V1"
         mock_device.id = "device_id"
@@ -201,16 +251,26 @@ async def test_async_sync_device_metadata_with_change():
         ),
     ):
         mock_device = MagicMock()
+        mock_device.model = "Generic Model"
         mock_device.sw_version = "1.2.2"
         mock_device.hw_version = "V1"
         mock_device.id = "device_id"
         mock_dev_reg.async_get_device.return_value = mock_device
 
-        devices = {"SN123": {"sw_version": "1.2.3", "hw_version": "V1"}}
+        devices = {
+            "SN123": {
+                "model": "HYX-H9K-HTA",
+                "sw_version": "1.2.3",
+                "hw_version": "V1",
+            }
+        }
         await coordinator._async_sync_device_metadata(devices)
 
         mock_dev_reg.async_update_device.assert_called_once_with(
-            "device_id", sw_version="1.2.3", hw_version="V1"
+            "device_id",
+            model="HYX-H9K-HTA",
+            sw_version="1.2.3",
+            hw_version="V1",
         )
 
 

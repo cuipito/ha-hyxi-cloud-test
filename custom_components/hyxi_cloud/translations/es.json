@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Error al conectar con los servidores de HYXI",
       "invalid_auth": "Clave de acceso o clave secreta no válida",
-      "unknown": "Ocurrió un error inesperado"
+      "unknown": "Ocurrió un error inesperado",
+      "no_devices": "No se encontraron plantas ni dispositivos. Si su correo electrónico de desarrollador es diferente al de su aplicación, primero debe compartir su planta desde la aplicación al correo electrónico de desarrollador."
     },
     "abort": {
       "already_configured": "Esta cuenta de HYXI ya está configurada.",
@@ -35,7 +36,8 @@
         "description": "Ajuste cómo se comunica su integración con HYXI Cloud.\n\n---",
         "data": {
           "update_interval": "Intervalo de actualización (1-60 minutos, por defecto: 5)",
-          "back_discovery": "Habilitar descubrimiento mediante alarmas (Avanzado)"
+          "back_discovery": "Habilitar descubrimiento mediante alarmas (Avanzado)",
+          "enable_battery_control": "Activar control y protección del dispositivo"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Inversor conectado a red",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Desconocido"
+          "unknown": "Desconocido",
+          "micro_inverter": "Microinversor",
+          "optimizer": "Optimizador",
+          "meter": "Medidor",
+          "battery": "Batería",
+          "ac_battery": "Batería de CA"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "Temperatura interna"
+      },
+      "invsts": {
+        "name": "Estado del inversor",
+        "state": {
+          "0": "Espera",
+          "1": "Normal",
+          "2": "Alarma",
+          "3": "Fallo",
+          "4": "Apagado"
+        }
+      },
+      "faultsts": {
+        "name": "Estado de fallo",
+        "state": {
+          "0": "Fallo",
+          "1": "Sin fallo"
+        }
+      },
+      "gridsts": {
+        "name": "Estado de la red",
+        "state": {
+          "0": "Fuera de red",
+          "1": "En red"
+        }
+      },
+      "devicegridconn": {
+        "name": "Estado de conexión a red",
+        "state": {
+          "0": "Fuera de red",
+          "1": "En red"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Estado del interruptor",
+        "state": {
+          "0": "Apagado",
+          "1": "Encendido"
+        }
+      },
+      "pvpower": {
+        "name": "Potencia PV total"
+      },
+      "pvnum": {
+        "name": "Cantidad PV"
+      },
+      "acsidetemper": {
+        "name": "Temperatura del lado AC"
+      },
+      "dcsidetemper": {
+        "name": "Temperatura del lado DC"
+      },
+      "gridf": {
+        "name": "Frecuencia de red"
+      },
+      "gridp": {
+        "name": "Potencia de red"
+      },
+      "gridq": {
+        "name": "Potencia reactiva de red"
+      },
+      "gridpfd": {
+        "name": "Factor de potencia de red"
+      },
+      "gridap": {
+        "name": "Potencia aparente de red"
+      },
+      "offgridf": {
+        "name": "Frecuencia fuera de red"
+      },
+      "offgridp": {
+        "name": "Potencia fuera de red"
+      },
+      "offgridq": {
+        "name": "Potencia reactiva fuera de red"
+      },
+      "offgridpfd": {
+        "name": "Factor de potencia fuera de red"
+      },
+      "offgridap": {
+        "name": "Potencia aparente fuera de red"
+      },
+      "batvch": {
+        "name": "Voltaje máximo de celda"
+      },
+      "batvcl": {
+        "name": "Voltaje mínimo de celda"
+      },
+      "battch": {
+        "name": "Temperatura máxima de celda"
+      },
+      "battcl": {
+        "name": "Temperatura mínima de celda"
+      },
+      "baticm": {
+        "name": "Corriente máxima de carga"
+      },
+      "batidm": {
+        "name": "Corriente máxima de descarga"
+      },
+      "batcharge": {
+        "name": "Energía de carga diaria"
+      },
+      "batdischarge": {
+        "name": "Energía de descarga diaria"
+      },
+      "totalechg": {
+        "name": "Energía de carga total"
+      },
+      "totaledchg": {
+        "name": "Energía de descarga total"
+      },
+      "ratedfrequency": {
+        "name": "Frecuencia nominal"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Potencia de carga objetivo"
+      },
+      "discharge_power": {
+        "name": "Potencia de descarga objetivo"
+      },
+      "micro_power_limit": {
+        "name": "Límite de potencia"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Control de frecuencia"
+      },
+      "micro_power": {
+        "name": "Alimentación"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Reiniciar dispositivo"
+      },
+      "mode_idle": {
+        "name": "Modo: Inactivo"
+      },
+      "mode_charge": {
+        "name": "Modo: Carga"
+      },
+      "mode_discharge": {
+        "name": "Modo: Descarga"
+      },
+      "mode_self_consume": {
+        "name": "Modo: Autoconsumo"
+      },
+      "peak_shaving_close": {
+        "name": "Control de picos de demanda: Desactivar"
+      },
+      "peak_shaving_charge": {
+        "name": "Control de picos de demanda: Forzar carga"
+      },
+      "peak_shaving_discharge": {
+        "name": "Control de picos de demanda: Forzar descarga"
+      },
+      "peak_shaving_stop": {
+        "name": "Control de picos de demanda: Detener"
+      },
+      "peak_shaving_hold": {
+        "name": "Control de picos de demanda: Mantener"
+      },
+      "clear_alarms": {
+        "name": "Borrar alarmas activas"
       }
     }
   }

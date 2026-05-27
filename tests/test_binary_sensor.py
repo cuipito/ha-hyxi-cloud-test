@@ -48,7 +48,7 @@ sys.modules["homeassistant.util"] = mock_util
 mock_dt = MagicMock()
 mock_dt.__spec__ = None
 sys.modules["homeassistant.util.dt"] = mock_dt
-import homeassistant.util.dt as dt_util  # noqa: E402
+import homeassistant.util.dt as dt_util
 
 mock_dt = MagicMock()
 mock_dt.UTC = UTC
@@ -59,11 +59,11 @@ sys.modules["homeassistant.util.dt"] = mock_dt
 mock_ha.util.dt = mock_dt  # Ensure both paths work
 
 # Now import and reload the component to ensure it uses the mock
-import custom_components.hyxi_cloud.binary_sensor as bs_mod  # noqa: E402
+import custom_components.hyxi_cloud.binary_sensor as bs_mod
 
 importlib.reload(bs_mod)
 
-from custom_components.hyxi_cloud.const import DOMAIN  # noqa: E402
+from custom_components.hyxi_cloud.const import DOMAIN
 
 
 @pytest.fixture
@@ -144,12 +144,14 @@ def test_device_alarm_sensor(mock_coordinator, mock_entry):
     mock_coordinator.data["SN123"]["alarms"] = [
         {"alarmState": "1"},
         {"alarmState": 0},
+        {"alarmState": 2, "endTime": 1779374715000},  # resolved alarm, should not count
+        {"alarmState": 1, "endtime": 0},  # active alarm (endtime=0)
     ]
 
     sensor = bs_mod.HyxiDeviceAlarmSensor(mock_coordinator, mock_entry, "SN123")
 
     assert sensor.is_on is True
-    assert sensor.extra_state_attributes["active_alarms_count"] == 2
+    assert sensor.extra_state_attributes["active_alarms_count"] == 3
 
     # Test update via coordinator handle
     mock_coordinator.data["SN123"]["alarms"] = []

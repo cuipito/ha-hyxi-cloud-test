@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Échec de la connexion aux serveurs HYXI",
       "invalid_auth": "Clé d'accès ou clé secrète invalide",
-      "unknown": "Une erreur inattendue est survenue"
+      "unknown": "Une erreur inattendue est survenue",
+      "no_devices": "Aucune centrale ni aucun appareil trouvé. Si votre adresse e-mail de développeur diffère de celle de votre application, vous devez d'abord partager votre centrale depuis l'application avec l'adresse e-mail de développeur."
     },
     "abort": {
       "already_configured": "Ce compte HYXI est déjà configuré.",
@@ -35,7 +36,8 @@
         "description": "Ajustez la façon dont votre intégration communique avec le cloud HYXI.\n\n---",
         "data": {
           "update_interval": "Intervalle de mise à jour (1-60 minutes, Défaut : 5)",
-          "back_discovery": "Activer la découverte via les alarmes (Avancé)"
+          "back_discovery": "Activer la découverte via les alarmes (Avancé)",
+          "enable_battery_control": "Activer le contrôle et la protection de l'appareil"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Onduleur connecté au réseau",
           "collector": "Collecteur de données",
           "micro_ess": "Système de stockage d'énergie micro (Micro ESS)",
-          "unknown": "Inconnu"
+          "unknown": "Inconnu",
+          "micro_inverter": "Micro-onduleur",
+          "optimizer": "Optimiseur",
+          "meter": "Compteur",
+          "battery": "Batterie",
+          "ac_battery": "Batterie CA"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "Température interne"
+      },
+      "invsts": {
+        "name": "Statut de l'onduleur",
+        "state": {
+          "0": "Veille",
+          "1": "Normal",
+          "2": "Alarme",
+          "3": "Défaut",
+          "4": "Arrêt"
+        }
+      },
+      "faultsts": {
+        "name": "Statut de défaut",
+        "state": {
+          "0": "Défaut",
+          "1": "Sans défaut"
+        }
+      },
+      "gridsts": {
+        "name": "Statut du réseau",
+        "state": {
+          "0": "Hors réseau",
+          "1": "Sur réseau"
+        }
+      },
+      "devicegridconn": {
+        "name": "Statut de connexion réseau",
+        "state": {
+          "0": "Hors réseau",
+          "1": "Sur réseau"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Statut du commutateur",
+        "state": {
+          "0": "Arrêt",
+          "1": "Marche"
+        }
+      },
+      "pvpower": {
+        "name": "Puissance PV totale"
+      },
+      "pvnum": {
+        "name": "Quantité PV"
+      },
+      "acsidetemper": {
+        "name": "Température côté AC"
+      },
+      "dcsidetemper": {
+        "name": "Température côté DC"
+      },
+      "gridf": {
+        "name": "Fréquence réseau"
+      },
+      "gridp": {
+        "name": "Puissance réseau"
+      },
+      "gridq": {
+        "name": "Puissance réactive réseau"
+      },
+      "gridpfd": {
+        "name": "Facteur de puissance réseau"
+      },
+      "gridap": {
+        "name": "Puissance apparente réseau"
+      },
+      "offgridf": {
+        "name": "Fréquence hors réseau"
+      },
+      "offgridp": {
+        "name": "Puissance hors réseau"
+      },
+      "offgridq": {
+        "name": "Puissance réactive hors réseau"
+      },
+      "offgridpfd": {
+        "name": "Facteur de puissance hors réseau"
+      },
+      "offgridap": {
+        "name": "Puissance apparente hors réseau"
+      },
+      "batvch": {
+        "name": "Tension de cellule max"
+      },
+      "batvcl": {
+        "name": "Tension de cellule min"
+      },
+      "battch": {
+        "name": "Température de cellule max"
+      },
+      "battcl": {
+        "name": "Température de cellule min"
+      },
+      "baticm": {
+        "name": "Courant de charge max"
+      },
+      "batidm": {
+        "name": "Courant de décharge max"
+      },
+      "batcharge": {
+        "name": "Énergie de charge quotidienne"
+      },
+      "batdischarge": {
+        "name": "Énergie de décharge quotidienne"
+      },
+      "totalechg": {
+        "name": "Énergie de charge totale"
+      },
+      "totaledchg": {
+        "name": "Énergie de décharge totale"
+      },
+      "ratedfrequency": {
+        "name": "Fréquence nominale"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Puissance de charge cible"
+      },
+      "discharge_power": {
+        "name": "Puissance de décharge cible"
+      },
+      "micro_power_limit": {
+        "name": "Limite de puissance"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Contrôle de fréquence"
+      },
+      "micro_power": {
+        "name": "Alimentation"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Redémarrer l'appareil"
+      },
+      "mode_idle": {
+        "name": "Mode : Inactif"
+      },
+      "mode_charge": {
+        "name": "Mode : Charge"
+      },
+      "mode_discharge": {
+        "name": "Mode : Décharge"
+      },
+      "mode_self_consume": {
+        "name": "Mode : Autoconsommation"
+      },
+      "peak_shaving_close": {
+        "name": "Écrêtement des pics : Désactiver"
+      },
+      "peak_shaving_charge": {
+        "name": "Écrêtement des pics : Forcer la charge"
+      },
+      "peak_shaving_discharge": {
+        "name": "Écrêtement des pics : Forcer la décharge"
+      },
+      "peak_shaving_stop": {
+        "name": "Écrêtement des pics : Arrêter"
+      },
+      "peak_shaving_hold": {
+        "name": "Écrêtement des pics : Maintenir"
+      },
+      "clear_alarms": {
+        "name": "Effacer les alarmes actives"
       }
     }
   }

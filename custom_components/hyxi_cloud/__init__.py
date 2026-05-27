@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from hyxi_cloud_api import HyxiApiClient
@@ -21,8 +22,12 @@ from .const import (
     MANUFACTURER,
     PLATFORMS,
     VERSION,
+    detect_phase_type,
+    get_raw_device_code,
+    normalize_device_type,
 )
 from .coordinator import HyxiDataUpdateCoordinator
+from .protection import HyxiBatteryProtectionController
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -121,6 +126,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 via_device=(DOMAIN, parent_sn),
             )
 
+    _remove_legacy_select_entities(hass, coordinator.data)
+    await _async_setup_battery_protection(hass, coordinator)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -130,6 +138,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    coordinator = hass.data[DOMAIN].get(entry.entry_id)
+    if coordinator is not None:
+        for controller in coordinator.protection_controllers.values():
+            await controller.async_stop()
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
@@ -140,3 +152,39 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry when options change."""
     _LOGGER.debug("HYXI: Options updated, reloading integration to apply new settings")
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+def _remove_legacy_select_entities(hass: HomeAssistant, devices: dict) -> None:
+    """Remove obsolete select entities replaced by stateless buttons."""
+    registry = er.async_get(hass)
+    for sn in devices:
+        for unique_id in (
+            f"hyxi_{sn}_operating_mode",
+            f"hyxi_{sn}_peak_shaving",
+        ):
+            entity_id = registry.async_get_entity_id("select", DOMAIN, unique_id)
+            if entity_id is not None:
+                _LOGGER.debug("Removing legacy HYXI select entity %s", entity_id)
+                registry.async_remove(entity_id)
+
+
+async def _async_setup_battery_protection(
+    hass: HomeAssistant,
+    coordinator: HyxiDataUpdateCoordinator,
+) -> None:
+    """Start battery protection on supported battery control devices."""
+    if not coordinator.entry.options.get("enable_battery_control", False):
+        _LOGGER.debug("Battery control and protection is disabled by user settings")
+        return
+
+    for sn, dev_data in coordinator.data.items():
+        device_type = normalize_device_type(get_raw_device_code(dev_data))
+        if device_type not in ("hybrid_inverter", "all_in_one"):
+            continue
+        phase = detect_phase_type(dev_data)
+        if phase not in ("three_phase", "single_phase"):
+            continue
+
+        controller = HyxiBatteryProtectionController(hass, coordinator, sn)
+        coordinator.protection_controllers[sn] = controller
+        await controller.async_start()

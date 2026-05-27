@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "连接 HYXI 服务器失败",
       "invalid_auth": "无效的访问密钥或加密密钥",
-      "unknown": "发生未知错误"
+      "unknown": "发生未知错误",
+      "no_devices": "未找到电站或设备。如果您的开发者邮箱与应用邮箱不同，您必须先在应用中将电站分享给开发者邮箱。"
     },
     "abort": {
       "already_configured": "该 HYXI 账号已配置。",
@@ -35,7 +36,8 @@
         "description": "调整插件与 HYXI Cloud 的通信方式。\n\n---",
         "data": {
           "update_interval": "轮询间隔 (1-60 分钟, 默认: 5)",
-          "back_discovery": "启用通过报警发现设备 (高级)"
+          "back_discovery": "启用通过报警发现设备 (高级)",
+          "enable_battery_control": "启用设备控制与保护"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "并网逆变器",
           "collector": "数据采集器",
           "micro_ess": "微型储能",
-          "unknown": "未知"
+          "unknown": "未知",
+          "micro_inverter": "微型逆变器",
+          "optimizer": "优化器",
+          "meter": "电表",
+          "battery": "电池",
+          "ac_battery": "交流电池"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "内部温度"
+      },
+      "invsts": {
+        "name": "逆变器状态",
+        "state": {
+          "0": "待机",
+          "1": "正常",
+          "2": "告警",
+          "3": "故障",
+          "4": "关机"
+        }
+      },
+      "faultsts": {
+        "name": "故障状态",
+        "state": {
+          "0": "故障",
+          "1": "无故障"
+        }
+      },
+      "gridsts": {
+        "name": "电网状态",
+        "state": {
+          "0": "离网",
+          "1": "并网"
+        }
+      },
+      "devicegridconn": {
+        "name": "并网状态",
+        "state": {
+          "0": "离网",
+          "1": "并网"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "开关状态",
+        "state": {
+          "0": "关机",
+          "1": "开机"
+        }
+      },
+      "pvpower": {
+        "name": "光伏总功率"
+      },
+      "pvnum": {
+        "name": "光伏数量"
+      },
+      "acsidetemper": {
+        "name": "交流侧温度"
+      },
+      "dcsidetemper": {
+        "name": "直流侧温度"
+      },
+      "gridf": {
+        "name": "并网频率"
+      },
+      "gridp": {
+        "name": "并网功率"
+      },
+      "gridq": {
+        "name": "并网无功功率"
+      },
+      "gridpfd": {
+        "name": "并网功率因数"
+      },
+      "gridap": {
+        "name": "并网视在功率"
+      },
+      "offgridf": {
+        "name": "离网频率"
+      },
+      "offgridp": {
+        "name": "离网功率"
+      },
+      "offgridq": {
+        "name": "离网无功功率"
+      },
+      "offgridpfd": {
+        "name": "离网功率因数"
+      },
+      "offgridap": {
+        "name": "离网视在功率"
+      },
+      "batvch": {
+        "name": "最高单体电压"
+      },
+      "batvcl": {
+        "name": "最低单体电压"
+      },
+      "battch": {
+        "name": "最高单体温度"
+      },
+      "battcl": {
+        "name": "最低单体温度"
+      },
+      "baticm": {
+        "name": "最大充电电流"
+      },
+      "batidm": {
+        "name": "最大放电电流"
+      },
+      "batcharge": {
+        "name": "日充电量"
+      },
+      "batdischarge": {
+        "name": "日放电量"
+      },
+      "totalechg": {
+        "name": "总充电量"
+      },
+      "totaledchg": {
+        "name": "总放电量"
+      },
+      "ratedfrequency": {
+        "name": "额定频率"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "目标充电功率"
+      },
+      "discharge_power": {
+        "name": "目标放电功率"
+      },
+      "micro_power_limit": {
+        "name": "功率限制"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "频率控制"
+      },
+      "micro_power": {
+        "name": "电源"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "重启设备"
+      },
+      "mode_idle": {
+        "name": "模式：待机"
+      },
+      "mode_charge": {
+        "name": "模式：充电"
+      },
+      "mode_discharge": {
+        "name": "模式：放电"
+      },
+      "mode_self_consume": {
+        "name": "模式：自发自用"
+      },
+      "peak_shaving_close": {
+        "name": "削峰填谷：关闭"
+      },
+      "peak_shaving_charge": {
+        "name": "削峰填谷：强制充电"
+      },
+      "peak_shaving_discharge": {
+        "name": "削峰填谷：强制放电"
+      },
+      "peak_shaving_stop": {
+        "name": "削峰填谷：停止"
+      },
+      "peak_shaving_hold": {
+        "name": "削峰填谷：保持"
+      },
+      "clear_alarms": {
+        "name": "清除活动告警"
       }
     }
   }

@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Nem sikerült csatlakozni a HYXI szerverekhez",
       "invalid_auth": "Érvénytelen hozzáférési kulcs vagy titkos kulcs",
-      "unknown": "Váratlan hiba történt"
+      "unknown": "Váratlan hiba történt",
+      "no_devices": "Nem található erőmű vagy eszköz. Ha a fejlesztői e-mail-címe eltér az alkalmazás e-mail-címétől, először meg kell osztania az erőművét az alkalmazásból a fejlesztői e-mail-címmel."
     },
     "abort": {
       "already_configured": "Ez a HYXI fiók már be van konfigurálva.",
@@ -35,7 +36,8 @@
         "description": "Állítsa be, hogyan kommunikáljon az integráció a HYXI Clouddal.\n\n---",
         "data": {
           "update_interval": "Lekérdezési időköz (1-60 perc, alapértelmezett: 5)",
-          "back_discovery": "Eszközfelderítés engedélyezése riasztásokon keresztül (haladó)"
+          "back_discovery": "Eszközfelderítés engedélyezése riasztásokon keresztül (haladó)",
+          "enable_battery_control": "Eszközvezérlés és -védelem engedélyezése"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Hálózatra kapcsolt inverter",
           "collector": "Adatgyűjtő",
           "micro_ess": "Micro ESS",
-          "unknown": "Ismeretlen"
+          "unknown": "Ismeretlen",
+          "micro_inverter": "Mikroinverter",
+          "optimizer": "Optimalizáló",
+          "meter": "Mérő",
+          "battery": "Akkumulátor",
+          "ac_battery": "AC akkumulátor"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "Belső hőmérséklet"
+      },
+      "invsts": {
+        "name": "Inverter állapota",
+        "state": {
+          "0": "Készenlét",
+          "1": "Normál",
+          "2": "Riasztás",
+          "3": "Hiba",
+          "4": "Leállítás"
+        }
+      },
+      "faultsts": {
+        "name": "Hibaállapot",
+        "state": {
+          "0": "Hiba",
+          "1": "Nincs hiba"
+        }
+      },
+      "gridsts": {
+        "name": "Hálózati állapot",
+        "state": {
+          "0": "Hálózaton kívüli",
+          "1": "Hálózaton belüli"
+        }
+      },
+      "devicegridconn": {
+        "name": "Hálózati csatlakozási állapot",
+        "state": {
+          "0": "Hálózaton kívüli",
+          "1": "Hálózaton belüli"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Kapcsoló állapota",
+        "state": {
+          "0": "Leállítás",
+          "1": "Bekapcsolás"
+        }
+      },
+      "pvpower": {
+        "name": "PV teljesítmény"
+      },
+      "pvnum": {
+        "name": "PV darabszám"
+      },
+      "acsidetemper": {
+        "name": "AC oldali hőmérséklet"
+      },
+      "dcsidetemper": {
+        "name": "DC oldali hőmérséklet"
+      },
+      "gridf": {
+        "name": "Hálózati frekvencia"
+      },
+      "gridp": {
+        "name": "Hálózati teljesítmény"
+      },
+      "gridq": {
+        "name": "Hálózati reaktív teljesítmény"
+      },
+      "gridpfd": {
+        "name": "Hálózati teljesítménytényező"
+      },
+      "gridap": {
+        "name": "Hálózati látszólagos teljesítmény"
+      },
+      "offgridf": {
+        "name": "Hálózaton kívüli frekvencia"
+      },
+      "offgridp": {
+        "name": "Hálózaton kívüli teljesítmény"
+      },
+      "offgridq": {
+        "name": "Hálózaton kívüli reaktív teljesítmény"
+      },
+      "offgridpfd": {
+        "name": "Hálózaton kívüli teljesítménytényező"
+      },
+      "offgridap": {
+        "name": "Hálózaton kívüli látszólagos teljesítmény"
+      },
+      "batvch": {
+        "name": "Max. cellafeszültség"
+      },
+      "batvcl": {
+        "name": "Min. cellafeszültség"
+      },
+      "battch": {
+        "name": "Max. cellahőmérséklet"
+      },
+      "battcl": {
+        "name": "Min. cellahőmérséklet"
+      },
+      "baticm": {
+        "name": "Max. töltőáram"
+      },
+      "batidm": {
+        "name": "Max. kisütési áram"
+      },
+      "batcharge": {
+        "name": "Napi töltési energia"
+      },
+      "batdischarge": {
+        "name": "Napi kisütési energia"
+      },
+      "totalechg": {
+        "name": "Teljes töltési energia"
+      },
+      "totaledchg": {
+        "name": "Teljes kisütési energia"
+      },
+      "ratedfrequency": {
+        "name": "Névleges frekvencia"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Cél töltési teljesítmény"
+      },
+      "discharge_power": {
+        "name": "Cél kisütési teljesítmény"
+      },
+      "micro_power_limit": {
+        "name": "Teljesítménykorlát"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenciaszabályozás"
+      },
+      "micro_power": {
+        "name": "Tápellátás"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Eszköz újraindítása"
+      },
+      "mode_idle": {
+        "name": "Mód: Készenléti"
+      },
+      "mode_charge": {
+        "name": "Mód: Töltés"
+      },
+      "mode_discharge": {
+        "name": "Mód: Kisütés"
+      },
+      "mode_self_consume": {
+        "name": "Mód: Önfogyasztás"
+      },
+      "peak_shaving_close": {
+        "name": "Csúcskisímítás: Kikapcsolás"
+      },
+      "peak_shaving_charge": {
+        "name": "Csúcskisímítás: Töltés kényszerítése"
+      },
+      "peak_shaving_discharge": {
+        "name": "Csúcskisímítás: Kisütés kényszerítése"
+      },
+      "peak_shaving_stop": {
+        "name": "Csúcskisímítás: Leállítás"
+      },
+      "peak_shaving_hold": {
+        "name": "Csúcskisímítás: Tartás"
+      },
+      "clear_alarms": {
+        "name": "Aktív riasztások törlése"
       }
     }
   }

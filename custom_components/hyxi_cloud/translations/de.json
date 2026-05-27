@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Verbindung zu den HYXI-Servern fehlgeschlagen",
       "invalid_auth": "Ungültiger Access Key oder Secret Key",
-      "unknown": "Ein unerwarteter Fehler ist aufgetreten"
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten",
+      "no_devices": "Keine Anlagen oder Geräte gefunden. Wenn sich Ihre Entwickler-E-Mail von Ihrer App-E-Mail unterscheidet, müssen Sie zuerst Ihre Anlage aus der App für die Entwickler-E-Mail freigeben."
     },
     "abort": {
       "already_configured": "Dieses HYXI-Konto ist bereits konfiguriert.",
@@ -35,7 +36,8 @@
         "description": "Passen Sie an, wie Ihre Integration mit der HYXI Cloud kommuniziert.\n\n---",
         "data": {
           "update_interval": "Abfrageintervall (1-60 Minuten, Standard: 5)",
-          "back_discovery": "Discovery über Alarme aktivieren (Erweitert)"
+          "back_discovery": "Discovery über Alarme aktivieren (Erweitert)",
+          "enable_battery_control": "Gerätesteuerung und -schutz aktivieren"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Netzgekoppelter Wechselrichter",
           "collector": "Datalogger",
           "micro_ess": "Micro-Energiespeichersystem (Micro ESS)",
-          "unknown": "Unbekannt"
+          "unknown": "Unbekannt",
+          "micro_inverter": "Mikrowechselrichter",
+          "optimizer": "Optimierer",
+          "meter": "Zähler",
+          "battery": "Batterie",
+          "ac_battery": "AC-Batterie"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "Innentemperatur"
+      },
+      "invsts": {
+        "name": "Wechselrichter-Status",
+        "state": {
+          "0": "Standby",
+          "1": "Normal",
+          "2": "Alarm",
+          "3": "Fehler",
+          "4": "Abschaltung"
+        }
+      },
+      "faultsts": {
+        "name": "Fehlerstatus",
+        "state": {
+          "0": "Fehler",
+          "1": "Kein Fehler"
+        }
+      },
+      "gridsts": {
+        "name": "Netzstatus",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "devicegridconn": {
+        "name": "Netzanschluss-Status",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Schalterstatus",
+        "state": {
+          "0": "Herunterfahren",
+          "1": "Einschalten"
+        }
+      },
+      "pvpower": {
+        "name": "PV-Gesamtleistung"
+      },
+      "pvnum": {
+        "name": "PV-Anzahl"
+      },
+      "acsidetemper": {
+        "name": "AC-Seitentemperatur"
+      },
+      "dcsidetemper": {
+        "name": "DC-Seitentemperatur"
+      },
+      "gridf": {
+        "name": "Netzfrequenz"
+      },
+      "gridp": {
+        "name": "Netzleistung"
+      },
+      "gridq": {
+        "name": "Netz-Blindleistung"
+      },
+      "gridpfd": {
+        "name": "Netz-Leistungsfaktor"
+      },
+      "gridap": {
+        "name": "Netz-Scheinleistung"
+      },
+      "offgridf": {
+        "name": "Off-Grid-Frequenz"
+      },
+      "offgridp": {
+        "name": "Off-Grid-Leistung"
+      },
+      "offgridq": {
+        "name": "Off-Grid-Blindleistung"
+      },
+      "offgridpfd": {
+        "name": "Off-Grid-Leistungsfaktor"
+      },
+      "offgridap": {
+        "name": "Off-Grid-Scheinleistung"
+      },
+      "batvch": {
+        "name": "Max. Zellenspannung"
+      },
+      "batvcl": {
+        "name": "Min. Zellenspannung"
+      },
+      "battch": {
+        "name": "Max. Zelltemperatur"
+      },
+      "battcl": {
+        "name": "Min. Zelltemperatur"
+      },
+      "baticm": {
+        "name": "Max. Ladestrom"
+      },
+      "batidm": {
+        "name": "Max. Entladestrom"
+      },
+      "batcharge": {
+        "name": "Tägliche Ladeenergie"
+      },
+      "batdischarge": {
+        "name": "Tägliche Entladeenergie"
+      },
+      "totalechg": {
+        "name": "Gesamte Ladeenergie"
+      },
+      "totaledchg": {
+        "name": "Gesamte Entladeenergie"
+      },
+      "ratedfrequency": {
+        "name": "Nennfrequenz"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Ziel-Ladeleistung"
+      },
+      "discharge_power": {
+        "name": "Ziel-Entladeleistung"
+      },
+      "micro_power_limit": {
+        "name": "Leistungsbegrenzung"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequenzregelung"
+      },
+      "micro_power": {
+        "name": "Strom"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Gerät neu starten"
+      },
+      "mode_idle": {
+        "name": "Modus: Leerlauf"
+      },
+      "mode_charge": {
+        "name": "Modus: Laden"
+      },
+      "mode_discharge": {
+        "name": "Modus: Entladen"
+      },
+      "mode_self_consume": {
+        "name": "Modus: Eigenverbrauch"
+      },
+      "peak_shaving_close": {
+        "name": "Spitzenlastkappung: Ausschalten"
+      },
+      "peak_shaving_charge": {
+        "name": "Spitzenlastkappung: Laden erzwingen"
+      },
+      "peak_shaving_discharge": {
+        "name": "Spitzenlastkappung: Entladen erzwingen"
+      },
+      "peak_shaving_stop": {
+        "name": "Spitzenlastkappung: Stoppen"
+      },
+      "peak_shaving_hold": {
+        "name": "Spitzenlastkappung: Halten"
+      },
+      "clear_alarms": {
+        "name": "Aktive Alarme löschen"
       }
     }
   }

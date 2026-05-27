@@ -61,6 +61,14 @@ class HyxiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[
             success = await client._refresh_token()
             if not success:
                 return "invalid_auth"
+
+            # Check if there are any devices/plants
+            device_data = await client.get_all_device_data()
+            if device_data is None:
+                return "cannot_connect"
+
+            if not device_data.get("data"):
+                return "no_devices"
         except (TimeoutError, ClientError) as e:
             _LOGGER.error("Connection error during validation: %s", e)
             return "cannot_connect"
@@ -142,6 +150,13 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional(
                     CONF_BACK_DISCOVERY,
                     default=self._config_entry.options.get(CONF_BACK_DISCOVERY, False),
+                ): selector.BooleanSelector(),
+                # Toggle for Battery Control & Protection
+                vol.Optional(
+                    "enable_battery_control",
+                    default=self._config_entry.options.get(
+                        "enable_battery_control", False
+                    ),
                 ): selector.BooleanSelector(),
             }
         )

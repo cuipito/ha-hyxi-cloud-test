@@ -21,7 +21,8 @@
     "error": {
       "cannot_connect": "Kunne ikke forbinde til HYXI-servere",
       "invalid_auth": "Ugyldig adgangsnøgle eller hemmelig nøgle",
-      "unknown": "Uventet fejl opstod"
+      "unknown": "Uventet fejl opstod",
+      "no_devices": "Ingen anlæg eller enheder fundet. Hvis din udvikler-e-mail er forskellig fra din app-e-mail, skal du først dele dit anlæg fra appen til udvikler-e-mailen."
     },
     "abort": {
       "already_configured": "Denne HYXI-konto er allerede konfigureret.",
@@ -35,7 +36,8 @@
         "description": "Juster hvordan din integration kommunikerer med HYXI Cloud.\n\n---",
         "data": {
           "update_interval": "Opdateringsinterval (1-60 minutter, standard: 5)",
-          "back_discovery": "Aktiver opdagelse via alarmer (avanceret)"
+          "back_discovery": "Aktiver opdagelse via alarmer (avanceret)",
+          "enable_battery_control": "Aktiver enhedskontrol og -beskyttelse"
         }
       }
     }
@@ -250,7 +252,12 @@
           "grid_connected_inverter": "Net-tilsluttet inverter",
           "collector": "Datalogger",
           "micro_ess": "Micro ESS",
-          "unknown": "Ukendt"
+          "unknown": "Ukendt",
+          "micro_inverter": "Mikroinverter",
+          "optimizer": "Optimerer",
+          "meter": "Måler",
+          "battery": "Batteri",
+          "ac_battery": "AC-batteri"
         }
       },
       "ratedpower": {
@@ -291,6 +298,188 @@
       },
       "internal_temperature": {
         "name": "Intern temperatur"
+      },
+      "invsts": {
+        "name": "Inverterstatus",
+        "state": {
+          "0": "Standby",
+          "1": "Normal",
+          "2": "Alarm",
+          "3": "Fejl",
+          "4": "Nedlukning"
+        }
+      },
+      "faultsts": {
+        "name": "Fejlstatus",
+        "state": {
+          "0": "Fejl",
+          "1": "Ingen fejl"
+        }
+      },
+      "gridsts": {
+        "name": "Netstatus",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "devicegridconn": {
+        "name": "Nettilslutningsstatus",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Afbryderstatus",
+        "state": {
+          "0": "Luk ned",
+          "1": "Tændt"
+        }
+      },
+      "pvpower": {
+        "name": "Total PV-effekt"
+      },
+      "pvnum": {
+        "name": "PV-antal"
+      },
+      "acsidetemper": {
+        "name": "AC-sidetemperatur"
+      },
+      "dcsidetemper": {
+        "name": "DC-sidetemperatur"
+      },
+      "gridf": {
+        "name": "Netfrekvens"
+      },
+      "gridp": {
+        "name": "Neteffekt"
+      },
+      "gridq": {
+        "name": "Net reaktiv effekt"
+      },
+      "gridpfd": {
+        "name": "Net effektfaktor"
+      },
+      "gridap": {
+        "name": "Net tilsyneladende effekt"
+      },
+      "offgridf": {
+        "name": "Off-grid-frekvens"
+      },
+      "offgridp": {
+        "name": "Off-grid-effekt"
+      },
+      "offgridq": {
+        "name": "Off-grid reaktiv effekt"
+      },
+      "offgridpfd": {
+        "name": "Off-grid effektfaktor"
+      },
+      "offgridap": {
+        "name": "Off-grid tilsyneladende effekt"
+      },
+      "batvch": {
+        "name": "Maks cellespænding"
+      },
+      "batvcl": {
+        "name": "Min cellespænding"
+      },
+      "battch": {
+        "name": "Maks celletemperatur"
+      },
+      "battcl": {
+        "name": "Min celletemperatur"
+      },
+      "baticm": {
+        "name": "Maks ladestrøm"
+      },
+      "batidm": {
+        "name": "Maks afladningsstrøm"
+      },
+      "batcharge": {
+        "name": "Daglig opladningsenergi"
+      },
+      "batdischarge": {
+        "name": "Daglig afladningsenergi"
+      },
+      "totalechg": {
+        "name": "Total opladningsenergi"
+      },
+      "totaledchg": {
+        "name": "Total afladningsenergi"
+      },
+      "ratedfrequency": {
+        "name": "Nominel frekvens"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Målopladningseffekt"
+      },
+      "discharge_power": {
+        "name": "Målafladningseffekt"
+      },
+      "micro_power_limit": {
+        "name": "Effektgrænse"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenskontrol"
+      },
+      "micro_power": {
+        "name": "Strøm"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Genstart enhed"
+      },
+      "mode_idle": {
+        "name": "Tilstand: Inaktiv"
+      },
+      "mode_charge": {
+        "name": "Tilstand: Opladning"
+      },
+      "mode_discharge": {
+        "name": "Tilstand: Afladning"
+      },
+      "mode_self_consume": {
+        "name": "Tilstand: Egetforbrug"
+      },
+      "peak_shaving_close": {
+        "name": "Spidsbelastningsudjævning: Slå fra"
+      },
+      "peak_shaving_charge": {
+        "name": "Spidsbelastningsudjævning: Tving opladning"
+      },
+      "peak_shaving_discharge": {
+        "name": "Spidsbelastningsudjævning: Tving afladning"
+      },
+      "peak_shaving_stop": {
+        "name": "Spidsbelastningsudjævning: Stop"
+      },
+      "peak_shaving_hold": {
+        "name": "Spidsbelastningsudjævning: Hold"
+      },
+      "clear_alarms": {
+        "name": "Ryd aktive alarmer"
       }
     }
   }
