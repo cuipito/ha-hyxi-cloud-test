@@ -1058,14 +1058,21 @@ class EnergyManagerEngine:
         solar_cap,
         charge_margin,
     ) -> None:
-        """Reduce charge power when importing from grid."""
-        charge_target = current_charge - (p1 + charge_margin)
+        """Reduce charge power when importing from grid.
+
+        Uses dampened reduction: max 50% cut per tick to avoid volatile P1
+        spikes crashing charge power from high values to 100W in one step.
+        """
+        desired_reduction = p1 + charge_margin
+        max_step = max(current_charge * 0.5, 200)
+        actual_reduction = min(desired_reduction, max_step)
+        charge_target = current_charge - actual_reduction
         charge_target = min(charge_target, solar_cap)
         charge_target = max(charge_target, 100)
 
         if charge_target <= 100:
             self._charge_bottomout_count += 1
-            if self._charge_bottomout_count >= 3:
+            if self._charge_bottomout_count >= 5:
                 self._set_decision("solar_self_consume")
                 self._last_charge_exit = time.monotonic()
                 self._last_bottomout_exit = time.monotonic()
