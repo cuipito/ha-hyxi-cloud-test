@@ -1,7 +1,6 @@
 {
-  "name": "HYXI",
-  "zip_release": true,
-  "filename": "hyxi_cloud.zip",
+  "name": "HYXI Development",
+  "zip_release": false,
   "render_readme": true,
   "homeassistant": "2024.1.0"
 }

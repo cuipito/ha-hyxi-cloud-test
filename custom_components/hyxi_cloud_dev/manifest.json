@@ -1,0 +1,20 @@
+{
+  "domain": "hyxi_cloud_dev",
+  "name": "HYXI Development",
+  "codeowners": [
+    "@cuipito"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/cuipito/ha-hyxi-cloud-test",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/cuipito/ha-hyxi-cloud-test/issues",
+  "loggers": [
+    "custom_components.hyxi_cloud_dev",
+    "hyxi_cloud_api"
+  ],
+  "requirements": [
+    "aiohttp>=3.13.4",
+    "hyxi-cloud-api>=1.2.5"
+  ],
+  "version": "1.6.0-beta2"
+}
