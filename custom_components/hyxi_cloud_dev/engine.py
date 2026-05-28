@@ -116,6 +116,7 @@ class EnergyManagerEngine:
         self._charge_entry_export_count: int = 0
         self._charge_bottomout_count: int = 0
         self._current_mode: str | None = None
+        self._last_sent_power: dict[str, int] = {"charge": 0, "discharge": 0}
 
         # PV curtailment state (peak shaving stop/hold cycling)
         self._pv_curtailed: bool = False
@@ -494,6 +495,8 @@ class EnergyManagerEngine:
             self._last_mode_switch = time.monotonic()
             prev_mode = self._current_mode
             self._current_mode = mode
+            if power_w and mode in ("charge", "discharge"):
+                self._last_sent_power[mode] = power_w
             action = f"{mode} @ {power_w}W" if power_w else mode
             self._last_action = action
             _LOGGER.info("EM: Mode -> %s", action)
@@ -554,6 +557,7 @@ class EnergyManagerEngine:
 
             self._last_power_adjust = time.monotonic()
             self._current_mode = direction
+            self._last_sent_power[direction] = target_w
             self._last_action = f"{direction} @ {target_w}W"
             _LOGGER.debug("EM: %s power -> %dW", direction, target_w)
 
@@ -613,7 +617,14 @@ class EnergyManagerEngine:
         self._pv_curtailed = False
 
     def _get_current_power_setting(self, direction: str) -> float:
-        """Read the current power setting from the number entity."""
+        """Get the last-sent power for the given direction.
+
+        Uses internal tracking (set by _set_mode/_adjust_power). Falls back
+        to the number entity if it exists (e.g. three-phase power numbers).
+        """
+        tracked = self._last_sent_power.get(direction, 0)
+        if tracked > 0:
+            return tracked
         unique_id = f"hyxi_{self._sn}_{direction}_power"
         entity_id = self._find_entity_id("number", unique_id)
         if entity_id:
@@ -1026,7 +1037,9 @@ class EnergyManagerEngine:
 
         elif s.p1 < -(sc.charge_margin + 100):
             # Exporting too much — increase charge
-            self._charge_bottomout_count = 0
+            # Decrement bottomout counter (don't fully reset — volatile P1
+            # can briefly dip negative between import spikes)
+            self._charge_bottomout_count = max(0, self._charge_bottomout_count - 1)
             excess_export = abs(s.p1) - sc.charge_margin
             charge_target = current_charge + excess_export
             charge_target = min(charge_target, s.max_charge)
@@ -1035,7 +1048,7 @@ class EnergyManagerEngine:
             await self._adjust_power("charge", int(charge_target))
         else:
             # P1 within target range — balanced
-            self._charge_bottomout_count = 0
+            self._charge_bottomout_count = max(0, self._charge_bottomout_count - 1)
             self._set_decision("solar_charge")
 
     async def _solar_reduce_charge(
