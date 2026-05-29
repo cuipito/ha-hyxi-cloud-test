@@ -38,7 +38,17 @@
           "update_interval": "Abfrageintervall (1-60 Minuten, Standard: 5)",
           "back_discovery": "Discovery über Alarme aktivieren (Erweitert)",
           "enable_battery_control": "Gerätesteuerung und -schutz aktivieren",
-          "enable_energy_manager": "Enable Energy Manager Standalone (Beta)"
+          "enable_energy_manager": "Enable Energy Manager Standalone (Beta)",
+          "rt_enabled": "Enable Real-Time Push (Beta)"
+        }
+      },
+      "real_time_push": {
+        "title": "Real-Time Push",
+        "description": "Configure webhook-based real-time data delivery from the HYXI Cloud. Requires a publicly accessible URL.",
+        "data": {
+          "rt_url_mode": "URL Mode",
+          "rt_external_url": "External URL (for Manual mode)",
+          "rt_push_rate_ms": "Push Interval (ms)"
         }
       },
       "energy_manager": {

@@ -27,6 +27,7 @@
 - **🔧 Device Control:** Send supported HYXI Cloud control commands from Home Assistant, including inverter mode buttons, peak shaving buttons, frequency control, and microinverter power controls.
 - **📊 Advanced Diagnostics:** Track cloud connectivity, API success rates, and data sync latency with dedicated diagnostic sensors.
 - **🕥 Adjustable Polling:** Fine-tune your data refresh rate between 1 and 60 minutes via the integration options.
+- **📡 Real-Time Push (Beta):** Webhook-based push notifications from HYXI Cloud for near-real-time sensor updates (5s–1h intervals).
 - **🛡️ Reliable Quality Assurance:** Built with **99%+ automated test coverage** and robust numeric safety nets to ensure your energy data is accurate and resilient.
 - **🧼 Clean UI:** Precision-tuned data with support for **20+ languages** (English, German, French, Dutch, Afrikaans, Portuguese, Spanish, Italian, and more).
 
@@ -314,6 +315,102 @@ The engine fires a `hyxi_em_mode_changed` event on every mode change, usable in 
 | `decision` | Decision label that triggered the change |
 | `dry_run` | `true` if in dry-run mode (field absent when not dry-run) |
 
+#### Real-Time Push (Beta)
+
+Real-Time Push replaces the default 5-minute polling with webhook-based push notifications from the HYXI Cloud. Device telemetry is pushed directly to your Home Assistant instance at configurable intervals (5 seconds to 1 hour), giving you near-real-time sensor updates.
+
+**Requirements:**
+- A publicly accessible URL for your Home Assistant instance (see setup options below)
+- HYXI Cloud API library v1.2.6+
+
+##### Enabling
+
+1. Go to **Settings > Devices & Services** > **HYXI Cloud** > **Configure**.
+2. Enable **Real-Time Push (Beta)** and save.
+3. Configure the push settings:
+   - **URL Mode** — `Manual URL` or `Nabu Casa` (see setup guides below)
+   - **External URL** — your public HA URL (only for Manual mode)
+   - **Push Interval (ms)** — how often HYXI Cloud pushes data (default: 30000ms = 30s, range: 5s–1h)
+
+##### Setup Option A: Nabu Casa (Easiest)
+
+If you have a [Nabu Casa](https://www.nabucasa.com/) subscription, this is the simplest setup — no port forwarding or reverse proxy needed.
+
+1. Ensure **Home Assistant Cloud** is connected: **Settings > Home Assistant Cloud** → status should show "Connected".
+2. Enable **Remote Control** in the Cloud settings (this provides your `*.ui.nabu.casa` URL).
+3. In the HYXI Real-Time Push options, select **URL Mode: Nabu Casa**.
+4. Leave the External URL field empty — the integration automatically uses your Nabu Casa remote URL.
+5. Save. The integration will register a webhook and subscribe to push data.
+
+> [!NOTE]
+> The Nabu Casa remote URL must be active and reachable. If your cloud connection drops, push data will not arrive, but the 30-minute fallback poll will continue.
+
+##### Setup Option B: Manual URL (Reverse Proxy / Cloudflare Tunnel)
+
+Use this if you expose Home Assistant via a reverse proxy (Nginx, Caddy, Traefik) or a Cloudflare Tunnel.
+
+**Prerequisites:**
+- A domain pointing to your HA instance (e.g. `https://ha.example.com`)
+- HTTPS with a valid certificate (HYXI Cloud requires HTTPS for webhook callbacks)
+- The `/api/webhook/` path must be publicly reachable without authentication
+
+**Cloudflare Tunnel example:**
+
+1. In your Cloudflare Zero Trust dashboard, create a tunnel pointing to your HA instance (e.g. `http://homeassistant.local:8123`).
+2. Map a public hostname (e.g. `ha.example.com`) to the tunnel.
+3. **Important:** Do not add any Cloudflare Access policies to the `/api/webhook/*` path — webhook requests from HYXI Cloud must pass through without browser-based authentication.
+4. In the HYXI Real-Time Push options:
+   - Select **URL Mode: Manual URL**
+   - Enter `https://ha.example.com` as the **External URL**
+5. Save. The integration constructs the full callback URL as `https://ha.example.com/api/webhook/{generated-id}`.
+
+**Nginx reverse proxy example:**
+
+Ensure your Nginx config forwards webhook requests to HA:
+
+```nginx
+location /api/webhook/ {
+    proxy_pass http://homeassistant.local:8123;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Then configure the integration with your public domain as the External URL.
+
+> [!IMPORTANT]
+> **Security:** The webhook handler verifies the `accessKey` header on every incoming request against your configured HYXI API credentials. Unauthenticated requests are rejected with HTTP 401. You do not need to add additional authentication layers for the webhook path.
+
+##### How It Works
+
+- HYXI Cloud sends device telemetry to a registered webhook on your HA instance
+- Each push updates all device sensors immediately (no waiting for next poll)
+- Polling continues at a 30-minute fallback interval as a safety net
+- If no push data is received for 120 seconds, the integration logs a staleness warning
+- The webhook verifies the `accessKey` header on each request for security
+- On integration unload, the push subscription is automatically cancelled
+
+##### Troubleshooting Real-Time Push
+
+| Symptom | Cause | Fix |
+| :--- | :--- | :--- |
+| Sensors not updating in real-time | Webhook not reachable | Check that your URL is publicly accessible. Test with `curl -X POST https://your-url/api/webhook/test` — should return a response, not a timeout. |
+| "Nabu Casa URL not available" error | Cloud not connected | Check **Settings > Home Assistant Cloud** → ensure status is "Connected" and Remote Control is enabled. |
+| HTTP 401 in HA logs | Access key mismatch | The `accessKey` header from HYXI Cloud doesn't match your configured credentials. Re-enter your API keys in the integration. |
+| Push stops after a while | Subscription expired | The integration re-subscribes on every reload. Try reloading the integration: **Settings > Devices & Services > HYXI Cloud > ⋮ > Reload**. |
+| Data arrives but sensors show stale values | Field mapping issue | Check HA logs for warnings from `custom_components.hyxi_cloud.webhook`. Report unknown field names as a GitHub issue. |
+
+##### Data Flow
+
+```
+HYXI Cloud → POST /api/webhook/{id} → HA webhook handler
+  → Verify accessKey header
+  → Translate fields (batterySoc → batsoc)
+  → Compute derived metrics (grid import/export, bat charging/discharging)
+  → Update coordinator → All sensors refresh instantly
+```
+
 #### Microinverter
 
 | Controls | controlId |
@@ -358,6 +455,7 @@ Click the **Configure** button on the HYXI integration card to access:
 * **Enable Discovery via Alarms:** Proactively discover child devices reporting active alarms (Advanced).
 * **Enable Device Control & Protection:** Opt-in to enable inverter mode buttons, charge/discharge power settings, automatic battery protection thresholds, and micro-inverter power limits or switches. By default, this is disabled to prevent conflicts with external control systems (e.g. energy providers or grid constraints).
 * **Enable Energy Manager Standalone (Beta):** Automated battery management engine. Only visible after enabling Device Control & Protection. See [Energy Manager Standalone](#energy-manager-standalone-beta) above.
+* **Enable Real-Time Push (Beta):** Webhook-based real-time data delivery from HYXI Cloud. See [Real-Time Push](#real-time-push-beta) below.
 
 ## 🛡️ Quality Assurance
 

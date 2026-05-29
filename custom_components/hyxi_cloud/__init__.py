@@ -22,6 +22,7 @@ from .const import (
     CONF_EM_FORECAST_POWER_ENTITY,
     CONF_EM_INVERTER_SN,
     CONF_EM_P1_ENTITY,
+    CONF_RT_ENABLED,
     CONF_SECRET_KEY,
     DOMAIN,
     MANUFACTURER,
@@ -158,6 +159,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             model="Energy Manager",
             via_device=(DOMAIN, em_sn),
         )
+
+    # Real-time push webhook
+    if entry.options.get(CONF_RT_ENABLED, False):
+        from .webhook import async_setup_webhook
+
+        rt_cleanup = await async_setup_webhook(hass, entry, coordinator)
+        entry.async_on_unload(rt_cleanup)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
