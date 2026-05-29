@@ -1098,9 +1098,6 @@ class EnergyManagerEngine:
         if not self._enabled:
             return
 
-        # Force coordinator refresh so engine always works with latest values
-        await self._coordinator.async_refresh()
-
         # Check em_enabled switch — force self_consume on disable
         em_enabled_uid = f"hyxi_{self._sn}_em_enabled"
         em_entity = self._find_entity_id("switch", em_enabled_uid)
