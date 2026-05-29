@@ -516,7 +516,6 @@ class EnergyManagerEngine:
             # Notify protection controller about the mode change
             self._notify_protection(mode)
 
-            await self._coordinator.async_request_refresh()
             return True
 
         except HyxiApiClient.ControlError as err:
@@ -764,7 +763,7 @@ class EnergyManagerEngine:
 
     async def _check_soc_limits(self, s: DecisionState) -> bool:
         """PRIORITY 1 & 2: SOC safety limits. Returns True if handled."""
-        if s.soc < s.soc_min:
+        if s.soc <= s.soc_min:
             if s.solar_producing:
                 charge_target = min(s.solar - 50, s.max_charge)
                 charge_target = max(charge_target, 300)
@@ -1098,6 +1097,9 @@ class EnergyManagerEngine:
         """15-second timer callback."""
         if not self._enabled:
             return
+
+        # Refresh coordinator data so engine always works with latest values
+        await self._coordinator.async_request_refresh()
 
         # Check em_enabled switch — force self_consume on disable
         em_enabled_uid = f"hyxi_{self._sn}_em_enabled"
