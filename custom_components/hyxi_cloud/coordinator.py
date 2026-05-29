@@ -1,6 +1,7 @@
 """DataUpdateCoordinator for HYXI Cloud."""
 
 import logging
+import time
 from datetime import datetime, timedelta
 from typing import Any, TypedDict
 
@@ -15,7 +16,10 @@ from hyxi_cloud_api import HyxiApiClient
 
 from .const import (
     CONF_BACK_DISCOVERY,
+    CONF_RT_ENABLED,
     DOMAIN,
+    RT_FALLBACK_POLL_MINUTES,
+    RT_PUSH_STALE_SECONDS,
     get_raw_device_code,
     get_software_version,
     mask_sn,
@@ -39,12 +43,18 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
 
     def __init__(self, hass: HomeAssistant, client: HyxiApiClient, entry: ConfigEntry):
         """Initialize the coordinator with dynamic interval."""
-        interval = entry.options.get("update_interval", 5)
+        rt_enabled = entry.options.get(CONF_RT_ENABLED, False)
+        interval = (
+            RT_FALLBACK_POLL_MINUTES
+            if rt_enabled
+            else entry.options.get("update_interval", 5)
+        )
 
         _LOGGER.debug(
-            "Initializing HYXI Coordinator for '%s' with polling interval: %s minutes",
+            "Initializing HYXI Coordinator for '%s' with polling interval: %s minutes%s",
             entry.title,
             interval,
+            " (RT push fallback)" if rt_enabled else "",
         )
 
         super().__init__(
@@ -58,13 +68,30 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.protection_controllers: dict[str, Any] = {}
 
-        # 🚀 Store metadata on the object, not in the data dictionary!
+        # Real-time push tracking
+        self._push_active: bool = False
+        self._last_push_received: float | None = None
+
         self.hyxi_metadata: HyxiMetadata = {
             "last_attempts": 0,
             "last_success": None,
             "last_error": None,
             "api_status": "Starting",
         }
+
+    def mark_push_active(self, active: bool) -> None:
+        """Set whether real-time push is active."""
+        self._push_active = active
+
+    def mark_push_received(self) -> None:
+        """Record that a push was just received."""
+        self._last_push_received = time.monotonic()
+
+    def is_push_stale(self) -> bool:
+        """Return True if push is active but no data received recently."""
+        if not self._push_active or self._last_push_received is None:
+            return False
+        return (time.monotonic() - self._last_push_received) > RT_PUSH_STALE_SECONDS
 
     async def _async_update_data(self):
         """Fetch data and manage metadata attributes."""

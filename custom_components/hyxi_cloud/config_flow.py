@@ -23,8 +23,17 @@ from .const import (
     CONF_EM_INVERTER_SN,
     CONF_EM_LOOP_INTERVAL,
     CONF_EM_P1_ENTITY,
+    CONF_RT_ENABLED,
+    CONF_RT_EXTERNAL_URL,
+    CONF_RT_PUSH_RATE_MS,
+    CONF_RT_SUBSCRIBE_CODE,
+    CONF_RT_URL_MODE,
+    CONF_RT_WEBHOOK_ID,
     CONF_SECRET_KEY,
     DOMAIN,
+    RT_PUSH_RATE_MS_DEFAULT,
+    RT_URL_MODE_MANUAL,
+    RT_URL_MODE_NABU_CASA,
     get_raw_device_code,
     normalize_device_type,
 )
@@ -166,6 +175,7 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
                 "enable_battery_control", False
             )
             enable_em = user_input.get("enable_energy_manager", False)
+            enable_rt = user_input.get(CONF_RT_ENABLED, False)
 
             # EM requires battery control — auto-enable if user turned on EM
             if enable_em and not self._options.get("enable_battery_control"):
@@ -173,21 +183,40 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
 
             if enable_em:
                 self._options[CONF_EM_ENABLED] = True
-                return await self.async_step_energy_manager()
+            else:
+                # EM disabled — remove EM keys if they were previously set
+                self._options.pop(CONF_EM_ENABLED, None)
+                for key in (
+                    CONF_EM_INVERTER_SN,
+                    CONF_EM_P1_ENTITY,
+                    CONF_EM_FORECAST_ENTITY,
+                    CONF_EM_FORECAST_POWER_ENTITY,
+                    CONF_EM_BATTERY_OVERRIDE,
+                    CONF_EM_BATTERY_CAPACITY,
+                    CONF_EM_LOOP_INTERVAL,
+                    CONF_EM_DRY_RUN,
+                ):
+                    self._options.pop(key, None)
 
-            # EM disabled — remove EM keys if they were previously set
-            self._options.pop(CONF_EM_ENABLED, None)
-            for key in (
-                CONF_EM_INVERTER_SN,
-                CONF_EM_P1_ENTITY,
-                CONF_EM_FORECAST_ENTITY,
-                CONF_EM_FORECAST_POWER_ENTITY,
-                CONF_EM_BATTERY_OVERRIDE,
-                CONF_EM_BATTERY_CAPACITY,
-                CONF_EM_LOOP_INTERVAL,
-                CONF_EM_DRY_RUN,
-            ):
-                self._options.pop(key, None)
+            if enable_rt:
+                self._options[CONF_RT_ENABLED] = True
+            else:
+                # RT disabled — remove RT keys
+                for key in (
+                    CONF_RT_ENABLED,
+                    CONF_RT_URL_MODE,
+                    CONF_RT_EXTERNAL_URL,
+                    CONF_RT_PUSH_RATE_MS,
+                    CONF_RT_SUBSCRIBE_CODE,
+                    CONF_RT_WEBHOOK_ID,
+                ):
+                    self._options.pop(key, None)
+
+            # Route to sub-steps if needed
+            if enable_em:
+                return await self.async_step_energy_manager()
+            if enable_rt:
+                return await self.async_step_real_time_push()
             return self.async_create_entry(title="", data=self._options)
 
         # Pull current values or defaults
@@ -224,6 +253,12 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional("enable_energy_manager", default=em_enabled)
                 ] = selector.BooleanSelector()
 
+        # Real-time push toggle
+        rt_enabled = self._config_entry.options.get(CONF_RT_ENABLED, False)
+        schema_dict[
+            vol.Optional(CONF_RT_ENABLED, default=rt_enabled)
+        ] = selector.BooleanSelector()
+
         return self.async_show_form(step_id="init", data_schema=vol.Schema(schema_dict))
 
     async def async_step_energy_manager(self, user_input=None):
@@ -252,6 +287,9 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_EM_LOOP_INTERVAL, 15
             )
             self._options[CONF_EM_DRY_RUN] = user_input.get(CONF_EM_DRY_RUN, False)
+            # Chain to RT step if enabled
+            if self._options.get(CONF_RT_ENABLED):
+                return await self.async_step_real_time_push()
             return self.async_create_entry(title="", data=self._options)
 
         # Build inverter SN options from coordinator data
@@ -330,6 +368,65 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
         return self.async_show_form(step_id="energy_manager", data_schema=schema)
+
+    async def async_step_real_time_push(self, user_input=None):
+        """Configure real-time push subscription settings."""
+        if user_input is not None:
+            self._options[CONF_RT_URL_MODE] = user_input[CONF_RT_URL_MODE]
+            self._options[CONF_RT_PUSH_RATE_MS] = int(
+                user_input.get(CONF_RT_PUSH_RATE_MS, RT_PUSH_RATE_MS_DEFAULT)
+            )
+            ext_url = user_input.get(CONF_RT_EXTERNAL_URL, "")
+            if ext_url:
+                self._options[CONF_RT_EXTERNAL_URL] = ext_url
+            else:
+                self._options.pop(CONF_RT_EXTERNAL_URL, None)
+            return self.async_create_entry(title="", data=self._options)
+
+        url_mode_options = [
+            selector.SelectOptionDict(value=RT_URL_MODE_MANUAL, label="Manual URL"),
+            selector.SelectOptionDict(
+                value=RT_URL_MODE_NABU_CASA, label="Nabu Casa"
+            ),
+        ]
+
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_RT_URL_MODE,
+                    default=self._config_entry.options.get(
+                        CONF_RT_URL_MODE, RT_URL_MODE_MANUAL
+                    ),
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=url_mode_options,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+                vol.Optional(
+                    CONF_RT_EXTERNAL_URL,
+                    default=self._config_entry.options.get(CONF_RT_EXTERNAL_URL, ""),
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
+                ),
+                vol.Optional(
+                    CONF_RT_PUSH_RATE_MS,
+                    default=self._config_entry.options.get(
+                        CONF_RT_PUSH_RATE_MS, RT_PUSH_RATE_MS_DEFAULT
+                    ),
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=5000,
+                        max=3600000,
+                        step=1000,
+                        unit_of_measurement="ms",
+                        mode=selector.NumberSelectorMode.BOX,
+                    )
+                ),
+            }
+        )
+
+        return self.async_show_form(step_id="real_time_push", data_schema=schema)
 
     def _get_controllable_sns(self) -> list[str]:
         """Get serial numbers of controllable inverters from coordinator data."""

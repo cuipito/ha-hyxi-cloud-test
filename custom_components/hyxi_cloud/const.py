@@ -12,7 +12,7 @@ BASE_URL_DEFAULT = "https://open.hyxicloud.com"
 BASE_URL = BASE_URL_DEFAULT
 
 MANUFACTURER = "HYXI Power"
-VERSION = "1.5.0"
+VERSION = "1.7.0-beta.1"
 
 CONF_BACK_DISCOVERY = "back_discovery"
 
@@ -244,3 +244,24 @@ EM_DEFAULTS: dict[str, int | float] = {
     "max_grid_export": 0,
 }
 EM_LOOP_INTERVAL = 15  # seconds
+
+# Real-time push subscription option keys
+CONF_RT_ENABLED = "rt_enabled"
+CONF_RT_URL_MODE = "rt_url_mode"
+CONF_RT_EXTERNAL_URL = "rt_external_url"
+CONF_RT_PUSH_RATE_MS = "rt_push_rate_ms"
+CONF_RT_SUBSCRIBE_CODE = "rt_subscribe_code"
+CONF_RT_WEBHOOK_ID = "rt_webhook_id"
+
+RT_PUSH_RATE_MS_DEFAULT = 30_000
+RT_FALLBACK_POLL_MINUTES = 1
+RT_PUSH_STALE_SECONDS = 120
+
+# URL mode choices for real-time push
+RT_URL_MODE_NABU_CASA = "nabu_casa"
+RT_URL_MODE_MANUAL = "manual"
+
+# Push field name → coordinator metrics key mapping.
+PUSH_TO_METRICS_MAP: dict[str, str] = {
+    "batterySoc": "batsoc",
+}
