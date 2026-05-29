@@ -1,0 +1,199 @@
+"""DataUpdateCoordinator for HYXI Cloud."""
+
+import logging
+import time
+from datetime import datetime, timedelta
+from typing import Any, TypedDict
+
+from aiohttp import ClientError
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
+from hyxi_cloud_api import HyxiApiClient
+
+from .const import (
+    CONF_BACK_DISCOVERY,
+    CONF_RT_ENABLED,
+    DOMAIN,
+    RT_FALLBACK_POLL_MINUTES,
+    RT_PUSH_STALE_SECONDS,
+    get_raw_device_code,
+    get_software_version,
+    mask_sn,
+    normalize_device_type,
+)
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class HyxiMetadata(TypedDict):
+    """Type definition for HYXI Metadata."""
+
+    last_attempts: int
+    last_success: datetime | None
+    last_error: str | None
+    api_status: str
+
+
+class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
+    """Class to manage fetching data from HYXI API."""
+
+    def __init__(self, hass: HomeAssistant, client: HyxiApiClient, entry: ConfigEntry):
+        """Initialize the coordinator with dynamic interval."""
+        rt_enabled = entry.options.get(CONF_RT_ENABLED, False)
+        interval = (
+            RT_FALLBACK_POLL_MINUTES
+            if rt_enabled
+            else entry.options.get("update_interval", 5)
+        )
+
+        _LOGGER.debug(
+            "Initializing HYXI Coordinator for '%s' with polling interval: %s minutes%s",
+            entry.title,
+            interval,
+            " (RT push fallback)" if rt_enabled else "",
+        )
+
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=timedelta(minutes=interval),
+            config_entry=entry,
+        )
+        self.client = client
+        self.entry = entry
+        self.protection_controllers: dict[str, Any] = {}
+
+        # Real-time push tracking
+        self._push_active: bool = False
+        self._last_push_received: float | None = None
+
+        self.hyxi_metadata: HyxiMetadata = {
+            "last_attempts": 0,
+            "last_success": None,
+            "last_error": None,
+            "api_status": "Starting",
+        }
+
+    def mark_push_active(self, active: bool) -> None:
+        """Set whether real-time push is active."""
+        self._push_active = active
+
+    def mark_push_received(self) -> None:
+        """Record that a push was just received."""
+        self._last_push_received = time.monotonic()
+
+    def is_push_stale(self) -> bool:
+        """Return True if push is active but no data received recently."""
+        if not self._push_active or self._last_push_received is None:
+            return False
+        return (time.monotonic() - self._last_push_received) > RT_PUSH_STALE_SECONDS
+
+    async def _async_update_data(self):
+        """Fetch data and manage metadata attributes."""
+        # Read Discovery Toggle
+        allow_discovery = self.entry.options.get(CONF_BACK_DISCOVERY, False)
+        _LOGGER.debug(
+            "HYXI Recursive device discovery via alarms is %s",
+            "ENABLED" if allow_discovery else "DISABLED",
+        )
+
+        try:
+            result = await self.client.get_all_device_data(
+                allow_back_discovery=allow_discovery
+            )
+
+            if result == "auth_failed":
+                raise ConfigEntryAuthFailed("Invalid API keys or expired token")
+
+            if result is None:
+                self.hyxi_metadata["last_attempts"] = 3  # Hard fail after retries
+                raise UpdateFailed(
+                    "HYXI Cloud unreachable. Check internet or API status."
+                )
+
+            # ✅ Success! Update metadata attributes.
+            devices = result["data"]
+
+            if not devices:
+                _LOGGER.warning(
+                    "HYXI Cloud returned success, but no plants or devices were found. "
+                    "If your developer email differs from your app email, you must share your Plant "
+                    "from the app to the developer email first."
+                )
+
+            # Warn (but don't fail) when telemetry is empty.
+            # Raising UpdateFailed here triggers HA exponential backoff,
+            # which compounds polling delays and causes stale-data perception.
+            non_collectors = [
+                dev_data
+                for dev_data in devices.values()
+                if normalize_device_type(get_raw_device_code(dev_data)) != "collector"
+            ]
+            if non_collectors and all(
+                not (set(dev_data.get("metrics") or {}) - {"last_seen"})
+                for dev_data in non_collectors
+            ):
+                _LOGGER.warning(
+                    "HYXI Cloud returned success but telemetry metrics are empty. "
+                    "Sensors may show stale values until next successful poll."
+                )
+
+            self.hyxi_metadata["last_attempts"] = result.get("attempts", 1)
+            self.hyxi_metadata["last_success"] = dt_util.utcnow()
+            self.hyxi_metadata["api_status"] = "Online"
+            self.hyxi_metadata["last_error"] = None
+
+            # Return pure device dictionary
+            await self._async_sync_device_metadata(devices)
+            return devices
+
+        except (
+            ConfigEntryAuthFailed,
+            UpdateFailed,
+        ) as err:
+            self.hyxi_metadata["last_error"] = str(err)
+            self.hyxi_metadata["api_status"] = "Error"
+            raise
+        except (ClientError, TimeoutError) as err:
+            _LOGGER.error("Unexpected error in HYXI update: %s", err)
+            self.hyxi_metadata["last_attempts"] += 1
+            self.hyxi_metadata["last_error"] = str(err)
+            self.hyxi_metadata["api_status"] = "Error"
+            raise UpdateFailed(f"Unexpected error: {err}") from err
+
+    async def _async_sync_device_metadata(self, devices):
+        """Sync software/hardware versions to the Device Registry."""
+        dev_reg = dr.async_get(self.hass)
+        for sn, dev_data in devices.items():
+            # We reuse the logic from sensor.py to generate the exact strings
+            # and cache it for the individual sensors to avoid re-calculation
+            sw_version = get_software_version(dev_data)
+            dev_data["_sw_version_cached"] = sw_version
+
+            device = dev_reg.async_get_device(identifiers={(DOMAIN, sn)})
+            if not device:
+                continue
+
+            model = dev_data.get("model")
+            hw_version = dev_data.get("hw_version")
+
+            # Only update if changed
+            if (
+                device.model != model
+                or device.sw_version != sw_version
+                or device.hw_version != hw_version
+            ):
+                _LOGGER.debug(
+                    "Updating device registry for %s: %s", mask_sn(sn), sw_version
+                )
+                dev_reg.async_update_device(
+                    device.id,
+                    model=model,
+                    sw_version=sw_version,
+                    hw_version=hw_version,
+                )

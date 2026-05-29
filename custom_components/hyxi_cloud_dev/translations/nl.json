@@ -1,0 +1,605 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbinden met HYXI Cloud",
+        "description": "Voer uw **Developer API-gegevens (AK/SK)** in. U kunt deze genereren op het [HYXIPOWER Developer Platform]({link}).\n\n**Opmerking:** Dit vereist een apart ontwikkelaarsaccount. Als uw e-mailadres voor ontwikkelaars afwijkt van uw app-e-mailadres, moet u eerst uw installatie vanuit de app **delen** met het e-mailadres voor ontwikkelaars.",
+        "data": {
+          "access_key": "Access Key (AK)",
+          "secret_key": "Secret Key (SK)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "HYXI Cloud opnieuw verifiëren",
+        "description": "Uw Access Key of Secret Key is niet meer geldig. Voer uw nieuwe inloggegevens in om de zonnemonitoring te hervatten. U kunt deze vinden op het [HYXIPOWER Developer Platform]({link}).",
+        "data": {
+          "access_key": "Access Key (AK)",
+          "secret_key": "Secret Key (SK)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kan geen verbinding maken met de HYXI servers",
+      "invalid_auth": "Ongeldige Access Key of Secret Key",
+      "unknown": "Er is een onverwachte fout opgetreden",
+      "no_devices": "Geen installaties of apparaten gevonden. Als je ontwikkelaars-e-mailadres verschilt van je app-e-mailadres, moet je eerst je installatie vanuit de app delen met het ontwikkelaars-e-mailadres."
+    },
+    "abort": {
+      "already_configured": "Dit HYXI account is al geconfigureerd.",
+      "reauth_successful": "Herauthenticatie was succesvol"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HYXI Systeemconfiguratie",
+        "description": "Pas aan hoe uw integratie communiceert met de HYXI Cloud.\n\n---",
+        "data": {
+          "update_interval": "Update-interval (1-60 minuten, Standaard: 5)",
+          "back_discovery": "Ontdekking via alarmen inschakelen (Geavanceerd)",
+          "enable_battery_control": "Apparaatcontrole en -bescherming inschakelen",
+          "enable_energy_manager": "Enable Energy Manager Standalone (Beta)",
+          "rt_enabled": "Enable Real-Time Push (Beta)"
+        }
+      },
+      "real_time_push": {
+        "title": "Real-Time Push",
+        "description": "Configure webhook-based real-time data delivery from the HYXI Cloud. Requires a publicly accessible URL.",
+        "data": {
+          "rt_url_mode": "URL Mode",
+          "rt_external_url": "External URL (for Manual mode)",
+          "rt_push_rate_ms": "Push Interval (ms)"
+        }
+      },
+      "energy_manager": {
+        "title": "Energy Manager",
+        "description": "Configure the Energy Manager to optimize battery usage based on solar production, grid meter, and forecast data.",
+        "data": {
+          "em_p1_entity": "P1 Smart Meter (power sensor)",
+          "em_forecast_entity": "Solar Forecast Remaining Today (optional)",
+          "em_forecast_power_entity": "Solar Forecast Current Power (optional)",
+          "em_inverter_sn": "Inverter to Control",
+          "em_battery_capacity_override": "Override Battery Capacity",
+          "em_battery_capacity_wh": "Battery Capacity (Wh)",
+          "em_loop_interval": "Decision Loop Interval (seconds)",
+          "em_dry_run": "Dry-Run Mode (no API calls)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Cloud Status"
+      },
+      "device_alarm": {
+        "name": "Actieve Problemen",
+        "state": {
+          "off": "Geen",
+          "on": "Probleem"
+        }
+      },
+"vpp_active": {
+        "name": "VPP Control Active",
+        "state": {
+          "off": "Normal Operation",
+          "on": "VPP Dispatch Active"
+        }
+      },
+      "em_night_mode_active": {
+        "name": "Night Mode"
+      },
+      "em_high_load_detected": {
+        "name": "High Load Detected"
+      }
+    },
+    "sensor": {
+      "batsoc": {
+        "name": "Batterij Laadstatus (SoC)"
+      },
+      "pbat": {
+        "name": "Batterijvermogen"
+      },
+      "ppv": {
+        "name": "Zonne-energie"
+      },
+      "duisoc": {
+        "name": "Batterij SOC"
+      },
+      "cuvolt": {
+        "name": "Batterijspanning"
+      },
+      "cucurr": {
+        "name": "Batterijstroom"
+      },
+      "cupower": {
+        "name": "Batterijvermogen (EMS)"
+      },
+      "cusoh": {
+        "name": "Batterij SOH"
+      },
+      "cuavgcelltemp": {
+        "name": "Gemiddelde Batterijtemperatuur"
+      },
+      "duichargetoday": {
+        "name": "Dagelijks Laden"
+      },
+      "duiunchargetoday": {
+        "name": "Dagelijks Ontladen"
+      },
+      "home_load": {
+        "name": "Huisverbruik"
+      },
+      "grid_import": {
+        "name": "Net Import"
+      },
+      "grid_export": {
+        "name": "Net Teruglevering"
+      },
+      "bat_charging": {
+        "name": "Batterij Opladen"
+      },
+      "bat_discharging": {
+        "name": "Batterij Ontladen"
+      },
+      "totale": {
+        "name": "Totale Energieopbrengst"
+      },
+      "bat_charge_total": {
+        "name": "Totaal Batterij Opgeladen"
+      },
+      "bat_discharge_total": {
+        "name": "Totaal Batterij Ontladen"
+      },
+      "batsoh": {
+        "name": "Batterij Gezondheid (SoH)"
+      },
+      "tinv": {
+        "name": "Interne Temperatuur"
+      },
+      "collecttime": {
+        "name": "Gegevensverzamelingstijd"
+      },
+      "last_seen": {
+        "name": "Laatste Cloud Sync"
+      },
+      "integration_last_updated": {
+        "name": "Integratie Laatst Bijgewerkt"
+      },
+      "batcap": {
+        "name": "Batterijcapaciteit"
+      },
+      "packnum": {
+        "name": "Aantal batterijmodules"
+      },
+      "maxchargepower": {
+        "name": "Max Laadlimiet"
+      },
+      "maxdischargepower": {
+        "name": "Max Ontlaadlimiet"
+      },
+      "signalintensity": {
+        "name": "Wi-Fi Signaalsterkte"
+      },
+      "signalval": {
+        "name": "Wi-Fi Signaalkwaliteit"
+      },
+      "wifiver": {
+        "name": "Software wifimodule"
+      },
+      "app_sw": {
+        "name": "Applicatiesoftware"
+      },
+      "master_sw": {
+        "name": "Controlesoftware (Master)"
+      },
+      "slave_sw": {
+        "name": "Controlesoftware (Secondair)"
+      },
+      "commode": {
+        "name": "Communicatiemodus"
+      },
+      "acp": {
+        "name": "AC Vermogen"
+      },
+      "vac": {
+        "name": "AC Spanning"
+      },
+      "vpv": {
+        "name": "PV Spanning"
+      },
+      "etoday": {
+        "name": "Energie Vandaag"
+      },
+      "efpv": {
+        "name": "PV-opbrengst Vandaag"
+      },
+      "ph1loadp": {
+        "name": "Fase 1 Belasting"
+      },
+      "ph2loadp": {
+        "name": "Fase 2 Belasting"
+      },
+      "ph3loadp": {
+        "name": "Fase 3 Belasting"
+      },
+      "pv1v": {
+        "name": "PV1 Spanning"
+      },
+      "pv2v": {
+        "name": "PV2 Spanning"
+      },
+      "pv1i": {
+        "name": "PV1 Stroom"
+      },
+      "pv2i": {
+        "name": "PV2 Stroom"
+      },
+      "pv1p": {
+        "name": "PV1 Vermogen"
+      },
+      "pv2p": {
+        "name": "PV2 Vermogen"
+      },
+      "pv3v": {
+        "name": "PV3 Spanning"
+      },
+      "pv4v": {
+        "name": "PV4 Spanning"
+      },
+      "pv3i": {
+        "name": "PV3 Stroom"
+      },
+      "pv4i": {
+        "name": "PV4 Stroom"
+      },
+      "pv3p": {
+        "name": "PV3 Vermogen"
+      },
+      "pv4p": {
+        "name": "PV4 Vermogen"
+      },
+      "batv": {
+        "name": "Batterijspanning"
+      },
+      "bati": {
+        "name": "Batterijstroom"
+      },
+      "vbus": {
+        "name": "Bus Spanning"
+      },
+      "f": {
+        "name": "Netfrequentie"
+      },
+      "ace": {
+        "name": "AC Energie"
+      },
+      "devicestate": {
+        "name": "Apparaatstatus",
+        "state": {
+          "1": "Online",
+          "2": "Offline",
+          "3": "Alarm",
+          "10": "Niet geactiveerd"
+        }
+      },
+      "device_type": {
+        "name": "Apparaattype",
+        "state": {
+          "hybrid_inverter": "Hybride omvormer",
+          "grid_connected_inverter": "Netgekoppelde omvormer",
+          "collector": "Datalogger",
+          "micro_ess": "Micro-energieopslagsysteem (Micro ESS)",
+          "unknown": "Onbekend",
+          "micro_inverter": "Micro-omvormer",
+          "optimizer": "Optimalisator",
+          "meter": "Meter",
+          "battery": "Batterij",
+          "ac_battery": "AC-batterij"
+        }
+      },
+      "ratedpower": {
+        "name": "Nominaal Vermogen"
+      },
+      "ratedvoltage": {
+        "name": "Nominale Spanning"
+      },
+      "childnum": {
+        "name": "Verbonden Apparaten"
+      },
+      "ph1v": {
+        "name": "Fase 1 Spanning"
+      },
+      "ph1i": {
+        "name": "Fase 1 Stroom"
+      },
+      "ph1p": {
+        "name": "Fase 1 Vermogen"
+      },
+      "ph2v": {
+        "name": "Fase 2 Spanning"
+      },
+      "ph2i": {
+        "name": "Fase 2 Stroom"
+      },
+      "ph2p": {
+        "name": "Fase 2 Vermogen"
+      },
+      "ph3v": {
+        "name": "Fase 3 Spanning"
+      },
+      "ph3i": {
+        "name": "Fase 3 Stroom"
+      },
+      "ph3p": {
+        "name": "Fase 3 Vermogen"
+      },
+      "internal_temperature": {
+        "name": "Interne Temperatuur"
+      },
+      "invsts": {
+        "name": "Omvormer status",
+        "state": {
+          "0": "Stand-by",
+          "1": "Normaal",
+          "2": "Alarm",
+          "3": "Fout",
+          "4": "Uitschakeling"
+        }
+      },
+      "faultsts": {
+        "name": "Foutstatus",
+        "state": {
+          "0": "Fout",
+          "1": "Geen fout"
+        }
+      },
+      "gridsts": {
+        "name": "Netstatus",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "devicegridconn": {
+        "name": "Netverbindingstatus",
+        "state": {
+          "0": "Off-Grid",
+          "1": "On-Grid"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Schakelaarstatus",
+        "state": {
+          "0": "Uitschakelen",
+          "1": "Inschakelen"
+        }
+      },
+      "pvpower": {
+        "name": "Totaal PV-vermogen"
+      },
+      "pvnum": {
+        "name": "PV-aantal"
+      },
+      "acsidetemper": {
+        "name": "Temperatuur AC-zijde"
+      },
+      "dcsidetemper": {
+        "name": "Temperatuur DC-zijde"
+      },
+      "gridf": {
+        "name": "Netfrequentie"
+      },
+      "gridp": {
+        "name": "Netvermogen"
+      },
+      "gridq": {
+        "name": "Net blindvermogen"
+      },
+      "gridpfd": {
+        "name": "Net vermogensfactor"
+      },
+      "gridap": {
+        "name": "Net schijnbaar vermogen"
+      },
+      "offgridf": {
+        "name": "Off-grid frequentie"
+      },
+      "offgridp": {
+        "name": "Off-grid vermogen"
+      },
+      "offgridq": {
+        "name": "Off-grid blindvermogen"
+      },
+      "offgridpfd": {
+        "name": "Off-grid vermogensfactor"
+      },
+      "offgridap": {
+        "name": "Off-grid schijnbaar vermogen"
+      },
+      "batvch": {
+        "name": "Max celspanning"
+      },
+      "batvcl": {
+        "name": "Min celspanning"
+      },
+      "battch": {
+        "name": "Max celtemperatuur"
+      },
+      "battcl": {
+        "name": "Min celtemperatuur"
+      },
+      "baticm": {
+        "name": "Max laadstroom"
+      },
+      "batidm": {
+        "name": "Max ontlaadstroom"
+      },
+      "batcharge": {
+        "name": "Dagelijkse laadenergie"
+      },
+      "batdischarge": {
+        "name": "Dagelijkse ontlaadenergie"
+      },
+      "totalechg": {
+        "name": "Totale laadenergie"
+      },
+      "totaledchg": {
+        "name": "Totale ontlaadenergie"
+      },
+      "ratedfrequency": {
+        "name": "Nominale frequentie"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      },
+      "em_current_decision": {
+        "name": "EM Decision"
+      },
+      "em_last_action": {
+        "name": "EM Last Action"
+      },
+      "em_battery_energy_available": {
+        "name": "Battery Energy Available"
+      },
+      "em_hours_until_sunrise": {
+        "name": "Hours Until Sunrise"
+      },
+      "em_hours_until_sunset": {
+        "name": "Hours Until Sunset"
+      },
+      "em_p1_average": {
+        "name": "P1 Average Power"
+      },
+      "em_status": {
+        "name": "EM Status"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Doellaadvermogen"
+      },
+      "discharge_power": {
+        "name": "Doelontlaadvermogen"
+      },
+      "micro_power_limit": {
+        "name": "Vermogenslimiet"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      },
+      "em_high_load_threshold": {
+        "name": "High Load Threshold"
+      },
+      "em_max_charge_power": {
+        "name": "Max Charge Power"
+      },
+      "em_max_discharge_power": {
+        "name": "Max Discharge Power"
+      },
+      "em_min_solar_for_charge": {
+        "name": "Min Solar for Charge"
+      },
+      "em_mode_switch_cooldown": {
+        "name": "Mode Switch Cooldown"
+      },
+      "em_power_change_threshold": {
+        "name": "Power Change Threshold"
+      },
+      "em_power_adjust_cooldown": {
+        "name": "Power Adjust Cooldown"
+      },
+      "em_night_buffer_pct": {
+        "name": "Night Buffer"
+      },
+      "em_avg_night_consumption": {
+        "name": "Avg Night Consumption"
+      },
+      "em_charge_margin": {
+        "name": "Charge Margin"
+      },
+      "em_charge_entry_threshold": {
+        "name": "Charge Entry Threshold"
+      },
+      "em_charge_reentry_delay": {
+        "name": "Charge Re-entry Delay"
+      },
+      "em_bottomout_cooldown": {
+        "name": "Bottom-out Cooldown"
+      },
+      "em_max_grid_export": {
+        "name": "Max Grid Export"
+      },
+      "em_p1_smoothing_period": {
+        "name": "P1 Smoothing Period"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frequentieregeling"
+      },
+      "micro_power": {
+        "name": "Voeding"
+      },
+      "em_grid_charge_allowed": {
+        "name": "Grid Charge Allowed"
+      },
+      "em_enabled": {
+        "name": "Energy Manager"
+      },
+      "em_high_load_battery_assist": {
+        "name": "High Load Battery Assist"
+      },
+      "em_night_mode": {
+        "name": "Night Mode"
+      },
+      "em_export_limiting": {
+        "name": "Export Limiting"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Apparaat herstarten"
+      },
+      "mode_idle": {
+        "name": "Modus: Inactief"
+      },
+      "mode_charge": {
+        "name": "Modus: Laden"
+      },
+      "mode_discharge": {
+        "name": "Modus: Ontladen"
+      },
+      "mode_self_consume": {
+        "name": "Modus: Eigenverbruik"
+      },
+      "peak_shaving_close": {
+        "name": "Piekbesparing: Uitschakelen"
+      },
+      "peak_shaving_charge": {
+        "name": "Piekbesparing: Geforceerd laden"
+      },
+      "peak_shaving_discharge": {
+        "name": "Piekbesparing: Geforceerd ontladen"
+      },
+      "peak_shaving_stop": {
+        "name": "Piekbesparing: Stoppen"
+      },
+      "peak_shaving_hold": {
+        "name": "Piekbesparing: Vasthouden"
+      },
+      "clear_alarms": {
+        "name": "Actieve alarmen wissen"
+      }
+    }
+  }
+}

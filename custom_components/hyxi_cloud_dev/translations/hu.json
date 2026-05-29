@@ -1,0 +1,605 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Csatlakozás a HYXI Cloudhoz",
+        "description": "Adja meg **fejlesztői API hitelesítő adatait (AK/SK)**. Ezeket a [HYXIPOWER fejlesztői platformon]({link}) hozhatja létre.\n\n**Megjegyzés:** Ehhez külön fejlesztői fiókra van szükség. Ha a fejlesztői e-mail-címe eltér az alkalmazásban használt e-mail-címétől, először **meg kell osztania az üzemét (Plant)** az alkalmazásból a fejlesztői e-mail-címre.",
+        "data": {
+          "access_key": "Hozzáférési kulcs (AK)",
+          "secret_key": "Titkos kulcs (SK)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "HYXI Cloud újrahitelesítése",
+        "description": "A hozzáférési kulcsa vagy a titkos kulcsa már nem érvényes. Kérjük, adja meg az új hitelesítő adatait a napelemes figyelés folytatásához. Ezeket a [HYXIPOWER fejlesztői platformon]({link}) találja meg.",
+        "data": {
+          "access_key": "Hozzáférési kulcs (AK)",
+          "secret_key": "Titkos kulcs (SK)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nem sikerült csatlakozni a HYXI szerverekhez",
+      "invalid_auth": "Érvénytelen hozzáférési kulcs vagy titkos kulcs",
+      "unknown": "Váratlan hiba történt",
+      "no_devices": "Nem található erőmű vagy eszköz. Ha a fejlesztői e-mail-címe eltér az alkalmazás e-mail-címétől, először meg kell osztania az erőművét az alkalmazásból a fejlesztői e-mail-címmel."
+    },
+    "abort": {
+      "already_configured": "Ez a HYXI fiók már be van konfigurálva.",
+      "reauth_successful": "Az újrahitelesítés sikeres volt"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HYXI rendszerkonfiguráció",
+        "description": "Állítsa be, hogyan kommunikáljon az integráció a HYXI Clouddal.\n\n---",
+        "data": {
+          "update_interval": "Lekérdezési időköz (1-60 perc, alapértelmezett: 5)",
+          "back_discovery": "Eszközfelderítés engedélyezése riasztásokon keresztül (haladó)",
+          "enable_battery_control": "Eszközvezérlés és -védelem engedélyezése",
+          "enable_energy_manager": "Enable Energy Manager Standalone (Beta)",
+          "rt_enabled": "Enable Real-Time Push (Beta)"
+        }
+      },
+      "real_time_push": {
+        "title": "Real-Time Push",
+        "description": "Configure webhook-based real-time data delivery from the HYXI Cloud. Requires a publicly accessible URL.",
+        "data": {
+          "rt_url_mode": "URL Mode",
+          "rt_external_url": "External URL (for Manual mode)",
+          "rt_push_rate_ms": "Push Interval (ms)"
+        }
+      },
+      "energy_manager": {
+        "title": "Energy Manager",
+        "description": "Configure the Energy Manager to optimize battery usage based on solar production, grid meter, and forecast data.",
+        "data": {
+          "em_p1_entity": "P1 Smart Meter (power sensor)",
+          "em_forecast_entity": "Solar Forecast Remaining Today (optional)",
+          "em_forecast_power_entity": "Solar Forecast Current Power (optional)",
+          "em_inverter_sn": "Inverter to Control",
+          "em_battery_capacity_override": "Override Battery Capacity",
+          "em_battery_capacity_wh": "Battery Capacity (Wh)",
+          "em_loop_interval": "Decision Loop Interval (seconds)",
+          "em_dry_run": "Dry-Run Mode (no API calls)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Felhő állapota"
+      },
+      "device_alarm": {
+        "name": "Aktív problémák",
+        "state": {
+          "off": "Nincs",
+          "on": "Probléma"
+        }
+      },
+"vpp_active": {
+        "name": "VPP Control Active",
+        "state": {
+          "off": "Normal Operation",
+          "on": "VPP Dispatch Active"
+        }
+      },
+      "em_night_mode_active": {
+        "name": "Night Mode"
+      },
+      "em_high_load_detected": {
+        "name": "High Load Detected"
+      }
+    },
+    "sensor": {
+      "batsoc": {
+        "name": "Akkumulátor töltöttségi szintje"
+      },
+      "pbat": {
+        "name": "Akkumulátor teljesítmény"
+      },
+      "ppv": {
+        "name": "Napelem teljesítmény"
+      },
+      "duisoc": {
+        "name": "Akkumulátor SOC"
+      },
+      "cuvolt": {
+        "name": "Akkumulátor feszültség"
+      },
+      "cucurr": {
+        "name": "Akkumulátor áramerősség"
+      },
+      "cupower": {
+        "name": "Akkumulátor teljesítmény (EMS)"
+      },
+      "cusoh": {
+        "name": "Akkumulátor SOH"
+      },
+      "cuavgcelltemp": {
+        "name": "Akkumulátorcsomag hőmérséklet"
+      },
+      "duichargetoday": {
+        "name": "Napi töltés"
+      },
+      "duiunchargetoday": {
+        "name": "Napi kisütés"
+      },
+      "home_load": {
+        "name": "Ház terhelése"
+      },
+      "grid_import": {
+        "name": "Hálózati import"
+      },
+      "grid_export": {
+        "name": "Hálózati export"
+      },
+      "bat_charging": {
+        "name": "Akkumulátor töltődik"
+      },
+      "bat_discharging": {
+        "name": "Akkumulátor merül"
+      },
+      "totale": {
+        "name": "Teljes energiahozam"
+      },
+      "bat_charge_total": {
+        "name": "Teljes akkumulátor töltés"
+      },
+      "bat_discharge_total": {
+        "name": "Teljes akkumulátor kisütés"
+      },
+      "batsoh": {
+        "name": "Akkumulátor egészségi állapota"
+      },
+      "tinv": {
+        "name": "Belső hőmérséklet"
+      },
+      "collecttime": {
+        "name": "Adatgyűjtés ideje"
+      },
+      "last_seen": {
+        "name": "Utolsó felhő szinkronizáció"
+      },
+      "integration_last_updated": {
+        "name": "Integráció utoljára frissítve"
+      },
+      "batcap": {
+        "name": "Akkumulátor kapacitás"
+      },
+      "packnum": {
+        "name": "Akkumulátorcsomagok száma"
+      },
+      "maxchargepower": {
+        "name": "Max. töltési limit"
+      },
+      "maxdischargepower": {
+        "name": "Max. kisütési limit"
+      },
+      "signalintensity": {
+        "name": "Wi-Fi jelerősség"
+      },
+      "signalval": {
+        "name": "Wi-Fi jelminőség"
+      },
+      "wifiver": {
+        "name": "Wi-Fi modul szoftver"
+      },
+      "app_sw": {
+        "name": "Alkalmazás szoftver"
+      },
+      "master_sw": {
+        "name": "Vezérlő szoftver (Master)"
+      },
+      "slave_sw": {
+        "name": "Vezérlő szoftver (Secondary)"
+      },
+      "commode": {
+        "name": "Kommunikációs mód"
+      },
+      "acp": {
+        "name": "AC teljesítmény"
+      },
+      "vac": {
+        "name": "AC feszültség"
+      },
+      "vpv": {
+        "name": "PV feszültség"
+      },
+      "etoday": {
+        "name": "Mai energia"
+      },
+      "efpv": {
+        "name": "Mai PV-hozam"
+      },
+      "ph1loadp": {
+        "name": "1. fázis terhelés"
+      },
+      "ph2loadp": {
+        "name": "2. fázis terhelés"
+      },
+      "ph3loadp": {
+        "name": "3. fázis terhelés"
+      },
+      "pv1v": {
+        "name": "PV1 feszültség"
+      },
+      "pv2v": {
+        "name": "PV2 feszültség"
+      },
+      "pv1i": {
+        "name": "PV1 áramerősség"
+      },
+      "pv2i": {
+        "name": "PV2 áramerősség"
+      },
+      "pv1p": {
+        "name": "PV1 teljesítmény"
+      },
+      "pv2p": {
+        "name": "PV2 teljesítmény"
+      },
+      "pv3v": {
+        "name": "PV3 feszültség"
+      },
+      "pv4v": {
+        "name": "PV4 feszültség"
+      },
+      "pv3i": {
+        "name": "PV3 áramerősség"
+      },
+      "pv4i": {
+        "name": "PV4 áramerősség"
+      },
+      "pv3p": {
+        "name": "PV3 teljesítmény"
+      },
+      "pv4p": {
+        "name": "PV4 teljesítmény"
+      },
+      "batv": {
+        "name": "Akkumulátor feszültség"
+      },
+      "bati": {
+        "name": "Akkumulátor áramerősség"
+      },
+      "vbus": {
+        "name": "Busz feszültség"
+      },
+      "f": {
+        "name": "Hálózati frekvencia"
+      },
+      "ace": {
+        "name": "AC energia"
+      },
+      "devicestate": {
+        "name": "Eszköz állapota",
+        "state": {
+          "1": "Online",
+          "2": "Offline",
+          "3": "Riasztás",
+          "10": "Nincs aktiválva"
+        }
+      },
+      "device_type": {
+        "name": "Eszköz típusa",
+        "state": {
+          "hybrid_inverter": "Hibrid inverter",
+          "grid_connected_inverter": "Hálózatra kapcsolt inverter",
+          "collector": "Adatgyűjtő",
+          "micro_ess": "Micro ESS",
+          "unknown": "Ismeretlen",
+          "micro_inverter": "Mikroinverter",
+          "optimizer": "Optimalizáló",
+          "meter": "Mérő",
+          "battery": "Akkumulátor",
+          "ac_battery": "AC akkumulátor"
+        }
+      },
+      "ratedpower": {
+        "name": "Névleges teljesítmény"
+      },
+      "ratedvoltage": {
+        "name": "Névleges feszültség"
+      },
+      "childnum": {
+        "name": "Csatlakoztatott eszközök"
+      },
+      "ph1v": {
+        "name": "1. fázis feszültség"
+      },
+      "ph1i": {
+        "name": "1. fázis áramerősség"
+      },
+      "ph1p": {
+        "name": "1. fázis teljesítmény"
+      },
+      "ph2v": {
+        "name": "2. fázis feszültség"
+      },
+      "ph2i": {
+        "name": "2. fázis áramerősség"
+      },
+      "ph2p": {
+        "name": "2. fázis teljesítmény"
+      },
+      "ph3v": {
+        "name": "3. fázis feszültség"
+      },
+      "ph3i": {
+        "name": "3. fázis áramerősség"
+      },
+      "ph3p": {
+        "name": "3. fázis teljesítmény"
+      },
+      "internal_temperature": {
+        "name": "Belső hőmérséklet"
+      },
+      "invsts": {
+        "name": "Inverter állapota",
+        "state": {
+          "0": "Készenlét",
+          "1": "Normál",
+          "2": "Riasztás",
+          "3": "Hiba",
+          "4": "Leállítás"
+        }
+      },
+      "faultsts": {
+        "name": "Hibaállapot",
+        "state": {
+          "0": "Hiba",
+          "1": "Nincs hiba"
+        }
+      },
+      "gridsts": {
+        "name": "Hálózati állapot",
+        "state": {
+          "0": "Hálózaton kívüli",
+          "1": "Hálózaton belüli"
+        }
+      },
+      "devicegridconn": {
+        "name": "Hálózati csatlakozási állapot",
+        "state": {
+          "0": "Hálózaton kívüli",
+          "1": "Hálózaton belüli"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Kapcsoló állapota",
+        "state": {
+          "0": "Leállítás",
+          "1": "Bekapcsolás"
+        }
+      },
+      "pvpower": {
+        "name": "PV teljesítmény"
+      },
+      "pvnum": {
+        "name": "PV darabszám"
+      },
+      "acsidetemper": {
+        "name": "AC oldali hőmérséklet"
+      },
+      "dcsidetemper": {
+        "name": "DC oldali hőmérséklet"
+      },
+      "gridf": {
+        "name": "Hálózati frekvencia"
+      },
+      "gridp": {
+        "name": "Hálózati teljesítmény"
+      },
+      "gridq": {
+        "name": "Hálózati reaktív teljesítmény"
+      },
+      "gridpfd": {
+        "name": "Hálózati teljesítménytényező"
+      },
+      "gridap": {
+        "name": "Hálózati látszólagos teljesítmény"
+      },
+      "offgridf": {
+        "name": "Hálózaton kívüli frekvencia"
+      },
+      "offgridp": {
+        "name": "Hálózaton kívüli teljesítmény"
+      },
+      "offgridq": {
+        "name": "Hálózaton kívüli reaktív teljesítmény"
+      },
+      "offgridpfd": {
+        "name": "Hálózaton kívüli teljesítménytényező"
+      },
+      "offgridap": {
+        "name": "Hálózaton kívüli látszólagos teljesítmény"
+      },
+      "batvch": {
+        "name": "Max. cellafeszültség"
+      },
+      "batvcl": {
+        "name": "Min. cellafeszültség"
+      },
+      "battch": {
+        "name": "Max. cellahőmérséklet"
+      },
+      "battcl": {
+        "name": "Min. cellahőmérséklet"
+      },
+      "baticm": {
+        "name": "Max. töltőáram"
+      },
+      "batidm": {
+        "name": "Max. kisütési áram"
+      },
+      "batcharge": {
+        "name": "Napi töltési energia"
+      },
+      "batdischarge": {
+        "name": "Napi kisütési energia"
+      },
+      "totalechg": {
+        "name": "Teljes töltési energia"
+      },
+      "totaledchg": {
+        "name": "Teljes kisütési energia"
+      },
+      "ratedfrequency": {
+        "name": "Névleges frekvencia"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      },
+      "em_current_decision": {
+        "name": "EM Decision"
+      },
+      "em_last_action": {
+        "name": "EM Last Action"
+      },
+      "em_battery_energy_available": {
+        "name": "Battery Energy Available"
+      },
+      "em_hours_until_sunrise": {
+        "name": "Hours Until Sunrise"
+      },
+      "em_hours_until_sunset": {
+        "name": "Hours Until Sunset"
+      },
+      "em_p1_average": {
+        "name": "P1 Average Power"
+      },
+      "em_status": {
+        "name": "EM Status"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Cél töltési teljesítmény"
+      },
+      "discharge_power": {
+        "name": "Cél kisütési teljesítmény"
+      },
+      "micro_power_limit": {
+        "name": "Teljesítménykorlát"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      },
+      "em_high_load_threshold": {
+        "name": "High Load Threshold"
+      },
+      "em_max_charge_power": {
+        "name": "Max Charge Power"
+      },
+      "em_max_discharge_power": {
+        "name": "Max Discharge Power"
+      },
+      "em_min_solar_for_charge": {
+        "name": "Min Solar for Charge"
+      },
+      "em_mode_switch_cooldown": {
+        "name": "Mode Switch Cooldown"
+      },
+      "em_power_change_threshold": {
+        "name": "Power Change Threshold"
+      },
+      "em_power_adjust_cooldown": {
+        "name": "Power Adjust Cooldown"
+      },
+      "em_night_buffer_pct": {
+        "name": "Night Buffer"
+      },
+      "em_avg_night_consumption": {
+        "name": "Avg Night Consumption"
+      },
+      "em_charge_margin": {
+        "name": "Charge Margin"
+      },
+      "em_charge_entry_threshold": {
+        "name": "Charge Entry Threshold"
+      },
+      "em_charge_reentry_delay": {
+        "name": "Charge Re-entry Delay"
+      },
+      "em_bottomout_cooldown": {
+        "name": "Bottom-out Cooldown"
+      },
+      "em_max_grid_export": {
+        "name": "Max Grid Export"
+      },
+      "em_p1_smoothing_period": {
+        "name": "P1 Smoothing Period"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Frekvenciaszabályozás"
+      },
+      "micro_power": {
+        "name": "Tápellátás"
+      },
+      "em_grid_charge_allowed": {
+        "name": "Grid Charge Allowed"
+      },
+      "em_enabled": {
+        "name": "Energy Manager"
+      },
+      "em_high_load_battery_assist": {
+        "name": "High Load Battery Assist"
+      },
+      "em_night_mode": {
+        "name": "Night Mode"
+      },
+      "em_export_limiting": {
+        "name": "Export Limiting"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Eszköz újraindítása"
+      },
+      "mode_idle": {
+        "name": "Mód: Készenléti"
+      },
+      "mode_charge": {
+        "name": "Mód: Töltés"
+      },
+      "mode_discharge": {
+        "name": "Mód: Kisütés"
+      },
+      "mode_self_consume": {
+        "name": "Mód: Önfogyasztás"
+      },
+      "peak_shaving_close": {
+        "name": "Csúcskisímítás: Kikapcsolás"
+      },
+      "peak_shaving_charge": {
+        "name": "Csúcskisímítás: Töltés kényszerítése"
+      },
+      "peak_shaving_discharge": {
+        "name": "Csúcskisímítás: Kisütés kényszerítése"
+      },
+      "peak_shaving_stop": {
+        "name": "Csúcskisímítás: Leállítás"
+      },
+      "peak_shaving_hold": {
+        "name": "Csúcskisímítás: Tartás"
+      },
+      "clear_alarms": {
+        "name": "Aktív riasztások törlése"
+      }
+    }
+  }
+}

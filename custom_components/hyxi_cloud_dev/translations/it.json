@@ -1,0 +1,605 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connettiti a HYXI Cloud",
+        "description": "Inserisci le tue **credenziali API sviluppatore (AK/SK)**. Puoi generarle sulla [Piattaforma sviluppatori HYXIPOWER]({link}).\n\n**Nota:** È necessario un account sviluppatore separato. Se l'e-mail dello sviluppatore differisce dall'e-mail dell'app, devi prima **Condividere il tuo impianto** dall'app all'e-mail dello sviluppatore.",
+        "data": {
+          "access_key": "Chiave di accesso (AK)",
+          "secret_key": "Chiave segreta (SK)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Riautenticazione HYXI Cloud",
+        "description": "La tua chiave di accesso o la tua chiave segreta non sono più valide. Inserisci le nuove credenziali per riprendere il monitoraggio solare. Puoi trovarle sulla [Piattaforma sviluppatori HYXIPOWER]({link}).",
+        "data": {
+          "access_key": "Chiave di accesso (AK)",
+          "secret_key": "Chiave segreta (SK)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Connessione ai server HYXI non riuscita",
+      "invalid_auth": "Chiave di accesso o chiave segreta non valida",
+      "unknown": "Si è verificato un errore imprevisto",
+      "no_devices": "Nessun impianto o dispositivo trovato. Se l'e-mail dello sviluppatore differisce da quella dell'app, devi prima condividere il tuo impianto dall'app all'e-mail dello sviluppatore."
+    },
+    "abort": {
+      "already_configured": "Questo account HYXI è già configurato.",
+      "reauth_successful": "La riautenticazione è andata a buon fine"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configurazione del sistema HYXI",
+        "description": "Regola il modo in cui la tua integrazione comunica con HYXI Cloud.\n\n---",
+        "data": {
+          "update_interval": "Intervallo di aggiornamento (1-60 Minuti, Predefinito: 5)",
+          "back_discovery": "Abilita il rilevamento tramite allarmi (Avanzato)",
+          "enable_battery_control": "Abilita controllo e protezione dispositivo",
+          "enable_energy_manager": "Enable Energy Manager Standalone (Beta)",
+          "rt_enabled": "Enable Real-Time Push (Beta)"
+        }
+      },
+      "real_time_push": {
+        "title": "Real-Time Push",
+        "description": "Configure webhook-based real-time data delivery from the HYXI Cloud. Requires a publicly accessible URL.",
+        "data": {
+          "rt_url_mode": "URL Mode",
+          "rt_external_url": "External URL (for Manual mode)",
+          "rt_push_rate_ms": "Push Interval (ms)"
+        }
+      },
+      "energy_manager": {
+        "title": "Energy Manager",
+        "description": "Configure the Energy Manager to optimize battery usage based on solar production, grid meter, and forecast data.",
+        "data": {
+          "em_p1_entity": "P1 Smart Meter (power sensor)",
+          "em_forecast_entity": "Solar Forecast Remaining Today (optional)",
+          "em_forecast_power_entity": "Solar Forecast Current Power (optional)",
+          "em_inverter_sn": "Inverter to Control",
+          "em_battery_capacity_override": "Override Battery Capacity",
+          "em_battery_capacity_wh": "Battery Capacity (Wh)",
+          "em_loop_interval": "Decision Loop Interval (seconds)",
+          "em_dry_run": "Dry-Run Mode (no API calls)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Stato Cloud"
+      },
+      "device_alarm": {
+        "name": "Problemi attivi",
+        "state": {
+          "off": "Nessuno",
+          "on": "Problema"
+        }
+      },
+"vpp_active": {
+        "name": "VPP Control Active",
+        "state": {
+          "off": "Normal Operation",
+          "on": "VPP Dispatch Active"
+        }
+      },
+      "em_night_mode_active": {
+        "name": "Night Mode"
+      },
+      "em_high_load_detected": {
+        "name": "High Load Detected"
+      }
+    },
+    "sensor": {
+      "batsoc": {
+        "name": "Stato di carica batteria"
+      },
+      "pbat": {
+        "name": "Potenza batteria"
+      },
+      "ppv": {
+        "name": "Potenza solare"
+      },
+      "duisoc": {
+        "name": "SOC batteria"
+      },
+      "cuvolt": {
+        "name": "Tensione batteria"
+      },
+      "cucurr": {
+        "name": "Corrente batteria"
+      },
+      "cupower": {
+        "name": "Potenza batteria (EMS)"
+      },
+      "cusoh": {
+        "name": "SOH batteria"
+      },
+      "cuavgcelltemp": {
+        "name": "Temp. pacco batteria"
+      },
+      "duichargetoday": {
+        "name": "Carica giornaliera"
+      },
+      "duiunchargetoday": {
+        "name": "Scarica giornaliera"
+      },
+      "home_load": {
+        "name": "Carico domestico"
+      },
+      "grid_import": {
+        "name": "Importazione rete"
+      },
+      "grid_export": {
+        "name": "Esportazione rete"
+      },
+      "bat_charging": {
+        "name": "Ricarica batteria"
+      },
+      "bat_discharging": {
+        "name": "Scarica batteria"
+      },
+      "totale": {
+        "name": "Rendimento energetico totale"
+      },
+      "bat_charge_total": {
+        "name": "Carica totale batteria"
+      },
+      "bat_discharge_total": {
+        "name": "Scarica totale batteria"
+      },
+      "batsoh": {
+        "name": "Stato di salute della batteria"
+      },
+      "tinv": {
+        "name": "Temperatura interna"
+      },
+      "collecttime": {
+        "name": "Ora raccolta dati"
+      },
+      "last_seen": {
+        "name": "Ultima sincronizzazione cloud"
+      },
+      "integration_last_updated": {
+        "name": "Ultimo aggiornamento integrazione"
+      },
+      "batcap": {
+        "name": "Capacità batteria"
+      },
+      "packnum": {
+        "name": "Numero pacchi batteria"
+      },
+      "maxchargepower": {
+        "name": "Limite max carica"
+      },
+      "maxdischargepower": {
+        "name": "Limite max scarica"
+      },
+      "signalintensity": {
+        "name": "Intensità segnale Wi-Fi"
+      },
+      "signalval": {
+        "name": "Qualità segnale Wi-Fi"
+      },
+      "wifiver": {
+        "name": "Software modulo Wi-Fi"
+      },
+      "app_sw": {
+        "name": "Software applicazione"
+      },
+      "master_sw": {
+        "name": "Software di controllo (Master)"
+      },
+      "slave_sw": {
+        "name": "Software di controllo (Secondario)"
+      },
+      "commode": {
+        "name": "Modalità di comunicazione"
+      },
+      "acp": {
+        "name": "Potenza AC"
+      },
+      "vac": {
+        "name": "Tensione AC"
+      },
+      "vpv": {
+        "name": "Tensione PV"
+      },
+      "etoday": {
+        "name": "Energia oggi"
+      },
+      "efpv": {
+        "name": "Rendimento oggi (PV)"
+      },
+      "ph1loadp": {
+        "name": "Carico Fase 1"
+      },
+      "ph2loadp": {
+        "name": "Carico Fase 2"
+      },
+      "ph3loadp": {
+        "name": "Carico Fase 3"
+      },
+      "pv1v": {
+        "name": "Tensione PV1"
+      },
+      "pv2v": {
+        "name": "Tensione PV2"
+      },
+      "pv1i": {
+        "name": "Corrente PV1"
+      },
+      "pv2i": {
+        "name": "Corrente PV2"
+      },
+      "pv1p": {
+        "name": "Potenza PV1"
+      },
+      "pv2p": {
+        "name": "Potenza PV2"
+      },
+      "pv3v": {
+        "name": "Tensione PV3"
+      },
+      "pv4v": {
+        "name": "Tensione PV4"
+      },
+      "pv3i": {
+        "name": "Corrente PV3"
+      },
+      "pv4i": {
+        "name": "Corrente PV4"
+      },
+      "pv3p": {
+        "name": "Potenza PV3"
+      },
+      "pv4p": {
+        "name": "Potenza PV4"
+      },
+      "batv": {
+        "name": "Tensione batteria"
+      },
+      "bati": {
+        "name": "Corrente batteria"
+      },
+      "vbus": {
+        "name": "Tensione bus"
+      },
+      "f": {
+        "name": "Frequenza di rete"
+      },
+      "ace": {
+        "name": "Energia AC"
+      },
+      "devicestate": {
+        "name": "Stato dispositivo",
+        "state": {
+          "1": "Online",
+          "2": "Offline",
+          "3": "Allarme",
+          "10": "Non attivato"
+        }
+      },
+      "device_type": {
+        "name": "Tipo dispositivo",
+        "state": {
+          "hybrid_inverter": "Inverter ibrido",
+          "grid_connected_inverter": "Inverter connesso alla rete",
+          "collector": "Datalogger",
+          "micro_ess": "Micro ESS",
+          "unknown": "Sconosciuto",
+          "micro_inverter": "Microinverter",
+          "optimizer": "Ottimizzatore",
+          "meter": "Contatore",
+          "battery": "Batteria",
+          "ac_battery": "Batteria CA"
+        }
+      },
+      "ratedpower": {
+        "name": "Potenza nominale"
+      },
+      "ratedvoltage": {
+        "name": "Tensione nominale"
+      },
+      "childnum": {
+        "name": "Dispositivi connessi"
+      },
+      "ph1v": {
+        "name": "Tensione Fase 1"
+      },
+      "ph1i": {
+        "name": "Corrente Fase 1"
+      },
+      "ph1p": {
+        "name": "Potenza Fase 1"
+      },
+      "ph2v": {
+        "name": "Tensione Fase 2"
+      },
+      "ph2i": {
+        "name": "Corrente Fase 2"
+      },
+      "ph2p": {
+        "name": "Potenza Fase 2"
+      },
+      "ph3v": {
+        "name": "Tensione Fase 3"
+      },
+      "ph3i": {
+        "name": "Corrente Fase 3"
+      },
+      "ph3p": {
+        "name": "Potenza Fase 3"
+      },
+      "internal_temperature": {
+        "name": "Temperatura interna"
+      },
+      "invsts": {
+        "name": "Stato inverter",
+        "state": {
+          "0": "Standby",
+          "1": "Normale",
+          "2": "Allarme",
+          "3": "Guasto",
+          "4": "Spegnimento"
+        }
+      },
+      "faultsts": {
+        "name": "Stato guasto",
+        "state": {
+          "0": "Guasto",
+          "1": "Nessun guasto"
+        }
+      },
+      "gridsts": {
+        "name": "Stato rete",
+        "state": {
+          "0": "Fuori rete",
+          "1": "In rete"
+        }
+      },
+      "devicegridconn": {
+        "name": "Stato connessione rete",
+        "state": {
+          "0": "Fuori rete",
+          "1": "In rete"
+        }
+      },
+      "deviceswitchstatus": {
+        "name": "Stato interruttore",
+        "state": {
+          "0": "Spegnimento",
+          "1": "Accensione"
+        }
+      },
+      "pvpower": {
+        "name": "Potenza PV totale"
+      },
+      "pvnum": {
+        "name": "Quantità PV"
+      },
+      "acsidetemper": {
+        "name": "Temperatura lato AC"
+      },
+      "dcsidetemper": {
+        "name": "Temperatura lato DC"
+      },
+      "gridf": {
+        "name": "Frequenza di rete"
+      },
+      "gridp": {
+        "name": "Potenza di rete"
+      },
+      "gridq": {
+        "name": "Potenza reattiva di rete"
+      },
+      "gridpfd": {
+        "name": "Fattore di potenza di rete"
+      },
+      "gridap": {
+        "name": "Potenza apparente di rete"
+      },
+      "offgridf": {
+        "name": "Frequenza fuori rete"
+      },
+      "offgridp": {
+        "name": "Potenza fuori rete"
+      },
+      "offgridq": {
+        "name": "Potenza reattiva fuori rete"
+      },
+      "offgridpfd": {
+        "name": "Fattore di potenza fuori rete"
+      },
+      "offgridap": {
+        "name": "Potenza apparente fuori rete"
+      },
+      "batvch": {
+        "name": "Tensione massima cella"
+      },
+      "batvcl": {
+        "name": "Tensione minima cella"
+      },
+      "battch": {
+        "name": "Temperatura massima cella"
+      },
+      "battcl": {
+        "name": "Temperatura minima cella"
+      },
+      "baticm": {
+        "name": "Corrente massima di carica"
+      },
+      "batidm": {
+        "name": "Corrente massima di scarica"
+      },
+      "batcharge": {
+        "name": "Energia di carica giornaliera"
+      },
+      "batdischarge": {
+        "name": "Energia di scarica giornaliera"
+      },
+      "totalechg": {
+        "name": "Energia di carica totale"
+      },
+      "totaledchg": {
+        "name": "Energia di scarica totale"
+      },
+      "ratedfrequency": {
+        "name": "Frequenza nominale"
+      },
+      "last_sent_mode": {
+        "name": "Last Sent Mode"
+      },
+      "em_current_decision": {
+        "name": "EM Decision"
+      },
+      "em_last_action": {
+        "name": "EM Last Action"
+      },
+      "em_battery_energy_available": {
+        "name": "Battery Energy Available"
+      },
+      "em_hours_until_sunrise": {
+        "name": "Hours Until Sunrise"
+      },
+      "em_hours_until_sunset": {
+        "name": "Hours Until Sunset"
+      },
+      "em_p1_average": {
+        "name": "P1 Average Power"
+      },
+      "em_status": {
+        "name": "EM Status"
+      }
+    },
+    "number": {
+      "charge_power": {
+        "name": "Potenza di carica target"
+      },
+      "discharge_power": {
+        "name": "Potenza di scarica target"
+      },
+      "micro_power_limit": {
+        "name": "Limite di potenza"
+      },
+      "soc_min": {
+        "name": "SOC Minimum"
+      },
+      "soc_max": {
+        "name": "SOC Maximum"
+      },
+      "soc_min_hysteresis_pct": {
+        "name": "SOC Min Hysteresis"
+      },
+      "soc_max_hysteresis_pct": {
+        "name": "SOC Max Hysteresis"
+      },
+      "em_high_load_threshold": {
+        "name": "High Load Threshold"
+      },
+      "em_max_charge_power": {
+        "name": "Max Charge Power"
+      },
+      "em_max_discharge_power": {
+        "name": "Max Discharge Power"
+      },
+      "em_min_solar_for_charge": {
+        "name": "Min Solar for Charge"
+      },
+      "em_mode_switch_cooldown": {
+        "name": "Mode Switch Cooldown"
+      },
+      "em_power_change_threshold": {
+        "name": "Power Change Threshold"
+      },
+      "em_power_adjust_cooldown": {
+        "name": "Power Adjust Cooldown"
+      },
+      "em_night_buffer_pct": {
+        "name": "Night Buffer"
+      },
+      "em_avg_night_consumption": {
+        "name": "Avg Night Consumption"
+      },
+      "em_charge_margin": {
+        "name": "Charge Margin"
+      },
+      "em_charge_entry_threshold": {
+        "name": "Charge Entry Threshold"
+      },
+      "em_charge_reentry_delay": {
+        "name": "Charge Re-entry Delay"
+      },
+      "em_bottomout_cooldown": {
+        "name": "Bottom-out Cooldown"
+      },
+      "em_max_grid_export": {
+        "name": "Max Grid Export"
+      },
+      "em_p1_smoothing_period": {
+        "name": "P1 Smoothing Period"
+      }
+    },
+    "switch": {
+      "frequency_control": {
+        "name": "Controllo frequenza"
+      },
+      "micro_power": {
+        "name": "Alimentazione"
+      },
+      "em_grid_charge_allowed": {
+        "name": "Grid Charge Allowed"
+      },
+      "em_enabled": {
+        "name": "Energy Manager"
+      },
+      "em_high_load_battery_assist": {
+        "name": "High Load Battery Assist"
+      },
+      "em_night_mode": {
+        "name": "Night Mode"
+      },
+      "em_export_limiting": {
+        "name": "Export Limiting"
+      }
+    },
+    "button": {
+      "micro_restart": {
+        "name": "Riavvia dispositivo"
+      },
+      "mode_idle": {
+        "name": "Modalità: Inattivo"
+      },
+      "mode_charge": {
+        "name": "Modalità: Carica"
+      },
+      "mode_discharge": {
+        "name": "Modalità: Scarica"
+      },
+      "mode_self_consume": {
+        "name": "Modalità: Autoconsumo"
+      },
+      "peak_shaving_close": {
+        "name": "Rasatura dei picchi: Disattiva"
+      },
+      "peak_shaving_charge": {
+        "name": "Rasatura dei picchi: Forza carica"
+      },
+      "peak_shaving_discharge": {
+        "name": "Rasatura dei picchi: Forza scarica"
+      },
+      "peak_shaving_stop": {
+        "name": "Rasatura dei picchi: Arresta"
+      },
+      "peak_shaving_hold": {
+        "name": "Rasatura dei picchi: Mantieni"
+      },
+      "clear_alarms": {
+        "name": "Cancella allarmi attivi"
+      }
+    }
+  }
+}
