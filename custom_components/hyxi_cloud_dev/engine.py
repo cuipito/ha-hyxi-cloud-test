@@ -767,6 +767,12 @@ class EnergyManagerEngine:
             if s.solar_producing:
                 charge_target = min(s.solar - 50, s.max_charge)
                 charge_target = max(charge_target, 300)
+                # Absorb grid export: if P1 negative, increase charge to
+                # capture excess solar instead of wasting it to grid
+                if s.p1 < 0:
+                    charge_target = min(
+                        charge_target + abs(int(s.p1)), int(s.max_charge)
+                    )
                 self._set_decision("emergency_solar_charge")
                 if self._current_mode != "charge":
                     await self._set_mode("charge", int(charge_target))
