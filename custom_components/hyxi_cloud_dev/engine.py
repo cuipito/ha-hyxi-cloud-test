@@ -1104,6 +1104,28 @@ class EnergyManagerEngine:
         if not self._enabled:
             return
 
+        # Staleness guard: auto-reload integration if data hasn't refreshed
+        from homeassistant.util import dt as dt_util
+
+        last_success = self._coordinator.hyxi_metadata.get("last_success")
+        if last_success is not None:
+            stale_seconds = (dt_util.utcnow() - last_success).total_seconds()
+            if stale_seconds > 600:  # 10 minutes
+                _LOGGER.warning(
+                    "EM: Coordinator data stale (%.0f min) — reloading integration",
+                    stale_seconds / 60,
+                )
+                self._hass.components.persistent_notification.async_create(
+                    f"Energy Manager detected stale data ({stale_seconds / 60:.0f} min). "
+                    "Auto-reloading integration to restore updates.",
+                    title="HYXI Cloud: Stale Data",
+                    notification_id="hyxi_stale_data",
+                )
+                await self._hass.config_entries.async_reload(
+                    self._coordinator.entry.entry_id
+                )
+                return
+
         # Check em_enabled switch — force self_consume on disable
         em_enabled_uid = f"hyxi_{self._sn}_em_enabled"
         em_entity = self._find_entity_id("switch", em_enabled_uid)
