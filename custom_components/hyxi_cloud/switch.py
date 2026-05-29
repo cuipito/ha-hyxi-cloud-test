@@ -6,18 +6,25 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from hyxi_cloud_api import HyxiApiClient
+from hyxi_cloud_api import VPP_ACTIVE_MODES, HyxiApiClient
 
 from .const import (
     DOMAIN,
     detect_phase_type,
     get_raw_device_code,
+    is_battery_control_enabled,
     mask_sn,
     normalize_device_type,
 )
 from .entity import HyxiEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _is_vpp_active(coordinator, sn: str) -> bool:
+    """Return True if a VPP program is currently controlling this device."""
+    metrics = (coordinator.data.get(sn) or {}).get("metrics", {})
+    return metrics.get("vppMode") in VPP_ACTIVE_MODES
 
 
 async def async_setup_entry(
@@ -40,13 +47,12 @@ async def async_setup_entry(
 
             # Frequency control (controlId 1020) — single-phase devices only
             if (
-                entry.options.get("enable_battery_control", False)
+                is_battery_control_enabled(entry, coordinator)
                 and phase == "single_phase"
             ):
                 entities.append(HyxiFrequencyControlSwitch(coordinator, sn, dev_data))
-        # Microinverter power on/off (controlId 3011)
         elif device_type == "micro_inverter":
-            if entry.options.get("enable_battery_control", False):
+            if is_battery_control_enabled(entry, coordinator):
                 entities.append(HyxiMicroPowerSwitch(coordinator, sn, dev_data))
 
     if entities:
@@ -96,6 +102,13 @@ class HyxiFrequencyControlSwitch(HyxiEntity, SwitchEntity):
                 "Failed to disable frequency control for %s: %s", mask_sn(self._sn), err
             )
             raise
+
+    @property
+    def available(self) -> bool:
+        """Unavailable when a VPP program is actively controlling this device."""
+        if _is_vpp_active(self.coordinator, self._sn):
+            return False
+        return super().available
 
 
 class HyxiMicroPowerSwitch(HyxiEntity, SwitchEntity):

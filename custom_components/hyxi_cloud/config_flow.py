@@ -11,7 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from hyxi_cloud_api import HyxiApiClient
 
 from .const import (
-    BASE_URL,
+    BASE_URL_DEFAULT,
     CONF_ACCESS_KEY,
     CONF_BACK_DISCOVERY,
     CONF_SECRET_KEY,
@@ -20,15 +20,17 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# Schema for User Setup and Re-auth
-STEP_USER_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_ACCESS_KEY): str,
-        vol.Required(CONF_SECRET_KEY): selector.TextSelector(
-            selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
-        ),
-    }
-)
+
+def _build_user_schema() -> vol.Schema:
+    """Build the user/reauth schema."""
+    return vol.Schema(
+        {
+            vol.Required(CONF_ACCESS_KEY): str,
+            vol.Required(CONF_SECRET_KEY): selector.TextSelector(
+                selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+            ),
+        }
+    )
 
 
 class HyxiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
@@ -49,10 +51,11 @@ class HyxiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[
     async def _validate_input(self, data):
         """Validate the user input allows us to connect."""
         session = async_get_clientsession(self.hass)
+
         client = HyxiApiClient(
             data[CONF_ACCESS_KEY],
             data[CONF_SECRET_KEY],
-            BASE_URL,
+            BASE_URL_DEFAULT,
             session,
         )
 
@@ -86,15 +89,21 @@ class HyxiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[
 
             error = await self._validate_input(user_input)
             if not error:
-                return self.async_create_entry(title="HYXI Cloud", data=user_input)
+                return self.async_create_entry(
+                    title="HYXI Cloud",
+                    data={
+                        **user_input,
+                        "base_url": BASE_URL_DEFAULT,
+                    },
+                )
 
             errors["base"] = error
 
         return self.async_show_form(
             step_id="user",
-            data_schema=STEP_USER_DATA_SCHEMA,
+            data_schema=_build_user_schema(),
             errors=errors,
-            description_placeholders={"link": BASE_URL},
+            description_placeholders={"link": BASE_URL_DEFAULT},
         )
 
     async def async_step_reauth(self, entry_data):
@@ -119,9 +128,9 @@ class HyxiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=STEP_USER_DATA_SCHEMA,
+            data_schema=_build_user_schema(),
             errors=errors,
-            description_placeholders={"link": BASE_URL},
+            description_placeholders={"link": BASE_URL_DEFAULT},
         )
 
 
@@ -140,6 +149,15 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
         # Pull current values or defaults
         current_interval = self._config_entry.options.get("update_interval", 5)
 
+        from .const import is_battery_control_enabled
+
+        coordinator = None
+        if hasattr(self, "hass") and self.hass:
+            coordinator = self.hass.data.get(DOMAIN, {}).get(
+                self._config_entry.entry_id
+            )
+        default_control = is_battery_control_enabled(self._config_entry, coordinator)
+
         options_schema = vol.Schema(
             {
                 # Slider for Interval
@@ -154,9 +172,7 @@ class HyxiOptionsFlowHandler(config_entries.OptionsFlow):
                 # Toggle for Battery Control & Protection
                 vol.Optional(
                     "enable_battery_control",
-                    default=self._config_entry.options.get(
-                        "enable_battery_control", False
-                    ),
+                    default=default_control,
                 ): selector.BooleanSelector(),
             }
         )

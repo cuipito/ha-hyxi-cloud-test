@@ -16,7 +16,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from hyxi_cloud_api import HyxiApiClient
+from hyxi_cloud_api import VPP_ACTIVE_MODES, HyxiApiClient
 
 from .binary_sensor import ACTIVE_ALARM_STATES
 from .const import (
@@ -24,6 +24,7 @@ from .const import (
     MANUFACTURER,
     detect_phase_type,
     get_raw_device_code,
+    is_battery_control_enabled,
     mask_sn,
     normalize_device_type,
 )
@@ -44,6 +45,16 @@ PEAK_SHAVING_ICONS: dict[str, str] = {
     "stop": "mdi:stop-circle-outline",
     "hold": "mdi:pause-circle-outline",
 }
+
+
+def _is_vpp_active(coordinator, sn: str) -> bool:
+    """Return True if a VPP program is currently controlling this device.
+
+    When True, manual control buttons must become unavailable to prevent
+    user commands from conflicting with the active VPP dispatch.
+    """
+    metrics = (coordinator.data.get(sn) or {}).get("metrics", {})
+    return metrics.get("vppMode") in VPP_ACTIVE_MODES
 
 
 async def async_setup_entry(
@@ -84,10 +95,7 @@ async def async_setup_entry(
             continue
 
         # Three-phase: operating mode buttons (controlIds 1062-1065)
-        if (
-            entry.options.get("enable_battery_control", False)
-            and phase == "three_phase"
-        ):
+        if is_battery_control_enabled(entry, coordinator) and phase == "three_phase":
             entities.extend(
                 [
                     HyxiModeButton(coordinator, sn, dev_data, "idle"),
@@ -98,10 +106,7 @@ async def async_setup_entry(
             )
 
         # Single-phase: peak shaving buttons (controlId 1021)
-        if (
-            entry.options.get("enable_battery_control", False)
-            and phase == "single_phase"
-        ):
+        if is_battery_control_enabled(entry, coordinator) and phase == "single_phase":
             for option in ("close", "charge", "discharge", "stop", "hold"):
                 entities.append(
                     HyxiPeakShavingButton(coordinator, sn, dev_data, option)
@@ -265,6 +270,13 @@ class HyxiModeButton(CoordinatorEntity, ButtonEntity):
             )
             raise
 
+    @property
+    def available(self) -> bool:
+        """Unavailable when a VPP program is actively controlling this device."""
+        if _is_vpp_active(self.coordinator, self._sn):
+            return False
+        return super().available
+
 
 class HyxiPeakShavingButton(CoordinatorEntity, ButtonEntity):
     """Button to send a peak shaving command (single-phase, write-only).
@@ -315,6 +327,13 @@ class HyxiPeakShavingButton(CoordinatorEntity, ButtonEntity):
                 err,
             )
             raise
+
+    @property
+    def available(self) -> bool:
+        """Unavailable when a VPP program is actively controlling this device."""
+        if _is_vpp_active(self.coordinator, self._sn):
+            return False
+        return super().available
 
 
 def _get_power_value(hass: HomeAssistant, sn: str, direction: str) -> int:

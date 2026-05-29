@@ -15,7 +15,7 @@ from hyxi_cloud_api import HyxiApiClient
 from hyxi_cloud_api import __version__ as API_VERSION
 
 from .const import (
-    BASE_URL,
+    BASE_URL_DEFAULT,
     CONF_ACCESS_KEY,
     CONF_SECRET_KEY,
     DOMAIN,
@@ -47,8 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("HYXI Integration could not find Access/Secret keys.")
         return False
 
+    # Base URL always defaults to global OpenAPI.
+    base_url = entry.data.get("base_url") or BASE_URL_DEFAULT
+
     session = async_get_clientsession(hass)
-    client = HyxiApiClient(access_key, secret_key, BASE_URL, session)
+    client = HyxiApiClient(access_key, secret_key, base_url, session)
 
     coordinator = HyxiDataUpdateCoordinator(hass, client, entry)
 
@@ -173,7 +176,9 @@ async def _async_setup_battery_protection(
     coordinator: HyxiDataUpdateCoordinator,
 ) -> None:
     """Start battery protection on supported battery control devices."""
-    if not coordinator.entry.options.get("enable_battery_control", False):
+    from .const import is_battery_control_enabled
+
+    if not is_battery_control_enabled(coordinator.entry, coordinator):
         _LOGGER.debug("Battery control and protection is disabled by user settings")
         return
 
