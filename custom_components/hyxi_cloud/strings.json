@@ -167,6 +167,9 @@
       "integration_last_updated": {
         "name": "Integration Last Updated"
       },
+      "last_push_received": {
+        "name": "Last Push Received"
+      },
       "batcap": {
         "name": "Battery Capacity"
       },

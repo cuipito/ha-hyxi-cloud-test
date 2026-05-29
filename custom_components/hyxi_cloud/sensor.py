@@ -22,6 +22,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     CONF_EM_ENABLED,
     CONF_EM_INVERTER_SN,
+    CONF_RT_ENABLED,
     DOMAIN,
     MANUFACTURER,
     detect_phase_type,
@@ -983,6 +984,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
             )
         )
 
+    # 5. Real-time push diagnostic sensor
+    if entry.options.get(CONF_RT_ENABLED):
+        entities.append(HyxiLastPushSensor(coordinator, entry))
+
     # FINAL REGISTRATION
     if entities:
         async_add_entities(entities)
@@ -1326,6 +1331,42 @@ class HyxiLastUpdateSensor(CoordinatorEntity, SensorEntity):
         """Handle updated data from the coordinator."""
         self._update_native_value()
         super()._handle_coordinator_update()
+
+
+class HyxiLastPushSensor(CoordinatorEntity, SensorEntity):
+    """Diagnostic sensor showing when the last RT push was received."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "last_push_received"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:webhook"
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_last_push_received"
+        self._attr_device_info = {
+            "identifiers": {(DOMAIN, entry.entry_id)},
+            "name": "HYXI Cloud Service",
+            "manufacturer": MANUFACTURER,
+            "model": "Cloud API Bridge",
+        }
+
+    @property
+    def native_value(self):
+        """Return the timestamp of the last push received."""
+        return self.coordinator._last_push_datetime
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra attributes about the push state."""
+        attrs: dict[str, Any] = {
+            "push_active": self.coordinator._push_active,
+            "devices_in_last_push": self.coordinator._last_push_device_count,
+        }
+        if self.coordinator._push_active and self.coordinator._last_push_received is not None:
+            attrs["push_stale"] = self.coordinator.is_push_stale()
+        return attrs
 
 
 class HyxiLastSentModeSensor(CoordinatorEntity, SensorEntity, RestoreEntity):

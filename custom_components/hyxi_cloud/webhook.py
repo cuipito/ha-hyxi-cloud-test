@@ -170,11 +170,18 @@ def _make_webhook_handler(
             return web.Response(status=400, text="Bad Request")
 
         _LOGGER.debug("RT push received: %d device(s)", len(data_list))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            for item in data_list:
+                _LOGGER.debug(
+                    "RT push payload for %s: keys=%s",
+                    item.get("deviceSn", "?"),
+                    sorted(item.keys()),
+                )
 
         for item in data_list:
             _merge_push_into_coordinator(coordinator, item)
 
-        coordinator.mark_push_received()
+        coordinator.mark_push_received(device_count=len(data_list))
         return web.Response(status=200, text="OK")
 
     return _handle

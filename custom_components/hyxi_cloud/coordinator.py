@@ -71,6 +71,8 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
         # Real-time push tracking
         self._push_active: bool = False
         self._last_push_received: float | None = None
+        self._last_push_datetime: datetime | None = None
+        self._last_push_device_count: int = 0
 
         self.hyxi_metadata: HyxiMetadata = {
             "last_attempts": 0,
@@ -83,9 +85,11 @@ class HyxiDataUpdateCoordinator(DataUpdateCoordinator):
         """Set whether real-time push is active."""
         self._push_active = active
 
-    def mark_push_received(self) -> None:
+    def mark_push_received(self, device_count: int = 0) -> None:
         """Record that a push was just received."""
         self._last_push_received = time.monotonic()
+        self._last_push_datetime = dt_util.utcnow()
+        self._last_push_device_count = device_count
 
     def is_push_stale(self) -> bool:
         """Return True if push is active but no data received recently."""
