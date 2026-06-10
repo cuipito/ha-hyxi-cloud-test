@@ -1,7 +1,8 @@
 """Integration tests for the HYXI Energy Manager decision engine."""
 
+import time
 from datetime import timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -552,3 +553,151 @@ async def test_engine_callbacks_and_staleness(hass: HomeAssistant):
 
     await engine.async_stop()
     await hass.async_block_till_done()
+
+
+def test_engine_p1_avg():
+    """Test the p1_avg property of EnergyManagerEngine."""
+    coordinator = MagicMock()
+    config = EMEntityConfig(sn="SN123", p1_entity="sensor.p1_meter")
+    engine = EnergyManagerEngine(MagicMock(), coordinator, config)
+
+    assert engine.p1_avg == 0.0
+
+    # Add one value
+    engine._p1_buffer.append((1.0, 100.0))
+    assert engine.p1_avg == 100.0
+
+    # Add second value
+    engine._p1_buffer.append((2.0, 300.0))
+    assert engine.p1_avg == 200.0
+
+    # Add third value
+    engine._p1_buffer.append((3.0, -100.0))
+    assert engine.p1_avg == 100.0
+
+
+@pytest.mark.asyncio
+async def test_engine_get_param_fallback(hass: HomeAssistant):
+    """Test fallback logic in _get_param when _get_ha_state_float returns non-float values."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"access_key": "test_ak", "secret_key": "test_sk"}
+    )
+    entry.add_to_hass(hass)
+
+    coordinator = MagicMock()
+    config = EMEntityConfig(sn="SN123", p1_entity="sensor.p1_meter")
+    engine = EnergyManagerEngine(hass, coordinator, config)
+
+    # 1. Test fallback when entity state is non-float by mocking _get_ha_state_float
+    # We mock _find_entity_id to return a fake ID so it gets to _get_ha_state_float
+    with patch.object(engine, "_find_entity_id", return_value="number.fake_id"):
+        with patch.object(engine, "_get_ha_state_float", return_value=0.0) as mock_get:
+            # high_load_threshold default in EM_DEFAULTS is 6500
+            val = engine._get_param("high_load_threshold")
+            assert (
+                val == 0.0
+            )  # mock returns 0.0, which means _get_ha_state_float caught exception and returned default
+            mock_get.assert_called_once_with("number.fake_id", 6500.0)
+
+    # 2. Test boolean fallback logic
+    with patch.object(engine, "_find_entity_id", side_effect=[None, "switch.fake_id"]):
+        with patch.object(engine, "_get_ha_state_bool", return_value=True):
+            val = engine._get_param("test_bool_key")
+            assert val == 1.0
+
+
+@pytest.mark.asyncio
+async def test_engine_has_peak_shaving_edge_cases(hass: HomeAssistant):
+    """Test edge cases for _has_peak_shaving in engine.py."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"access_key": "test_ak", "secret_key": "test_sk"}
+    )
+    entry.add_to_hass(hass)
+
+    coordinator = MagicMock()
+    coordinator.data = None
+    config = EMEntityConfig(sn="SN123", p1_entity="sensor.p1_meter")
+    engine = EnergyManagerEngine(hass, coordinator, config)
+
+    # Test 1: coordinator.data is falsy (None, empty dict)
+    assert engine._has_peak_shaving() is False
+
+
+@pytest.mark.asyncio
+async def test_engine_status_property(hass: HomeAssistant):
+    """Test all branches of the engine status property."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"access_key": "test_ak", "secret_key": "test_sk"},
+        options={
+            CONF_EM_ENABLED: True,
+            CONF_EM_INVERTER_SN: "SN123",
+            CONF_EM_P1_ENTITY: "sensor.p1_meter",
+            "em_dry_run": False,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    coordinator = MagicMock()
+    coordinator.entry = entry
+    coordinator.protection_controllers = {}
+    coordinator.data = {
+        "SN123": {
+            "device_name": "Test Inverter",
+            "model": "HYX-H10K-HT",
+            "device_type_code": "1",
+            "metrics": {},
+        }
+    }
+
+    config = EMEntityConfig(
+        sn="SN123",
+        p1_entity="sensor.p1_meter",
+        forecast_entity="sensor.solar_forecast",
+        forecast_power_entity="sensor.solar_forecast_power",
+    )
+
+    engine = EnergyManagerEngine(hass, coordinator, config)
+
+    # 1. Stopped
+    assert engine.status == "stopped"
+
+    # Start engine
+    await engine.async_start()
+
+    # 2. Disabled (via em_enabled switch off)
+    with (
+        patch.object(engine, "_find_entity_id", return_value="switch.hyxi_em_enabled"),
+        patch.object(engine, "_get_ha_state_bool", return_value=False),
+    ):
+        assert engine.status == "disabled"
+
+    # 3. Error
+    engine._last_decision = "error"
+    assert engine.status == "error"
+    engine._last_decision = "running"  # reset for next test
+
+    # 4. Cooldown
+    engine._last_mode_switch = time.monotonic() - 10
+    with patch.object(engine, "_get_param", return_value=300):
+        assert engine.status == "cooldown"
+
+    # 5. Dry run
+    # Ensure it doesn't hit cooldown
+    engine._last_mode_switch = time.monotonic() - 400
+    with patch.object(engine, "_get_param", return_value=300):
+        with patch.object(
+            EnergyManagerEngine, "_dry_run", new_callable=PropertyMock
+        ) as mock_dry_run:
+            mock_dry_run.return_value = True
+            assert engine.status == "dry_run"
+
+    # 6. Running
+    with patch.object(engine, "_get_param", return_value=300):
+        with patch.object(
+            EnergyManagerEngine, "_dry_run", new_callable=PropertyMock
+        ) as mock_dry_run:
+            mock_dry_run.return_value = False
+            assert engine.status == "running"
+
+    await engine.async_stop()

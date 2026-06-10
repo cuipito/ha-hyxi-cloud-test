@@ -1,6 +1,7 @@
 """HYXI Cloud Integration for Home Assistant."""
 # pylint: disable=wrong-import-position
 
+import hmac
 import logging
 
 from aiohttp import ClientError, web
@@ -549,7 +550,9 @@ async def _async_handle_webhook(
 
     # 1. Ingress Header authentication check (defense-in-depth)
     incoming_ak = request.headers.get("accessKey") or request.headers.get("AccessKey")
-    if not incoming_ak or incoming_ak != coordinator.client.access_key:
+    if not incoming_ak or not hmac.compare_digest(
+        incoming_ak, coordinator.client.access_key
+    ):
         # Do not log the header value — it is user-controlled (CWE-117 Log Injection).
         _LOGGER.warning(
             "Unauthorized push attempt received on webhook %s",
@@ -606,15 +609,16 @@ async def _async_handle_webhook(
         any_updated = True
 
         # Log the push metrics with sensitive keys masked (using mask_sensitive_key_value)
-        logged_metrics = {
-            k: mask_sensitive_key_value(k, v)
-            for k, v in device_update["metrics"].items()
-        }
-        _LOGGER.debug(
-            "HYXI Push Telemetry Update for Device %s: %s",
-            mask_sn(sn),
-            logged_metrics,
-        )
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            logged_metrics = {
+                k: mask_sensitive_key_value(k, v)
+                for k, v in device_update["metrics"].items()
+            }
+            _LOGGER.debug(
+                "HYXI Push Telemetry Update for Device %s: %s",
+                mask_sn(sn),
+                logged_metrics,
+            )
 
     if any_updated:
         coordinator.last_push_received = dt_util.utcnow()
@@ -787,7 +791,9 @@ async def _async_handle_alarm_webhook(
     coordinator.data[sn]["alarms"] so HyxiDeviceAlarmSensor fires instantly.
     """
     incoming_ak = request.headers.get("accessKey") or request.headers.get("AccessKey")
-    if not incoming_ak or incoming_ak != coordinator.client.access_key:
+    if not incoming_ak or not hmac.compare_digest(
+        incoming_ak, coordinator.client.access_key
+    ):
         # Do not log the header value — it is user-controlled (CWE-117 Log Injection).
         _LOGGER.warning(
             "Unauthorized alarm push attempt received on webhook %s",
@@ -843,16 +849,17 @@ async def _async_handle_alarm_webhook(
         any_updated = True
 
         # Log the push alarms with sensitive keys masked (using mask_sensitive_key_value)
-        logged_alarms = []
-        for rec in alarm_records:
-            logged_rec = {k: mask_sensitive_key_value(k, v) for k, v in rec.items()}
-            logged_alarms.append(logged_rec)
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            logged_alarms = []
+            for rec in alarm_records:
+                logged_rec = {k: mask_sensitive_key_value(k, v) for k, v in rec.items()}
+                logged_alarms.append(logged_rec)
 
-        _LOGGER.debug(
-            "HYXI Alarm Push Telemetry Update for Device %s: %s",
-            mask_sn(sn),
-            logged_alarms,
-        )
+            _LOGGER.debug(
+                "HYXI Alarm Push Telemetry Update for Device %s: %s",
+                mask_sn(sn),
+                logged_alarms,
+            )
 
     if any_updated:
         coordinator.async_update_listeners()
@@ -874,14 +881,15 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         if not subscribe_code:
             raise HomeAssistantError("Subscription code cannot be empty")
 
-        coordinators = list(hass.data.get(DOMAIN, {}).values())
-        if not coordinators:
+        coordinators_values = hass.data.get(DOMAIN, {}).values()
+        if not coordinators_values:
             raise HomeAssistantError(
                 "No active HYXI Cloud integration entries found to call the API"
             )
 
         # Use the client from the first active integration entry
-        coordinator = coordinators[0]
+        coordinator = next(iter(coordinators_values))
+        _LOGGER.info("Manually cancelling HYXI subscription: %s", subscribe_code)
         try:
             await async_cancel_and_unregister_subscription(
                 hass, coordinator.client, subscribe_code
@@ -935,7 +943,7 @@ async def async_register_subscription_code(hass: HomeAssistant, code: str) -> No
         await store.async_save(data)
 
     # Update active coordinators
-    for coordinator in list(hass.data.get(DOMAIN, {}).values()):
+    for coordinator in hass.data.get(DOMAIN, {}).values():
         coordinator.known_subscription_codes = list(codes)
         coordinator.async_update_listeners()
 
@@ -957,7 +965,7 @@ async def async_unregister_subscription_code(hass: HomeAssistant, code: str) -> 
         await store.async_save(data)
 
     # Update active coordinators
-    for coordinator in list(hass.data.get(DOMAIN, {}).values()):
+    for coordinator in hass.data.get(DOMAIN, {}).values():
         coordinator.known_subscription_codes = list(codes)
         coordinator.async_update_listeners()
 

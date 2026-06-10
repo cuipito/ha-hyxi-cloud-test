@@ -212,6 +212,14 @@ def test_manual_charge_allowed_below_upper_release_threshold():
     assert controller.should_block_manual_charge() is False
 
 
+def test_manual_charge_blocked_above_release_threshold():
+    """Manual charge should still be blocked between soc_max and upper hysteresis."""
+    controller = _build_controller(89)
+    controller._high_soc_hold = True
+
+    assert controller.should_block_manual_charge() is True
+
+
 # --- Single-Phase Behavior ---
 
 
@@ -297,6 +305,18 @@ async def test_async_stop_cancels_evaluation_task():
     assert controller._unsub_listener is None
     mock_task.cancel.assert_called_once()
     assert controller._eval_task is None
+
+
+def test_note_manual_mode():
+    """Verify note_manual_mode correctly updates the last sent mode attribute."""
+    controller = _build_controller(50)
+    assert controller.last_sent_mode is None
+
+    controller.note_manual_mode("charge")
+    assert controller.last_sent_mode == "charge"
+
+    controller.note_manual_mode("idle")
+    assert controller.last_sent_mode == "idle"
 
 
 def test_restore_last_sent_mode_invalid():
