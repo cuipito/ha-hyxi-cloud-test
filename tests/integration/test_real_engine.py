@@ -10,13 +10,13 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.hyxi_cloud.const import (
+from custom_components.hyxi_cloud_dev.const import (
     CONF_EM_ENABLED,
     CONF_EM_INVERTER_SN,
     CONF_EM_P1_ENTITY,
     DOMAIN,
 )
-from custom_components.hyxi_cloud.engine import (
+from custom_components.hyxi_cloud_dev.engine import (
     EMEntityConfig,
     EnergyManagerEngine,
 )

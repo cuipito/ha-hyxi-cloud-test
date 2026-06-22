@@ -44,8 +44,8 @@ hyxi_cloud_api.HyxiApiClient = MagicMock()  # type: ignore[attr-defined]
 hyxi_cloud_api.HyxiApiClient.ControlError = MockControlError  # type: ignore[misc]
 
 # Now we can safely import our component code
-from custom_components.hyxi_cloud import switch as switch_mod
-from custom_components.hyxi_cloud.const import DOMAIN
+from custom_components.hyxi_cloud_dev import switch as switch_mod
+from custom_components.hyxi_cloud_dev.const import DOMAIN
 
 
 # 2. FIXTURES
@@ -102,15 +102,15 @@ async def test_async_setup_entry_single_phase_hybrid(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.switch.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.switch.normalize_device_type",
             return_value="hybrid_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.switch.get_raw_device_code",
             return_value="HYBRID_INVERTER",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.switch.detect_phase_type",
             return_value="single_phase",
         ),
     ):
@@ -138,15 +138,15 @@ async def test_async_setup_entry_three_phase_hybrid(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.switch.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.switch.normalize_device_type",
             return_value="hybrid_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.switch.get_raw_device_code",
             return_value="HYBRID_INVERTER",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.switch.detect_phase_type",
             return_value="three_phase",
         ),
     ):
@@ -168,15 +168,15 @@ async def test_async_setup_entry_single_phase_all_in_one(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.switch.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.switch.normalize_device_type",
             return_value="all_in_one",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.switch.get_raw_device_code",
             return_value="ALL_IN_ONE",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.switch.detect_phase_type",
             return_value="single_phase",
         ),
     ):
@@ -202,15 +202,15 @@ async def test_async_setup_entry_three_phase_all_in_one(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.switch.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.switch.normalize_device_type",
             return_value="all_in_one",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.switch.get_raw_device_code",
             return_value="ALL_IN_ONE",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.switch.detect_phase_type",
             return_value="three_phase",
         ),
     ):
@@ -234,15 +234,15 @@ async def test_async_setup_entry_micro_inverter(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.switch.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.switch.normalize_device_type",
             return_value="micro_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.switch.get_raw_device_code",
             return_value="MICRO_INVERTER",
         ),
         patch(
-            "custom_components.hyxi_cloud.switch.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.switch.detect_phase_type",
             return_value="unknown",
         ),
     ):
@@ -302,7 +302,7 @@ async def test_frequency_control_switch_error(mock_coordinator_fixture):
     err = switch_mod.HyxiApiClient.ControlError("Network error")
     mock_coordinator_fixture.client.set_frequency_control.side_effect = err
 
-    with patch("custom_components.hyxi_cloud.switch._LOGGER.error") as mock_logger:
+    with patch("custom_components.hyxi_cloud_dev.switch._LOGGER.error") as mock_logger:
         with pytest.raises(switch_mod.HyxiApiClient.ControlError):
             await switch.async_turn_on()
 
@@ -316,7 +316,7 @@ async def test_frequency_control_switch_error(mock_coordinator_fixture):
     mock_coordinator_fixture.async_request_refresh.assert_not_called()
     assert switch._attr_is_on is None
 
-    with patch("custom_components.hyxi_cloud.switch._LOGGER.error") as mock_logger:
+    with patch("custom_components.hyxi_cloud_dev.switch._LOGGER.error") as mock_logger:
         with pytest.raises(switch_mod.HyxiApiClient.ControlError):
             await switch.async_turn_off()
 

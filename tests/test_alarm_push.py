@@ -12,12 +12,12 @@ if "homeassistant.components.cloud" not in sys.modules:
 
 # These imports must follow sys.modules patching — pylint: disable=wrong-import-position
 
-from custom_components.hyxi_cloud.__init__ import (  # pylint: disable=wrong-import-position
+from custom_components.hyxi_cloud_dev.__init__ import (  # pylint: disable=wrong-import-position
     _async_handle_alarm_webhook,
     _async_setup_alarm_subscription,
     _async_teardown_alarm_subscription,
 )
-from custom_components.hyxi_cloud.const import (  # pylint: disable=wrong-import-position
+from custom_components.hyxi_cloud_dev.const import (  # pylint: disable=wrong-import-position
     CONF_ENABLE_PUSH,
     CONF_PUSH_RATE,
 )
@@ -76,7 +76,7 @@ async def test_setup_alarm_subscription_success(
 ):
     """Happy path: subscription registered and code persisted."""
     with patch(
-        "custom_components.hyxi_cloud.__init__._async_resolve_webhook_url",
+        "custom_components.hyxi_cloud_dev.__init__._async_resolve_webhook_url",
         new=AsyncMock(
             return_value="https://example.ngrok.app/api/webhook/hyxi_cloud_entry_test_alarm"
         ),
@@ -92,7 +92,7 @@ async def test_setup_alarm_subscription_success(
 async def test_setup_alarm_subscription_no_url(mock_hass, mock_entry, mock_coordinator):
     """When URL resolution fails, status is set to error and subscribe is not called."""
     with patch(
-        "custom_components.hyxi_cloud.__init__._async_resolve_webhook_url",
+        "custom_components.hyxi_cloud_dev.__init__._async_resolve_webhook_url",
         new=AsyncMock(return_value=None),
     ):
         await _async_setup_alarm_subscription(mock_hass, mock_entry, mock_coordinator)
@@ -109,7 +109,7 @@ async def test_setup_alarm_cancels_prior_orphan(
     mock_entry.data = {"alarm_subscribe_code": "old_code_xyz"}
 
     with patch(
-        "custom_components.hyxi_cloud.__init__._async_resolve_webhook_url",
+        "custom_components.hyxi_cloud_dev.__init__._async_resolve_webhook_url",
         new=AsyncMock(
             return_value="https://example.ngrok.app/api/webhook/hyxi_cloud_entry_test_alarm"
         ),
@@ -291,7 +291,7 @@ async def test_handle_alarm_webhook_logging_details(
 
     caplog.set_level(logging.DEBUG)
 
-    with patch("custom_components.hyxi_cloud.__init__.web.json_response"):
+    with patch("custom_components.hyxi_cloud_dev.__init__.web.json_response"):
         await _async_handle_alarm_webhook(
             mock_hass, "hyxi_cloud_entry_test_alarm", request, mock_coordinator
         )

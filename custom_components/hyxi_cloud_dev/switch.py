@@ -84,10 +84,11 @@ async def async_setup_entry(
             )
         )
 
-        # Export limiting — single-phase only (uses peak shaving controlId 1021)
+        # Export limiting — single-phase curtails PV via peak shaving
+        # (controlId 1021); three-phase absorbs excess into the battery only.
         em_dev_data = coordinator.data.get(em_sn, {})
         em_phase = detect_phase_type(em_dev_data)
-        if em_phase == "single_phase":
+        if em_phase in ("single_phase", "three_phase"):
             entities.append(
                 EMToggleSwitch(
                     coordinator,

@@ -64,8 +64,8 @@ mock_api = sys.modules["hyxi_cloud_api"]
 
 
 # Now import the modules to test
-import custom_components.hyxi_cloud.button as button_mod
-from custom_components.hyxi_cloud.const import DOMAIN
+import custom_components.hyxi_cloud_dev.button as button_mod
+from custom_components.hyxi_cloud_dev.const import DOMAIN
 
 
 @pytest.fixture
@@ -109,11 +109,11 @@ async def test_async_setup_entry_micro_inverter(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.button.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.button.normalize_device_type",
             return_value="micro_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.button.get_raw_device_code",
             return_value="MICRO_INVERTER",
         ),
     ):
@@ -147,15 +147,15 @@ async def test_async_setup_entry_three_phase(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.button.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.button.normalize_device_type",
             return_value="hybrid_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.button.get_raw_device_code",
             return_value="HYBRID_INVERTER",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.button.detect_phase_type",
             return_value="three_phase",
         ),
     ):
@@ -186,15 +186,15 @@ async def test_async_setup_entry_single_phase(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.button.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.button.normalize_device_type",
             return_value="hybrid_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.button.get_raw_device_code",
             return_value="HYBRID_INVERTER",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.button.detect_phase_type",
             return_value="single_phase",
         ),
     ):
@@ -227,15 +227,15 @@ async def test_async_setup_entry_unknown_phase(
 
     with (
         patch(
-            "custom_components.hyxi_cloud.button.normalize_device_type",
+            "custom_components.hyxi_cloud_dev.button.normalize_device_type",
             return_value="hybrid_inverter",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.get_raw_device_code",
+            "custom_components.hyxi_cloud_dev.button.get_raw_device_code",
             return_value="HYBRID_INVERTER",
         ),
         patch(
-            "custom_components.hyxi_cloud.button.detect_phase_type",
+            "custom_components.hyxi_cloud_dev.button.detect_phase_type",
             return_value="unknown",
         ),
     ):
@@ -288,7 +288,7 @@ async def test_mode_button_press_idle_self_consume(mock_coordinator_fixture):
 
 
 @pytest.mark.asyncio()
-@patch("custom_components.hyxi_cloud.button._get_power_value", return_value=5000)
+@patch("custom_components.hyxi_cloud_dev.button._get_power_value", return_value=5000)
 async def test_mode_button_press_charge_discharge(
     mock_get_power, mock_coordinator_fixture
 ):
@@ -371,7 +371,7 @@ def test_get_power_value_valid_state():
 
     # Mock entity registry get
     with patch(
-        "custom_components.hyxi_cloud.button.er.async_get", return_value=registry
+        "custom_components.hyxi_cloud_dev.button.er.async_get", return_value=registry
     ):
         state = MagicMock()
         state.state = "3000.0"
@@ -393,7 +393,7 @@ def test_get_power_value_entity_not_found():
     registry.async_get_entity_id.return_value = None
 
     with patch(
-        "custom_components.hyxi_cloud.button.er.async_get", return_value=registry
+        "custom_components.hyxi_cloud_dev.button.er.async_get", return_value=registry
     ):
         result = button_mod._get_power_value(hass, "SN123", "charge")
         assert result == 100
@@ -406,7 +406,7 @@ def test_get_power_value_invalid_state():
     registry.async_get_entity_id.return_value = "number.hyxi_sn123_charge_power"
 
     with patch(
-        "custom_components.hyxi_cloud.button.er.async_get", return_value=registry
+        "custom_components.hyxi_cloud_dev.button.er.async_get", return_value=registry
     ):
         # Test 'unknown' state
         state_unknown = MagicMock()

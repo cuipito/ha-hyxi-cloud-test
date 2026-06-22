@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ha-hyxi-cloud"
-version = "1.6.0"
+version = "1.7.0"
 description = "HYXI ⚡️🔋☀️ Integration for HomeAssistant using HYXI Cloud ☁️"
 readme = "README.md"
 authors = [
@@ -28,7 +28,7 @@ ignore = ["E501", "N818", "S105", "N999"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S105", "S106", "N802", "E402"]
-"custom_components/hyxi_cloud/__init__.py" = ["N812"]
+"custom_components/hyxi_cloud_dev/__init__.py" = ["N812"]
 
 [tool.mypy]
 python_version = "3.14"

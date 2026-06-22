@@ -12,7 +12,7 @@ def main() -> None:
     root = Path(__file__).parent.parent
 
     # 1. Read manifest.json
-    manifest_path = root / "custom_components" / "hyxi_cloud" / "manifest.json"
+    manifest_path = root / "custom_components" / "hyxi_cloud_dev" / "manifest.json"
     if not manifest_path.exists():
         print(f"Error: manifest.json not found at {manifest_path}")
         sys.exit(1)
@@ -53,7 +53,7 @@ def main() -> None:
     )
 
     # 3. Read const.py
-    const_path = root / "custom_components" / "hyxi_cloud" / "const.py"
+    const_path = root / "custom_components" / "hyxi_cloud_dev" / "const.py"
     if not const_path.exists():
         print(f"Error: const.py not found at {const_path}")
         sys.exit(1)

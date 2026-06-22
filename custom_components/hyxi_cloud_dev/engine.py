@@ -126,6 +126,13 @@ class EnergyManagerEngine:
         self._pv_curtailed: bool = False
         self._last_pv_curtail_toggle: float = -999999.0
 
+        # Three-phase export limiting: PV curtailment (peak shaving 1021) is not
+        # officially supported. Attempt it experimentally; if firmware rejects
+        # the command, latch it off and fall back to battery-absorb only.
+        self._last_no_curtail_warn: float = -999999.0
+        self._three_phase_curtail_unsupported: bool = False
+        self._peak_shaving_rejected: bool = False
+
         # P1 rolling average
         self._p1_buffer: deque[tuple[float, float]] = deque()
 
@@ -359,6 +366,55 @@ class EnergyManagerEngine:
         return phase == "single_phase" and device_type in (
             "hybrid_inverter",
             "all_in_one",
+        )
+
+    def _export_limit_mode(self) -> str | None:
+        """Return the export-limiting phase mode for this device.
+
+        'single_phase' → battery absorb + PV curtailment (peak shaving 1021).
+        'three_phase'  → battery absorb only (no PV curtailment control).
+        None → device does not support export limiting.
+        """
+        if not self._coordinator.data:
+            return None
+        dev_data = self._coordinator.data.get(self._sn)
+        if not dev_data:
+            return None
+        device_type = normalize_device_type(get_raw_device_code(dev_data))
+        if device_type not in ("hybrid_inverter", "all_in_one"):
+            return None
+        phase = detect_phase_type(dev_data)
+        if phase in ("single_phase", "three_phase"):
+            return phase
+        return None
+
+    def _warn_three_phase_no_curtail(self) -> None:
+        """Warn (throttled hourly) that three-phase export can't be curtailed."""
+        now = time.monotonic()
+        if (now - self._last_no_curtail_warn) < 3600:
+            return
+        self._last_no_curtail_warn = now
+        _LOGGER.warning(
+            "EM: Export over limit but battery full on three-phase %s — no PV "
+            "curtailment control available, excess will export to grid",
+            mask_sn(self._sn),
+        )
+
+    def _warn_three_phase_curtail_unsupported(self) -> None:
+        """Notify that experimental three-phase PV curtailment was rejected."""
+        _LOGGER.warning(
+            "EM: Three-phase device %s rejected peak shaving (controlId 1021) — "
+            "experimental PV curtailment disabled; battery-absorb only",
+            mask_sn(self._sn),
+        )
+        persistent_notification.async_create(
+            self._hass,
+            "Experimental three-phase PV curtailment is not supported by this "
+            "inverter (peak shaving command was rejected). Export limiting will "
+            "still absorb excess into the battery, but cannot curtail PV once "
+            "the battery is full.",
+            title="HYXI Cloud: Export Limiting",
+            notification_id=f"hyxi_em_curtail_unsupported_{self._sn}",
         )
 
     def _get_protection_param(self, key: str, default: float) -> float:
@@ -604,11 +660,13 @@ class EnergyManagerEngine:
             await client.set_peak_shaving(self._sn, option)
             self._last_pv_curtail_toggle = time.monotonic()
             self._pv_curtailed = option == "stop"
+            self._peak_shaving_rejected = False
             self._last_action = f"peak_shaving_{option}"
             _LOGGER.info("EM: Peak shaving -> %s for %s", option, mask_sn(self._sn))
             self._notify_sensors()
             return True
         except HyxiApiClient.ControlError as err:
+            self._peak_shaving_rejected = True
             _LOGGER.error("EM: Failed to set peak shaving '%s': %s", option, err)
             return False
 
@@ -822,15 +880,20 @@ class EnergyManagerEngine:
         return False
 
     async def _check_export_limit(self, s: DecisionState) -> bool:
-        """PRIORITY 2b: Export limiting (single-phase only). Returns True if handled.
+        """PRIORITY 2b: Export limiting. Returns True if handled.
 
-        Only applies to single-phase devices with peak shaving support
-        (controlId 1021). Uses battery charge to absorb excess when SOC
-        allows, and PV curtailment (stop/hold) when battery is full.
-        Three-phase devices rely on existing mode controls instead.
+        Applies to single- and three-phase hybrid/all-in-one inverters. Both
+        charge the battery to absorb grid export above the configured limit
+        when SOC allows. When the battery is full both attempt PV curtailment
+        via peak shaving stop/hold (controlId 1021):
+          - single-phase: officially supported.
+          - three-phase: experimental — if the firmware rejects the command it
+            latches off and falls back to battery-absorb only (excess exports).
         """
-        if not self._has_peak_shaving():
+        phase = self._export_limit_mode()
+        if phase is None:
             return False
+        single_phase = phase == "single_phase"
 
         export_limit_uid = f"hyxi_{self._sn}_em_export_limiting"
         export_limit_entity = self._find_entity_id("switch", export_limit_uid)
@@ -848,7 +911,7 @@ class EnergyManagerEngine:
         # P1 negative = exporting; check if export exceeds limit
         if s.p1 < -max_export:
             if s.soc < s.soc_max:
-                # Battery has room — charge to absorb excess
+                # Battery has room — charge to absorb excess (both phase types)
                 if self._pv_curtailed:
                     await self._release_pv_curtailment()
                 excess = abs(s.p1) - max_export
@@ -861,10 +924,20 @@ class EnergyManagerEngine:
                     await self._adjust_power("charge", int(charge_target))
                 return True
 
-            # Battery full — curtail PV via peak shaving stop
+            # Battery full — curtail PV via peak shaving stop.
+            # Three-phase is experimental and latches off on rejection.
+            if not single_phase and self._three_phase_curtail_unsupported:
+                self._set_decision("export_limit_full_no_curtail")
+                self._warn_three_phase_no_curtail()
+                return False
             self._set_decision("export_limit_pv_curtail")
             if not self._pv_curtailed:
                 await self._set_peak_shaving("stop")
+                if not single_phase and self._peak_shaving_rejected:
+                    # Firmware rejected 1021 — disable experimental curtailment
+                    self._three_phase_curtail_unsupported = True
+                    self._warn_three_phase_curtail_unsupported()
+                    return False
             return True
 
         # Export within limit — release curtailment if active

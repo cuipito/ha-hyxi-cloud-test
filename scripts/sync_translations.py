@@ -26,7 +26,7 @@ def main():
     translations_dir = (
         pathlib.Path(__file__).parent.parent
         / "custom_components"
-        / "hyxi_cloud"
+        / "hyxi_cloud_dev"
         / "translations"
     )
     en_file = translations_dir / "en.json"

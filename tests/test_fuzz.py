@@ -76,7 +76,7 @@ if "homeassistant.util" not in sys.modules:
 
 # Now it's safe to import the sensor
 # pylint: disable-next=wrong-import-position
-from custom_components.hyxi_cloud.sensor import HyxiSensor
+from custom_components.hyxi_cloud_dev.sensor import HyxiSensor
 
 # ==========================================
 # 2. THE FUZZ TEST

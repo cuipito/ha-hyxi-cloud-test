@@ -208,7 +208,7 @@ class FakeEngine:
         pass
 
     # ── Decision logic — 1:1 copy from engine.py ────────────────────────
-    # Keep in sync with custom_components/hyxi_cloud/engine.py
+    # Keep in sync with custom_components/hyxi_cloud_dev/engine.py
 
     async def _make_decision(self) -> None:
         solar = self._get_solar()
@@ -839,7 +839,7 @@ class TestHAStateUtilities:
         """Test getting float from HA state handles valid, invalid and missing states."""
         from unittest.mock import MagicMock
 
-        from custom_components.hyxi_cloud.engine import EnergyManagerEngine
+        from custom_components.hyxi_cloud_dev.engine import EnergyManagerEngine
 
         # We need to mock HA just enough to test the float getter
         hass_mock = MagicMock()
@@ -897,7 +897,7 @@ class TestHasPeakShaving:
         """Test _has_peak_shaving logic."""
         from unittest.mock import MagicMock
 
-        from custom_components.hyxi_cloud.engine import EnergyManagerEngine
+        from custom_components.hyxi_cloud_dev.engine import EnergyManagerEngine
 
         # Create minimal engine instance without triggering __init__ logic
         engine = object.__new__(EnergyManagerEngine)
@@ -936,3 +936,37 @@ class TestHasPeakShaving:
             "H10K-HT"  # -HT detects as three_phase
         )
         assert engine._has_peak_shaving() is False
+
+
+class TestExportLimitMode:
+    """Test export-limiting phase detection logic."""
+
+    def test_export_limit_mode(self):
+        """Test _export_limit_mode for single-phase, three-phase, and None."""
+        from unittest.mock import MagicMock
+
+        from custom_components.hyxi_cloud_dev.engine import EnergyManagerEngine
+
+        engine = object.__new__(EnergyManagerEngine)
+        engine._sn = "test_sn"
+        engine._coordinator = MagicMock()
+
+        # Missing data / device
+        engine._coordinator.data = None
+        assert engine._export_limit_mode() is None
+        engine._coordinator.data = {"other_sn": {}}
+        assert engine._export_limit_mode() is None
+
+        # Single-phase hybrid inverter
+        engine._coordinator.data = {
+            "test_sn": {"deviceCode": "1", "model": "H5K-LS"}
+        }
+        assert engine._export_limit_mode() == "single_phase"
+
+        # Three-phase hybrid inverter — now supported (experimental curtail)
+        engine._coordinator.data["test_sn"]["model"] = "H10K-HT"
+        assert engine._export_limit_mode() == "three_phase"
+
+        # Wrong device type
+        engine._coordinator.data["test_sn"]["deviceCode"] = "MICRO_INVERTER"
+        assert engine._export_limit_mode() is None

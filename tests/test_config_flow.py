@@ -82,7 +82,7 @@ def mock_ha_environment():
         if "hyxi" in m and m != "hyxi_cloud_api":
             del sys.modules[m]
 
-    import custom_components.hyxi_cloud.config_flow as config_flow_mod
+    import custom_components.hyxi_cloud_dev.config_flow as config_flow_mod
 
     importlib.reload(config_flow_mod)
 
@@ -112,8 +112,8 @@ def config_flow(mock_ha_environment):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_success(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -125,8 +125,8 @@ async def test_validate_input_success(
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_invalid_auth(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -138,8 +138,8 @@ async def test_validate_input_invalid_auth(
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_cannot_connect(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -153,8 +153,8 @@ async def test_validate_input_cannot_connect(
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_timeout(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -166,8 +166,8 @@ async def test_validate_input_timeout(
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_unknown_error(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -179,8 +179,8 @@ async def test_validate_input_unknown_error(
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_no_devices(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -193,8 +193,8 @@ async def test_validate_input_no_devices(
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiApiClient")
-@patch("custom_components.hyxi_cloud.config_flow.async_get_clientsession")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient")
+@patch("custom_components.hyxi_cloud_dev.config_flow.async_get_clientsession")
 async def test_validate_input_get_all_device_data_none(
     mock_get_session, mock_api_client_class, config_flow, mock_hyxi_client
 ):
@@ -219,7 +219,7 @@ async def test_step_user_show_form(config_flow):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiConfigFlow._validate_input")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiConfigFlow._validate_input")
 async def test_step_user_success(mock_validate_input, config_flow):
     mock_validate_input.return_value = None
     config_flow.async_set_unique_id = AsyncMock()
@@ -235,7 +235,7 @@ async def test_step_user_success(mock_validate_input, config_flow):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiConfigFlow._validate_input")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiConfigFlow._validate_input")
 async def test_step_user_validation_error(mock_validate_input, config_flow):
     mock_validate_input.return_value = "invalid_auth"
     config_flow.async_set_unique_id = AsyncMock()
@@ -289,7 +289,7 @@ async def test_step_reauth_confirm_show_form(config_flow):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiConfigFlow._validate_input")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiConfigFlow._validate_input")
 async def test_step_reauth_confirm_success(mock_validate_input, config_flow):
     mock_validate_input.return_value = None
     config_flow.reauth_entry = "mock_entry"
@@ -308,7 +308,7 @@ async def test_step_reauth_confirm_success(mock_validate_input, config_flow):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiConfigFlow._validate_input")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiConfigFlow._validate_input")
 async def test_step_reauth_confirm_validation_error(mock_validate_input, config_flow):
     mock_validate_input.return_value = "invalid_auth"
     config_flow.async_show_form = MagicMock(
@@ -328,7 +328,7 @@ async def test_step_reauth_confirm_validation_error(mock_validate_input, config_
 
 
 def test_get_options_flow(mock_ha_environment):
-    import custom_components.hyxi_cloud.config_flow as config_flow_mod
+    import custom_components.hyxi_cloud_dev.config_flow as config_flow_mod
 
     config_entry = MagicMock()
 
@@ -345,7 +345,7 @@ def test_get_options_flow(mock_ha_environment):
 
 @pytest.mark.asyncio
 async def test_options_flow_show_form_default_fallback(mock_ha_environment):
-    import custom_components.hyxi_cloud.config_flow as config_flow_mod
+    import custom_components.hyxi_cloud_dev.config_flow as config_flow_mod
 
     config_entry = MagicMock()
     config_entry.options = {}  # Empty options to trigger default fallback
@@ -374,7 +374,7 @@ async def test_options_flow_show_form_default_fallback(mock_ha_environment):
 
 @pytest.mark.asyncio
 async def test_options_flow_show_form(mock_ha_environment):
-    import custom_components.hyxi_cloud.config_flow as config_flow_mod
+    import custom_components.hyxi_cloud_dev.config_flow as config_flow_mod
 
     config_entry = MagicMock()
     config_entry.options = {"update_interval": 10}
@@ -399,7 +399,7 @@ async def test_options_flow_show_form(mock_ha_environment):
 
 @pytest.mark.asyncio
 async def test_options_flow_success(mock_ha_environment):
-    import custom_components.hyxi_cloud.config_flow as config_flow_mod
+    import custom_components.hyxi_cloud_dev.config_flow as config_flow_mod
 
     config_entry = MagicMock()
     options_flow = config_flow_mod.HyxiOptionsFlowHandler(config_entry)
@@ -414,10 +414,10 @@ async def test_options_flow_success(mock_ha_environment):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.hyxi_cloud.config_flow.HyxiConfigFlow._validate_input")
+@patch("custom_components.hyxi_cloud_dev.config_flow.HyxiConfigFlow._validate_input")
 async def test_step_user_already_configured(mock_validate_input, config_flow):
     """Test step_user when the entry is already configured (Unique ID abort)."""
-    import custom_components.hyxi_cloud.config_flow as config_flow_mod
+    import custom_components.hyxi_cloud_dev.config_flow as config_flow_mod
 
     mock_validate_input.return_value = None
     config_flow.async_set_unique_id = AsyncMock()

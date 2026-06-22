@@ -35,8 +35,8 @@ if isinstance(mock_coordinator, MagicMock):
     mock_coordinator.CoordinatorEntity = FakeCoordinatorEntity
 
 # 2. LOCAL IMPORTS (After patching sys.modules)
-from custom_components.hyxi_cloud.const import DOMAIN, MANUFACTURER
-from custom_components.hyxi_cloud.entity import HyxiEntity
+from custom_components.hyxi_cloud_dev.const import DOMAIN, MANUFACTURER
+from custom_components.hyxi_cloud_dev.entity import HyxiEntity
 
 
 def test_hyxi_entity_initialization_with_complete_data():

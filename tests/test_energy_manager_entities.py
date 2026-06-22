@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-_CONST_PATH = Path(__file__).parent / "../custom_components/hyxi_cloud/const.py"
+_CONST_PATH = Path(__file__).parent / "../custom_components/hyxi_cloud_dev/const.py"
 
 
 def _read_const() -> str:
@@ -45,7 +45,7 @@ def _parse_em_number_defs():
 
     Returns list of dicts with keys: key, unit, min_val, max_val, step, icon.
     """
-    path = Path(__file__).parent / "../custom_components/hyxi_cloud/number.py"
+    path = Path(__file__).parent / "../custom_components/hyxi_cloud_dev/number.py"
     content = path.read_text(encoding="utf-8")
 
     # Find the EM_NUMBER_DEFS list block
@@ -195,7 +195,7 @@ class TestEMTranslationCoverage:
 
     @staticmethod
     def _load_strings():
-        path = Path(__file__).parent / "../custom_components/hyxi_cloud/strings.json"
+        path = Path(__file__).parent / "../custom_components/hyxi_cloud_dev/strings.json"
         with path.open(encoding="utf-8") as f:
             return json.load(f)
 

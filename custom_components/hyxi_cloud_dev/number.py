@@ -149,12 +149,9 @@ async def async_setup_entry(
     # EM-only numbers — only when Energy Manager is enabled for this inverter
     em_sn = entry.options.get(CONF_EM_INVERTER_SN)
     if entry.options.get(CONF_EM_ENABLED) and em_sn and em_sn in coordinator.data:
-        em_dev_data = coordinator.data.get(em_sn, {})
-        em_is_single_phase = detect_phase_type(em_dev_data) == "single_phase"
+        # max_grid_export drives export limiting for both single- and
+        # three-phase hybrid/all-in-one inverters.
         for numdef in EM_NUMBER_DEFS:
-            # max_grid_export only relevant for single-phase export limiting
-            if numdef.key == "max_grid_export" and not em_is_single_phase:
-                continue
             entities.append(EMParameterNumber(coordinator, em_sn, numdef))
 
     if entities:

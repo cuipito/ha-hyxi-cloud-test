@@ -73,7 +73,7 @@ if "hyxi_cloud_api" not in sys.modules:
     sys.modules["hyxi_cloud_api"] = mock_api
 
 
-import custom_components.hyxi_cloud.coordinator as hc_coord  # pylint: disable=wrong-import-position
+import custom_components.hyxi_cloud_dev.coordinator as hc_coord  # pylint: disable=wrong-import-position
 
 importlib.reload(hc_coord)
 
@@ -231,11 +231,11 @@ async def test_async_sync_device_metadata_no_change():
     mock_dev_reg = MagicMock()
     with (
         patch(
-            "custom_components.hyxi_cloud.coordinator.dr.async_get",
+            "custom_components.hyxi_cloud_dev.coordinator.dr.async_get",
             return_value=mock_dev_reg,
         ),
         patch(
-            "custom_components.hyxi_cloud.coordinator.get_software_version",
+            "custom_components.hyxi_cloud_dev.coordinator.get_software_version",
             return_value="1.2.3",
         ),
     ):
@@ -264,11 +264,11 @@ async def test_async_sync_device_metadata_with_change():
     mock_dev_reg = MagicMock()
     with (
         patch(
-            "custom_components.hyxi_cloud.coordinator.dr.async_get",
+            "custom_components.hyxi_cloud_dev.coordinator.dr.async_get",
             return_value=mock_dev_reg,
         ),
         patch(
-            "custom_components.hyxi_cloud.coordinator.get_software_version",
+            "custom_components.hyxi_cloud_dev.coordinator.get_software_version",
             return_value="1.2.3",
         ),
     ):
@@ -307,7 +307,7 @@ async def test_async_sync_device_metadata_device_not_found():
 
     mock_dev_reg = MagicMock()
     with patch(
-        "custom_components.hyxi_cloud.coordinator.dr.async_get",
+        "custom_components.hyxi_cloud_dev.coordinator.dr.async_get",
         return_value=mock_dev_reg,
     ):
         mock_dev_reg.async_get_device.return_value = None
@@ -332,7 +332,7 @@ async def test_async_update_data_empty_devices_warning():
         MagicMock(), mock_client, mock_entry
     )
 
-    with patch("custom_components.hyxi_cloud.coordinator._LOGGER.warning") as mock_warn:
+    with patch("custom_components.hyxi_cloud_dev.coordinator._LOGGER.warning") as mock_warn:
         result = await coordinator._async_update_data()
         assert result == {}
         mock_warn.assert_any_call(

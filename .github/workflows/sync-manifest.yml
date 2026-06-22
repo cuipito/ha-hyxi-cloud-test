@@ -37,8 +37,8 @@ jobs:
           CLEAN_VER=$(echo $TAG_NAME | sed 's/^v//')
 
           # Update the manifest locally (DO NOT COMMIT)
-          jq ".version = \"$CLEAN_VER\"" custom_components/hyxi_cloud/manifest.json > temp.json && mv temp.json custom_components/hyxi_cloud/manifest.json
+          jq ".version = \"$CLEAN_VER\"" custom_components/hyxi_cloud_dev/manifest.json > temp.json && mv temp.json custom_components/hyxi_cloud_dev/manifest.json
 
           # Zip the integration folder
           cd custom_components
-          zip -r ../hyxi_cloud.zip hyxi_cloud/
+          zip -r ../hyxi_cloud_dev.zip hyxi_cloud_dev/

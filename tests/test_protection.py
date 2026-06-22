@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from custom_components.hyxi_cloud.protection import HyxiBatteryProtectionController
+from custom_components.hyxi_cloud_dev.protection import HyxiBatteryProtectionController
 
 
 class FakeCoordinator:
@@ -523,7 +523,7 @@ def test_get_param_registry_and_state_fallbacks():
     mock_registry.async_get_entity_id.return_value = None
 
     with patch(
-        "custom_components.hyxi_cloud.protection.er.async_get",
+        "custom_components.hyxi_cloud_dev.protection.er.async_get",
         return_value=mock_registry,
     ):
         # 1. Registry returns None
@@ -555,7 +555,7 @@ def test_get_power_value_fallbacks():
     mock_registry.async_get_entity_id.return_value = None
 
     with patch(
-        "custom_components.hyxi_cloud.protection.er.async_get",
+        "custom_components.hyxi_cloud_dev.protection.er.async_get",
         return_value=mock_registry,
     ):
         # 1. Registry returns None

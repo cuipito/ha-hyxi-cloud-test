@@ -35,20 +35,20 @@ jobs:
           CLEAN_VERSION="${TAG_NAME#v}"
 
           echo "Injecting version $CLEAN_VERSION into manifest..."
-          jq ".version = \"$CLEAN_VERSION\"" custom_components/hyxi_cloud/manifest.json > tmp.json
-          mv tmp.json custom_components/hyxi_cloud/manifest.json
+          jq ".version = \"$CLEAN_VERSION\"" custom_components/hyxi_cloud_dev/manifest.json > tmp.json
+          mv tmp.json custom_components/hyxi_cloud_dev/manifest.json
 
       - name: 📦 Create Zip Archive
         run: |
           # Go INSIDE the integration folder and zip the contents
           # This ensures manifest.json is at the root of the zip file
-          cd custom_components/hyxi_cloud
-          zip -r ../../hyxi_cloud.zip .
+          cd custom_components/hyxi_cloud_dev
+          zip -r ../../hyxi_cloud_dev.zip .
           cd ../..
 
       - name: 🚀 Upload Zip to Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
-          files: hyxi_cloud.zip
+          files: hyxi_cloud_dev.zip
           tag_name: ${{ github.event.release.tag_name }}
           overwrite_files: true

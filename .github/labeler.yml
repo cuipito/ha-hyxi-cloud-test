@@ -8,15 +8,15 @@
   - head-branch: ["^fix/", "^bug/"]
   - title: ["^fix:", "^bug:", "🐛"]
   - changed-files:
-      - any-glob-to-any-file: "custom_components/hyxi_cloud/*.py"
+      - any-glob-to-any-file: "custom_components/hyxi_cloud_dev/*.py"
 
 # 🎨 Style
 "style":
   - changed-files:
       - any-glob-to-any-file:
-          - "custom_components/hyxi_cloud/static/**/*"
-          - "custom_components/hyxi_cloud/brand/**/*"
-          - "custom_components/hyxi_cloud/translations/**/*"
+          - "custom_components/hyxi_cloud_dev/static/**/*"
+          - "custom_components/hyxi_cloud_dev/brand/**/*"
+          - "custom_components/hyxi_cloud_dev/translations/**/*"
 
 # 🧪 Tests
 "test":
@@ -40,8 +40,8 @@
 "chore":
   - changed-files:
       - any-glob-to-any-file:
-          - "custom_components/hyxi_cloud/manifest.json"
-          - "custom_components/hyxi_cloud/hacs.json"
+          - "custom_components/hyxi_cloud_dev/manifest.json"
+          - "custom_components/hyxi_cloud_dev/hacs.json"
           - ".gitignore"
 
 # Label for GitHub Actions, Scripts, and Repo Infrastructure
@@ -58,6 +58,6 @@
       - any-glob-to-any-file:
           - "*.md"                                      # Root level markdown files
           - "LICENSE"                                   # Legal updates
-          - "custom_components/hyxi_cloud/strings.json" # Translation updates
+          - "custom_components/hyxi_cloud_dev/strings.json" # Translation updates
           - "docs/**/*"                                 # Anything inside a docs folder
           - ".github/ISSUE_TEMPLATE/*.md"               # Issue template updates

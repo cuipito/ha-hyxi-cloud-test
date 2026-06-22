@@ -15,7 +15,7 @@ def get_translation_keys():
     }
 
     # 1. Sensors from sensor.py
-    sensor_path = Path(__file__).parent / "../custom_components/hyxi_cloud/sensor.py"
+    sensor_path = Path(__file__).parent / "../custom_components/hyxi_cloud_dev/sensor.py"
     with sensor_path.open(encoding="utf-8") as f:
         content = f.read()
 
@@ -46,7 +46,7 @@ def get_translation_keys():
 
     # 2. Binary Sensors from binary_sensor.py
     binary_path = (
-        Path(__file__).parent / "../custom_components/hyxi_cloud/binary_sensor.py"
+        Path(__file__).parent / "../custom_components/hyxi_cloud_dev/binary_sensor.py"
     )
     with binary_path.open(encoding="utf-8") as f:
         content = f.read()
@@ -71,7 +71,7 @@ def get_translation_keys():
 def get_all_languages():
     """Get list of translation files."""
     translations_dir = (
-        Path(__file__).parent / "../custom_components/hyxi_cloud/translations"
+        Path(__file__).parent / "../custom_components/hyxi_cloud_dev/translations"
     )
     return [f.name for f in translations_dir.iterdir() if f.suffix == ".json"]
 
@@ -80,7 +80,7 @@ def load_translation(lang_file):
     """Load a translation JSON file."""
     path = (
         Path(__file__).parent
-        / "../custom_components/hyxi_cloud/translations"
+        / "../custom_components/hyxi_cloud_dev/translations"
         / lang_file
     )
     with path.open(encoding="utf-8") as f:
@@ -115,7 +115,7 @@ def test_strings_json_is_synchronized():
     """Verify that strings.json is synchronized with code and en.json."""
     code_keys = get_translation_keys()
 
-    path = Path(__file__).parent / "../custom_components/hyxi_cloud/strings.json"
+    path = Path(__file__).parent / "../custom_components/hyxi_cloud_dev/strings.json"
     with path.open(encoding="utf-8") as f:
         strings_json = json.load(f)
 
@@ -265,7 +265,7 @@ def test_translation_structure_and_keys():
     """Verify that all translation files have the exact same keys/structure as en.json, and strings.json matches en.json (except title)."""
     # 1. Load strings.json and en.json
     strings_path = (
-        Path(__file__).parent / "../custom_components/hyxi_cloud/strings.json"
+        Path(__file__).parent / "../custom_components/hyxi_cloud_dev/strings.json"
     )
     with strings_path.open(encoding="utf-8") as f:
         strings_json = json.load(f)

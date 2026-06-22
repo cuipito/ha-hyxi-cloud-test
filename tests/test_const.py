@@ -1,6 +1,6 @@
 """Tests for the hyxi_cloud const module."""
 
-from custom_components.hyxi_cloud.const import (
+from custom_components.hyxi_cloud_dev.const import (
     detect_phase_type,
     get_raw_device_code,
     get_software_version,

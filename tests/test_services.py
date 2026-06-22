@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.exceptions import HomeAssistantError
 
-from custom_components.hyxi_cloud import (
+from custom_components.hyxi_cloud_dev import (
     DOMAIN,
     async_get_subscription_codes,
     async_register_subscription_code,
@@ -57,11 +57,11 @@ async def test_service_registration_and_unload(hass, mock_entry, mock_coordinato
             return_value=True,
         ),
         patch(
-            "custom_components.hyxi_cloud._async_teardown_push_subscription",
+            "custom_components.hyxi_cloud_dev._async_teardown_push_subscription",
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.hyxi_cloud._async_teardown_alarm_subscription",
+            "custom_components.hyxi_cloud_dev._async_teardown_alarm_subscription",
             new_callable=AsyncMock,
         ),
     ):

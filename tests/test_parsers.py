@@ -93,14 +93,14 @@ if "homeassistant.util" not in sys.modules:
 if "aiohttp" not in sys.modules:
     sys.modules["aiohttp"] = MagicMock()
 
-from custom_components.hyxi_cloud.sensor import HyxiSensor
+from custom_components.hyxi_cloud_dev.sensor import HyxiSensor
 
 
 @pytest.fixture
 def mock_sensor():
     """Create a mock HyxiSensor instance for testing parsers."""
-    import custom_components.hyxi_cloud.const as const_mod
-    import custom_components.hyxi_cloud.sensor as sensor_mod
+    import custom_components.hyxi_cloud_dev.const as const_mod
+    import custom_components.hyxi_cloud_dev.sensor as sensor_mod
 
     sensor_mod.is_null_value = const_mod.is_null_value
     coordinator = MagicMock()
@@ -111,7 +111,7 @@ def mock_sensor():
     description.native_unit_of_measurement = "units"
 
     with patch(
-        "custom_components.hyxi_cloud.sensor.HyxiSensor.__init__", return_value=None
+        "custom_components.hyxi_cloud_dev.sensor.HyxiSensor.__init__", return_value=None
     ):
         sensor = HyxiSensor(coordinator, "SN123", description)
         sensor.coordinator = coordinator
@@ -192,7 +192,7 @@ def test_parse_collect_time_errors(mock_sensor):
     assert mock_sensor._parse_collect_time({}, 10**25) is None
 
     # Extreme value that might pass the 10-digit check but still fail fromtimestamp
-    with patch("custom_components.hyxi_cloud.sensor.datetime") as mock_dt:
+    with patch("custom_components.hyxi_cloud_dev.sensor.datetime") as mock_dt:
         mock_dt.fromtimestamp.side_effect = OverflowError()
         assert mock_sensor._parse_collect_time({}, 1234567890) is None
 
@@ -203,7 +203,7 @@ def test_parse_last_seen_valid(mock_sensor):
     expected_dt = datetime(2023, 10, 1, 12, 0, 0, tzinfo=UTC)
 
     with patch(
-        "custom_components.hyxi_cloud.sensor.dt_util.parse_datetime",
+        "custom_components.hyxi_cloud_dev.sensor.dt_util.parse_datetime",
         return_value=expected_dt,
     ) as mock_parse:
         assert mock_sensor._parse_last_seen({}, valid_dt_str) == expected_dt

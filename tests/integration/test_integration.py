@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.hyxi_cloud.const import (
+from custom_components.hyxi_cloud_dev.const import (
     CONF_ACCESS_KEY,
     CONF_SECRET_KEY,
     DOMAIN,
@@ -27,7 +27,7 @@ async def test_config_flow_success(hass: HomeAssistant):
 
     # 2. Configure with mock credentials and mock API client
     with patch(
-        "custom_components.hyxi_cloud.config_flow.HyxiApiClient"
+        "custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient"
     ) as mock_client_class:
         mock_client = AsyncMock()
         mock_client._refresh_token.return_value = True
@@ -64,7 +64,7 @@ async def test_config_flow_invalid_auth(hass: HomeAssistant):
     )
 
     with patch(
-        "custom_components.hyxi_cloud.config_flow.HyxiApiClient"
+        "custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient"
     ) as mock_client_class:
         mock_client = AsyncMock()
         mock_client._refresh_token.return_value = False
@@ -115,7 +115,7 @@ async def test_setup_entry_and_sensors(hass: HomeAssistant):
         }
     }
 
-    with patch("custom_components.hyxi_cloud.HyxiApiClient") as mock_client_class:
+    with patch("custom_components.hyxi_cloud_dev.HyxiApiClient") as mock_client_class:
         mock_client = AsyncMock()
         mock_client._refresh_token.return_value = True
         mock_client.get_all_device_data.return_value = {
@@ -154,7 +154,7 @@ async def test_config_flow_no_devices(hass: HomeAssistant):
     )
 
     with patch(
-        "custom_components.hyxi_cloud.config_flow.HyxiApiClient"
+        "custom_components.hyxi_cloud_dev.config_flow.HyxiApiClient"
     ) as mock_client_class:
         mock_client = AsyncMock()
         mock_client._refresh_token.return_value = True

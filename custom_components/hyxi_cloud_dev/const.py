@@ -4,7 +4,7 @@ from typing import Any
 
 from homeassistant.const import Platform
 
-DOMAIN = "hyxi_cloud"
+DOMAIN = "hyxi_cloud_dev"
 CONF_ACCESS_KEY = "access_key"
 CONF_SECRET_KEY = "secret_key"
 BASE_URL_DEFAULT = "https://open.hyxicloud.com"
@@ -12,7 +12,7 @@ BASE_URL_DEFAULT = "https://open.hyxicloud.com"
 BASE_URL = BASE_URL_DEFAULT
 
 MANUFACTURER = "HYXI Power"
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 
 CONF_BACK_DISCOVERY = "back_discovery"
 

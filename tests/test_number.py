@@ -90,8 +90,8 @@ mock_api_module.__version__ = "1.0.4"
 ensure_mock("hyxi_cloud_api", mock_obj=mock_api_module)
 
 # Now import the modules
-import custom_components.hyxi_cloud.const as const_mod
-import custom_components.hyxi_cloud.number as number_mod
+import custom_components.hyxi_cloud_dev.const as const_mod
+import custom_components.hyxi_cloud_dev.number as number_mod
 
 # Wire up real const functions
 number_mod.normalize_device_type = const_mod.normalize_device_type
@@ -370,7 +370,7 @@ async def test_hyxi_micro_power_limit_set_value_error():
 
     with pytest.raises(MockControlError):
         with patch(
-            "custom_components.hyxi_cloud.number.HyxiApiClient.ControlError",
+            "custom_components.hyxi_cloud_dev.number.HyxiApiClient.ControlError",
             MockControlError,
         ):
             await entity.async_set_native_value(75.0)

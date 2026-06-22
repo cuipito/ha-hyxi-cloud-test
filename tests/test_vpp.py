@@ -79,17 +79,17 @@ else:
     sys.modules["hyxi_cloud_api"].VPP_ACTIVE_MODES = frozenset({"13", "14"})  # type: ignore[attr-defined]
 
 # Import modules and force reload to ensure they use our fakes
-import custom_components.hyxi_cloud.binary_sensor as binary_sensor_mod
-import custom_components.hyxi_cloud.button as button_mod
-import custom_components.hyxi_cloud.entity as entity_mod
-import custom_components.hyxi_cloud.switch as switch_mod
+import custom_components.hyxi_cloud_dev.binary_sensor as binary_sensor_mod
+import custom_components.hyxi_cloud_dev.button as button_mod
+import custom_components.hyxi_cloud_dev.entity as entity_mod
+import custom_components.hyxi_cloud_dev.switch as switch_mod
 
 importlib.reload(entity_mod)
 importlib.reload(binary_sensor_mod)
 importlib.reload(button_mod)
 importlib.reload(switch_mod)
 
-from custom_components.hyxi_cloud.const import is_battery_control_enabled
+from custom_components.hyxi_cloud_dev.const import is_battery_control_enabled
 
 
 def test_vpp_dispatch_sensor_on_during_active_dispatch():
@@ -99,7 +99,7 @@ def test_vpp_dispatch_sensor_on_during_active_dispatch():
     entry.entry_id = "test_entry"
 
     with patch(
-        "custom_components.hyxi_cloud.binary_sensor.VPP_ACTIVE_MODES",
+        "custom_components.hyxi_cloud_dev.binary_sensor.VPP_ACTIVE_MODES",
         frozenset({"13", "14"}),
     ):
         # Mode 13 and 14 must trigger the sensor
@@ -154,7 +154,7 @@ def test_vpp_dispatch_sensor_off_in_standby_and_normal_modes():
     entry.entry_id = "test_entry"
 
     with patch(
-        "custom_components.hyxi_cloud.binary_sensor.VPP_ACTIVE_MODES",
+        "custom_components.hyxi_cloud_dev.binary_sensor.VPP_ACTIVE_MODES",
         frozenset({"13", "14"}),
     ):
         for inactive_mode in ("16", "0", "1", "2", "3"):

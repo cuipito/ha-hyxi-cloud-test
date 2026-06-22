@@ -101,8 +101,8 @@ if "aiohttp" not in sys.modules:
 
 
 # Standardize import style to resolve code scanning alert no. 50
-import custom_components.hyxi_cloud.const as const_mod
-import custom_components.hyxi_cloud.sensor as sensor_mod
+import custom_components.hyxi_cloud_dev.const as const_mod
+import custom_components.hyxi_cloud_dev.sensor as sensor_mod
 
 try:
     importlib.reload(const_mod)
@@ -119,8 +119,8 @@ except ImportError:
 
 # Wire up real const.py functions into sensor_mod to bypass MagicMock pollution.
 # This ensures that any test-level patch() targeting
-# 'custom_components.hyxi_cloud.sensor.normalize_device_type' or
-# 'custom_components.hyxi_cloud.sensor.get_raw_device_code'
+# 'custom_components.hyxi_cloud_dev.sensor.normalize_device_type' or
+# 'custom_components.hyxi_cloud_dev.sensor.get_raw_device_code'
 # correctly overrides the real implementations rather than a MagicMock.
 sensor_mod.normalize_device_type = const_mod.normalize_device_type
 sensor_mod.get_raw_device_code = const_mod.get_raw_device_code
@@ -145,7 +145,7 @@ def base_sensor():
 
 def test_mask_sn():
     """Verify mask_sn correctly hides the middle of serial numbers."""
-    from custom_components.hyxi_cloud.sensor import mask_sn
+    from custom_components.hyxi_cloud_dev.sensor import mask_sn
 
     # Empty/None handling
     assert mask_sn(None) == "****"
@@ -272,7 +272,7 @@ def test_collecttime_error_handling(base_sensor):
     assert sensor.native_value is None
 
     # Test OSError explicitly by patching datetime since OverflowError is now ValueError in Python 3.12+
-    with patch("custom_components.hyxi_cloud.sensor.datetime") as mock_dt:
+    with patch("custom_components.hyxi_cloud_dev.sensor.datetime") as mock_dt:
         mock_dt.fromtimestamp.side_effect = OSError("mocked OSError")
         coordinator.data["SN123"]["metrics"]["collectTime"] = 1234567890
         sensor._handle_coordinator_update()
@@ -337,7 +337,7 @@ def test_batsoc_batsoh_casting(base_sensor):
 @pytest.mark.asyncio
 async def test_new_api_metrics_registration():
     """Verify that all new PV, Phase, Battery, and Status sensors instantiate correctly."""
-    from custom_components.hyxi_cloud.const import DOMAIN
+    from custom_components.hyxi_cloud_dev.const import DOMAIN
 
     hass = MagicMock()
     entry = MagicMock()
@@ -446,7 +446,7 @@ async def test_new_api_metrics_registration():
 @pytest.mark.asyncio
 async def test_async_setup_entry_no_data():
     """Verify that async_setup_entry returns early when coordinator has no data."""
-    from custom_components.hyxi_cloud.const import DOMAIN
+    from custom_components.hyxi_cloud_dev.const import DOMAIN
 
     hass = MagicMock()
     entry = MagicMock()
@@ -675,7 +675,7 @@ def test_hyxi_sensor_last_seen(base_sensor):
     coordinator.data["SN123"]["metrics"]["last_seen"] = fixed_time_str
 
     with patch(
-        "custom_components.hyxi_cloud.sensor.dt_util.parse_datetime",
+        "custom_components.hyxi_cloud_dev.sensor.dt_util.parse_datetime",
         return_value=fixed_time_dt,
     ):
         sensor._handle_coordinator_update()
@@ -712,7 +712,7 @@ async def test_sensor_batteries_and_collectors():
             },
         }
     }
-    hass.data = {"hyxi_cloud": {"test_entry": coordinator}}
+    hass.data = {"hyxi_cloud_dev": {"test_entry": coordinator}}
 
     registered_entities = []
 
@@ -753,7 +753,7 @@ def test_battery_serial_mapping(base_sensor):
     sensor = sensor_mod.HyxiSensor(coordinator, "INV123", description)
 
     assert sensor._actual_sn == "BAT_REAL_123"
-    assert sensor.device_info["identifiers"] == {("hyxi_cloud", "BAT_REAL_123")}
+    assert sensor.device_info["identifiers"] == {("hyxi_cloud_dev", "BAT_REAL_123")}
     assert sensor.device_info["name"] == "Battery BAT_REAL_123"
 
 
@@ -775,7 +775,7 @@ def test_log_glitch_once(base_sensor):
     """Verify that _log_glitch_once logs a glitch value only once."""
     sensor, _ = base_sensor
 
-    with patch("custom_components.hyxi_cloud.sensor._LOGGER.debug") as mock_debug:
+    with patch("custom_components.hyxi_cloud_dev.sensor._LOGGER.debug") as mock_debug:
         # First time with value 123.4
         sensor._log_glitch_once(123.4, "Test glitch %s", 123.4)
         mock_debug.assert_called_once_with("Test glitch %s", 123.4)
@@ -812,7 +812,7 @@ async def test_base_sensor_added_to_hass_invalid_restoration():
     last_state.state = "not-a-number"
     sensor.async_get_last_state = AsyncMock(return_value=last_state)
 
-    with patch("custom_components.hyxi_cloud.sensor._LOGGER.debug") as mock_debug:
+    with patch("custom_components.hyxi_cloud_dev.sensor._LOGGER.debug") as mock_debug:
         await sensor.async_added_to_hass()
 
         # Verify that _last_valid_value is None
@@ -893,7 +893,7 @@ def test_process_numeric_value_anti_spike(base_sensor):
 @pytest.mark.asyncio
 async def test_async_setup_entry_null_string_filtering():
     """Verify that metrics with 'null' or 'NA' strings are filtered out during registration."""
-    from custom_components.hyxi_cloud.const import DOMAIN
+    from custom_components.hyxi_cloud_dev.const import DOMAIN
 
     hass = MagicMock()
     entry = MagicMock()
@@ -937,7 +937,7 @@ def test_get_metric_float_method():
     """Test the _get_metric_float method safely extracts floats from metrics."""
     from unittest.mock import MagicMock
 
-    from custom_components.hyxi_cloud.sensor import HyxiSensor
+    from custom_components.hyxi_cloud_dev.sensor import HyxiSensor
 
     coordinator = MagicMock()
     coordinator.data = {
@@ -975,7 +975,7 @@ def test_get_metric_float_method():
 @pytest.mark.asyncio
 async def test_new_telemetry_keys_registration_and_parsing():
     """Verify that all 29 new telemetry/Micro ESS sensors are registered and cast correctly."""
-    from custom_components.hyxi_cloud.const import DOMAIN
+    from custom_components.hyxi_cloud_dev.const import DOMAIN
 
     hass = MagicMock()
     entry = MagicMock()
@@ -1111,7 +1111,7 @@ async def test_new_telemetry_keys_registration_and_parsing():
         sensor_entity = registered_by_key[key]
         assert sensor_entity._actual_sn == "BAT_REAL_123"
         assert sensor_entity.device_info["identifiers"] == {
-            ("hyxi_cloud", "BAT_REAL_123")
+            ("hyxi_cloud_dev", "BAT_REAL_123")
         }
 
 
@@ -1285,7 +1285,7 @@ def test_hyxi_sensor_advanced_mappings(base_sensor):
     sensor._dev_data = coordinator.data["INV123"]
     sensor._metrics = sensor._dev_data["metrics"]
 
-    assert sensor.device_info["via_device"] == ("hyxi_cloud", "COLLECTOR_123")
+    assert sensor.device_info["via_device"] == ("hyxi_cloud_dev", "COLLECTOR_123")
 
     # 2. genP mapping: (val - acl) * 2.0 -> (200.0 - 50.0) * 2.0 = 300.0
     sensor._attr_native_value = 200.0
@@ -1317,7 +1317,7 @@ def test_hyxi_sensor_advanced_mappings(base_sensor):
 @pytest.mark.asyncio
 async def test_async_setup_entry_em_and_battery_options():
     """Verify async_setup_entry registers EM and last_sent_mode sensors when enabled."""
-    from custom_components.hyxi_cloud.const import DOMAIN
+    from custom_components.hyxi_cloud_dev.const import DOMAIN
 
     # Stub dependencies directly on the module dictionary to bypass MagicMock discrepancies
     sensor_mod.is_battery_control_enabled = lambda e, c: True
@@ -1352,7 +1352,7 @@ async def test_async_setup_entry_em_and_battery_options():
 
     # We mock _LOGGER.isEnabledFor(logging.DEBUG) to True to cover that block
     with patch(
-        "custom_components.hyxi_cloud.sensor._LOGGER.isEnabledFor", return_value=True
+        "custom_components.hyxi_cloud_dev.sensor._LOGGER.isEnabledFor", return_value=True
     ):
         await sensor_mod.async_setup_entry(hass, entry, mock_async_add_entities)
 

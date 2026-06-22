@@ -2,4 +2,4 @@
 * @Veldkornet
 
 # Optional: If you want to be specifically tagged for the core logic
-# custom_components/hyxi_cloud/sensor.py    @Veldkornet
+# custom_components/hyxi_cloud_dev/sensor.py    @Veldkornet

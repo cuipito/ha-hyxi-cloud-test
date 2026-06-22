@@ -81,11 +81,11 @@ sys.modules["homeassistant.util.dt"] = mock_dt
 mock_ha.util.dt = mock_dt  # Ensure both paths work
 
 # Now import and reload the component to ensure it uses the mock
-import custom_components.hyxi_cloud.binary_sensor as bs_mod
+import custom_components.hyxi_cloud_dev.binary_sensor as bs_mod
 
 importlib.reload(bs_mod)
 
-from custom_components.hyxi_cloud.const import DOMAIN
+from custom_components.hyxi_cloud_dev.const import DOMAIN
 
 
 @pytest.fixture
