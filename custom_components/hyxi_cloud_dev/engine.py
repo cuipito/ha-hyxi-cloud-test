@@ -902,13 +902,12 @@ class EnergyManagerEngine:
                 await self._release_pv_curtailment()
             return False
 
-        max_export = self._get_param("max_grid_export")
-        if max_export <= 0:
-            if self._pv_curtailed:
-                await self._release_pv_curtailment()
-            return False
+        # The export_limiting switch (checked above) is the enable/disable.
+        # The number is the export cap and 0 W is a valid value meaning
+        # "no grid export allowed". Clamp negatives defensively.
+        max_export = max(0.0, self._get_param("max_grid_export"))
 
-        # P1 negative = exporting; check if export exceeds limit
+        # P1 negative = exporting; check if export exceeds the cap
         if s.p1 < -max_export:
             if s.soc < s.soc_max:
                 # Battery has room — charge to absorb excess (both phase types)
